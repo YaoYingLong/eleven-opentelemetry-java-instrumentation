@@ -1,0 +1,2 @@
+io.opentelemetry.javaagent.tooling.config.ConfigurationPropertiesSupplier
+io.opentelemetry.javaagent.tooling.config.ConfigurationPropertiesSupplierTest$UserCustomPropertiesSupplier
