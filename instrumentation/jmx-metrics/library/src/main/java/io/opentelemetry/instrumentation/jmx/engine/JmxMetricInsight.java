@@ -35,10 +35,7 @@ public class JmxMetricInsight {
 
   public void start(MetricConfiguration conf) {
     if (conf.isEmpty()) {
-      logger.log(
-          FINE,
-          "Empty JMX configuration, no metrics will be collected for InstrumentationScope "
-              + INSTRUMENTATION_SCOPE);
+      logger.log(FINE, "Empty JMX configuration, no metrics will be collected for InstrumentationScope " + INSTRUMENTATION_SCOPE);
     } else {
       MetricRegistrar registrar = new MetricRegistrar(openTelemetry, INSTRUMENTATION_SCOPE);
       BeanFinder finder = new BeanFinder(registrar, discoveryDelay);

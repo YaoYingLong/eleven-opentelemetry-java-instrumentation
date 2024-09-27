@@ -24,8 +24,7 @@ public class AgentTracerProviderConfigurer implements AutoConfigurationCustomize
 
   @Override
   public void customize(AutoConfigurationCustomizer autoConfigurationCustomizer) {
-    autoConfigurationCustomizer.addTracerProviderCustomizer(
-        AgentTracerProviderConfigurer::configure);
+    autoConfigurationCustomizer.addTracerProviderCustomizer(AgentTracerProviderConfigurer::configure);
   }
 
   @CanIgnoreReturnValue

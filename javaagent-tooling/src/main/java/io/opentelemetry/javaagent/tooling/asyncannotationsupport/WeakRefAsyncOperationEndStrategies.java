@@ -20,8 +20,7 @@ public final class WeakRefAsyncOperationEndStrategies extends AsyncOperationEndS
    * strategies' classloaders, in case applications get undeployed (and all their classes unloaded).
    */
   public static void initialize() {
-    AsyncOperationEndStrategies.internalSetStrategiesStorage(
-        new WeakRefAsyncOperationEndStrategies());
+    AsyncOperationEndStrategies.internalSetStrategiesStorage(new WeakRefAsyncOperationEndStrategies());
   }
 
   private final List<WeakReference<AsyncOperationEndStrategy>> strategies =

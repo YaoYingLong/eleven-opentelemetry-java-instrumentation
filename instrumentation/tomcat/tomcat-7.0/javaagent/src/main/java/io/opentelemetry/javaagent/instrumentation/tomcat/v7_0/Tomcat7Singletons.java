@@ -20,8 +20,7 @@ public final class Tomcat7Singletons {
   private static final Instrumenter<Request, Response> INSTRUMENTER =
       TomcatInstrumenterFactory.create(INSTRUMENTATION_NAME, Servlet3Accessor.INSTANCE);
   private static final TomcatHelper<HttpServletRequest, HttpServletResponse> HELPER =
-      new TomcatHelper<>(
-          INSTRUMENTER, Tomcat7ServletEntityProvider.INSTANCE, Servlet3Singletons.helper());
+      new TomcatHelper<>(INSTRUMENTER, Tomcat7ServletEntityProvider.INSTANCE, Servlet3Singletons.helper());
 
   public static TomcatHelper<HttpServletRequest, HttpServletResponse> helper() {
     return HELPER;

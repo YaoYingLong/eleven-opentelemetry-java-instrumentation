@@ -108,10 +108,10 @@ public final class MemoryPools {
       List<MemoryPoolMXBean> poolBeans,
       Function<MemoryPoolMXBean, MemoryUsage> memoryUsageExtractor,
       Function<MemoryUsage, Long> valueExtractor) {
+
     List<Attributes> attributeSets = new ArrayList<>(poolBeans.size());
     for (MemoryPoolMXBean pool : poolBeans) {
-      attributeSets.add(
-          Attributes.builder()
+      attributeSets.add(Attributes.builder()
               .put(POOL_KEY, pool.getName())
               .put(TYPE_KEY, memoryType(pool.getType()))
               .build());

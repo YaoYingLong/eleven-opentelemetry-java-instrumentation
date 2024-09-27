@@ -34,8 +34,7 @@ public class Tomcat7ServerHandlerAdvice {
 
     scope = context.makeCurrent();
 
-    HttpServerResponseCustomizerHolder.getCustomizer()
-        .customize(context, response, Tomcat7ResponseMutator.INSTANCE);
+    HttpServerResponseCustomizerHolder.getCustomizer().customize(context, response, Tomcat7ResponseMutator.INSTANCE);
   }
 
   @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

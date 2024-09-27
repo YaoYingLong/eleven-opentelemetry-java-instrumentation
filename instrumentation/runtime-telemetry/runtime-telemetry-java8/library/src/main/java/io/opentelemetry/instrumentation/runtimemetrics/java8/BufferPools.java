@@ -40,14 +40,12 @@ public final class BufferPools {
 
   /** Register observers for java runtime buffer pool metrics. */
   public static List<AutoCloseable> registerObservers(OpenTelemetry openTelemetry) {
-    List<BufferPoolMXBean> bufferBeans =
-        ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
+    List<BufferPoolMXBean> bufferBeans = ManagementFactory.getPlatformMXBeans(BufferPoolMXBean.class);
     return registerObservers(openTelemetry, bufferBeans);
   }
 
   // Visible for testing
-  static List<AutoCloseable> registerObservers(
-      OpenTelemetry openTelemetry, List<BufferPoolMXBean> bufferBeans) {
+  static List<AutoCloseable> registerObservers(OpenTelemetry openTelemetry, List<BufferPoolMXBean> bufferBeans) {
     List<AutoCloseable> observables = new ArrayList<>();
     Meter meter = JmxRuntimeMetricsUtil.getMeter(openTelemetry);
     observables.add(
@@ -73,8 +71,7 @@ public final class BufferPools {
   }
 
   // Visible for testing
-  static Consumer<ObservableLongMeasurement> callback(
-      List<BufferPoolMXBean> bufferPools, Function<BufferPoolMXBean, Long> extractor) {
+  static Consumer<ObservableLongMeasurement> callback(List<BufferPoolMXBean> bufferPools, Function<BufferPoolMXBean, Long> extractor) {
     List<Attributes> attributeSets = new ArrayList<>(bufferPools.size());
     for (BufferPoolMXBean pool : bufferPools) {
       attributeSets.add(Attributes.builder().put(POOL_KEY, pool.getName()).build());

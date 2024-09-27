@@ -31,8 +31,7 @@ public class JmxMetricInsightInstaller implements AgentListener {
     ConfigProperties config = AutoConfigureUtil.getConfig(autoConfiguredSdk);
 
     if (config.getBoolean("otel.jmx.enabled", true)) {
-      JmxMetricInsight service =
-          JmxMetricInsight.createService(GlobalOpenTelemetry.get(), beanDiscoveryDelay(config));
+      JmxMetricInsight service = JmxMetricInsight.createService(GlobalOpenTelemetry.get(), beanDiscoveryDelay(config));
       MetricConfiguration conf = buildMetricConfiguration(config);
       service.start(conf);
     }
@@ -56,8 +55,7 @@ public class JmxMetricInsightInstaller implements AgentListener {
 
   private static void addRulesForPlatform(String platform, MetricConfiguration conf) {
     String yamlResource = resourceFor(platform);
-    try (InputStream inputStream =
-        JmxMetricInsightInstaller.class.getResourceAsStream(yamlResource)) {
+    try (InputStream inputStream = JmxMetricInsightInstaller.class.getResourceAsStream(yamlResource)) {
       if (inputStream != null) {
         JmxMetricInsight.getLogger().log(FINE, "Opened input stream {0}", yamlResource);
         RuleParser parserInstance = RuleParser.get();
@@ -70,8 +68,7 @@ public class JmxMetricInsightInstaller implements AgentListener {
     }
   }
 
-  private static void buildFromDefaultRules(
-      MetricConfiguration conf, ConfigProperties configProperties) {
+  private static void buildFromDefaultRules(MetricConfiguration conf, ConfigProperties configProperties) {
     List<String> platforms = configProperties.getList("otel.jmx.target.system");
     for (String platform : platforms) {
       addRulesForPlatform(platform, conf);

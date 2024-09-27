@@ -150,8 +150,7 @@ public final class SpringWebMvcTelemetryBuilder {
     }
 
     InstrumenterBuilder<HttpServletRequest, HttpServletResponse> builder =
-        Instrumenter.<HttpServletRequest, HttpServletResponse>builder(
-                openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
+        Instrumenter.<HttpServletRequest, HttpServletResponse>builder(openTelemetry, INSTRUMENTATION_NAME, spanNameExtractor)
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
             .addAttributesExtractor(httpAttributesExtractorBuilder.build())
             .addAttributesExtractors(additionalExtractors)

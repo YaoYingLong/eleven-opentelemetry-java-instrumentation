@@ -82,8 +82,7 @@ public class AgentClassLoader extends URLClassLoader {
    * @param isSecurityManagerSupportEnabled Whether this class loader should define classes with all
    *     permissions
    */
-  public AgentClassLoader(
-      File javaagentFile, String internalJarFileName, boolean isSecurityManagerSupportEnabled) {
+  public AgentClassLoader(File javaagentFile, String internalJarFileName, boolean isSecurityManagerSupportEnabled) {
     super(new URL[] {}, getParentClassLoader());
     if (javaagentFile == null) {
       throw new IllegalArgumentException("Agent jar location should be set");
@@ -95,16 +94,13 @@ public class AgentClassLoader extends URLClassLoader {
     this.isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled;
     bootstrapProxy = new BootstrapClassLoaderProxy(this);
 
-    jarEntryPrefix =
-        internalJarFileName
-            + (internalJarFileName.isEmpty() || internalJarFileName.endsWith("/") ? "" : "/");
+    jarEntryPrefix = internalJarFileName + (internalJarFileName.isEmpty() || internalJarFileName.endsWith("/") ? "" : "/");
     try {
       jarFile = new JarFile(javaagentFile, false);
       // base url for constructing jar entry urls
       // we use a custom protocol instead of typical jar:file: because we don't want to be affected
       // by user code disabling URLConnection caching for jar protocol e.g. tomcat does this
-      jarBase =
-          new URL("x-internal-jar", null, 0, "/", new AgentClassLoaderUrlStreamHandler(jarFile));
+      jarBase = new URL("x-internal-jar", null, 0, "/", new AgentClassLoaderUrlStreamHandler(jarFile));
       codeSource = new CodeSource(javaagentFile.toURI().toURL(), (Certificate[]) null);
       manifest = jarFile.getManifest();
     } catch (IOException e) {
@@ -116,11 +112,7 @@ public class AgentClassLoader extends URLClassLoader {
       try {
         url = new File(AGENT_INITIALIZER_JAR).toURI().toURL();
       } catch (MalformedURLException e) {
-        throw new IllegalStateException(
-            "Filename could not be parsed: "
-                + AGENT_INITIALIZER_JAR
-                + ". Initializer is not installed",
-            e);
+        throw new IllegalStateException("Filename could not be parsed: " + AGENT_INITIALIZER_JAR + ". Initializer is not installed", e);
       }
 
       addURL(url);
@@ -422,8 +414,7 @@ public class AgentClassLoader extends URLClassLoader {
         if (entryName != null) {
           jarEntry = jarFile.getJarEntry(entryName);
           if (jarEntry == null) {
-            throw new FileNotFoundException(
-                "JAR entry " + entryName + " not found in " + jarFile.getName());
+            throw new FileNotFoundException("JAR entry " + entryName + " not found in " + jarFile.getName());
           }
         }
         connected = true;
@@ -438,8 +429,7 @@ public class AgentClassLoader extends URLClassLoader {
         throw new IOException("no entry name specified");
       } else {
         if (jarEntry == null) {
-          throw new FileNotFoundException(
-              "JAR entry " + entryName + " not found in " + jarFile.getName());
+          throw new FileNotFoundException("JAR entry " + entryName + " not found in " + jarFile.getName());
         }
         return jarFile.getInputStream(jarEntry);
       }
@@ -487,8 +477,7 @@ public class AgentClassLoader extends URLClassLoader {
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
       // prometheus exporter uses jdk http server, load it from the platform class loader
       // some custom extensions use java.sql classes, make these available to agent and extensions
-      if (name != null
-          && (name.startsWith("com.sun.net.httpserver.") || name.startsWith("java.sql."))) {
+      if (name != null && (name.startsWith("com.sun.net.httpserver.") || name.startsWith("java.sql."))) {
         return platformClassLoader.loadClass(name);
       }
       return Class.forName(name, false, null);

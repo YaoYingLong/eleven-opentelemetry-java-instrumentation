@@ -51,11 +51,7 @@ public class ExtensionClassLoader extends URLClassLoader {
     ClassLoader.registerAsParallelCapable();
   }
 
-  public static ClassLoader getInstance(
-      ClassLoader parent,
-      File javaagentFile,
-      boolean isSecurityManagerSupportEnabled,
-      EarlyInitAgentConfig earlyConfig) {
+  public static ClassLoader getInstance(ClassLoader parent, File javaagentFile, boolean isSecurityManagerSupportEnabled, EarlyInitAgentConfig earlyConfig) {
     List<URL> extensions = new ArrayList<>();
 
     includeEmbeddedExtensionsIfFound(extensions, javaagentFile);
@@ -91,10 +87,7 @@ public class ExtensionClassLoader extends URLClassLoader {
           File tempFile = new File(tempDirectory, name.substring(prefix.length()));
           // reject extensions that would be extracted outside of temp directory
           // https://security.snyk.io/research/zip-slip-vulnerability
-          if (!tempFile
-              .getCanonicalFile()
-              .toPath()
-              .startsWith(tempDirectory.getCanonicalFile().toPath())) {
+          if (!tempFile.getCanonicalFile().toPath().startsWith(tempDirectory.getCanonicalFile().toPath())) {
             throw new IllegalStateException("Invalid extension " + name);
           }
           if (tempFile.createNewFile()) {

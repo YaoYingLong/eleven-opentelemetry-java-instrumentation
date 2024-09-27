@@ -77,8 +77,7 @@ public class AgentStarterImpl implements AgentStarter {
     }
 
     LoggingCustomizer loggingCustomizer = null;
-    for (LoggingCustomizer customizer :
-        ServiceLoader.load(LoggingCustomizer.class, extensionClassLoader)) {
+    for (LoggingCustomizer customizer : ServiceLoader.load(LoggingCustomizer.class, extensionClassLoader)) {
       if (customizer.name().equalsIgnoreCase(loggerImplementationName)) {
         loggingCustomizer = customizer;
         break;
@@ -127,10 +126,8 @@ public class AgentStarterImpl implements AgentStarter {
     return extensionClassLoader;
   }
 
-  private ClassLoader createExtensionClassLoader(
-      ClassLoader agentClassLoader, EarlyInitAgentConfig earlyConfig) {
-    return ExtensionClassLoader.getInstance(
-        agentClassLoader, javaagentFile, isSecurityManagerSupportEnabled, earlyConfig);
+  private ClassLoader createExtensionClassLoader(ClassLoader agentClassLoader, EarlyInitAgentConfig earlyConfig) {
+    return ExtensionClassLoader.getInstance(agentClassLoader, javaagentFile, isSecurityManagerSupportEnabled, earlyConfig);
   }
 
   private static class LaunchHelperClassFileTransformer implements ClassFileTransformer {

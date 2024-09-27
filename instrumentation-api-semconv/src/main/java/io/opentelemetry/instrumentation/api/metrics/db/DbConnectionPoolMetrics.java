@@ -59,8 +59,7 @@ public final class DbConnectionPoolMetrics {
     return meter
         .upDownCounterBuilder("db.client.connections.usage")
         .setUnit("{connections}")
-        .setDescription(
-            "The number of connections that are currently in state described by the state attribute.")
+        .setDescription("The number of connections that are currently in state described by the state attribute.")
         .buildObserver();
   }
 

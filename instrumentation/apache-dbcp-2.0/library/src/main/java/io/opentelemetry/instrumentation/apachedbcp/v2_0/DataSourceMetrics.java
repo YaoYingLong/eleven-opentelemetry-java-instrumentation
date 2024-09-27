@@ -23,10 +23,8 @@ final class DataSourceMetrics {
   private static final Map<BasicDataSourceMXBean, BatchCallback> dataSourceMetrics =
       new ConcurrentHashMap<>();
 
-  public static void registerMetrics(
-      OpenTelemetry openTelemetry, BasicDataSourceMXBean dataSource, String dataSourceName) {
-    DbConnectionPoolMetrics metrics =
-        DbConnectionPoolMetrics.create(openTelemetry, INSTRUMENTATION_NAME, dataSourceName);
+  public static void registerMetrics(OpenTelemetry openTelemetry, BasicDataSourceMXBean dataSource, String dataSourceName) {
+    DbConnectionPoolMetrics metrics = DbConnectionPoolMetrics.create(openTelemetry, INSTRUMENTATION_NAME, dataSourceName);
 
     ObservableLongMeasurement connections = metrics.connections();
     ObservableLongMeasurement minIdleConnections = metrics.minIdleConnections();
@@ -37,8 +35,7 @@ final class DataSourceMetrics {
     Attributes usedConnectionsAttributes = metrics.getUsedConnectionsAttributes();
     Attributes idleConnectionsAttributes = metrics.getIdleConnectionsAttributes();
 
-    BatchCallback callback =
-        metrics.batchCallback(
+    BatchCallback callback = metrics.batchCallback(
             () -> {
               connections.record(dataSource.getNumActive(), usedConnectionsAttributes);
               connections.record(dataSource.getNumIdle(), idleConnectionsAttributes);

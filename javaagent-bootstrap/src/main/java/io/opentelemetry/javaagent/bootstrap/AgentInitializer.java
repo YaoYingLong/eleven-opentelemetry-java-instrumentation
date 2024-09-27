@@ -27,8 +27,7 @@ public final class AgentInitializer {
   @Nullable private static AgentStarter agentStarter = null;
   private static boolean isSecurityManagerSupportEnabled = false;
 
-  public static void initialize(Instrumentation inst, File javaagentFile, boolean fromPremain)
-      throws Exception {
+  public static void initialize(Instrumentation inst, File javaagentFile, boolean fromPremain) throws Exception {
     if (agentClassLoader != null) {
       return;
     }
@@ -47,9 +46,12 @@ public final class AgentInitializer {
         new PrivilegedExceptionAction<Void>() {
           @Override
           public Void run() throws Exception {
+            // 创建AgentClassLoader
             agentClassLoader = createAgentClassLoader("inst", javaagentFile);
+            // 通过AgentClassLoader加载AgentStarterImpl并调用其构造方法
             agentStarter = createAgentStarter(agentClassLoader, inst, javaagentFile);
             if (!fromPremain || !delayAgentStart()) {
+              // 这里调用AgentStarterImpl的start方法
               agentStarter.start();
             }
             return null;
@@ -167,15 +169,10 @@ public final class AgentInitializer {
     return new AgentClassLoader(javaagentFile, innerJarFilename, isSecurityManagerSupportEnabled);
   }
 
-  private static AgentStarter createAgentStarter(
-      ClassLoader agentClassLoader, Instrumentation instrumentation, File javaagentFile)
-      throws Exception {
-    Class<?> starterClass =
-        agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentStarterImpl");
-    Constructor<?> constructor =
-        starterClass.getDeclaredConstructor(Instrumentation.class, File.class, boolean.class);
-    return (AgentStarter)
-        constructor.newInstance(instrumentation, javaagentFile, isSecurityManagerSupportEnabled);
+  private static AgentStarter createAgentStarter(ClassLoader agentClassLoader, Instrumentation instrumentation, File javaagentFile) throws Exception {
+    Class<?> starterClass = agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.AgentStarterImpl");
+    Constructor<?> constructor = starterClass.getDeclaredConstructor(Instrumentation.class, File.class, boolean.class);
+    return (AgentStarter) constructor.newInstance(instrumentation, javaagentFile, isSecurityManagerSupportEnabled);
   }
 
   private AgentInitializer() {}

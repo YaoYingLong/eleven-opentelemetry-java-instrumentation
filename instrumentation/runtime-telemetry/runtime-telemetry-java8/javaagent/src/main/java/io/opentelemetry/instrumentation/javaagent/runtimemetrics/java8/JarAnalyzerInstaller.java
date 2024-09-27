@@ -20,8 +20,7 @@ public class JarAnalyzerInstaller implements BeforeAgentListener {
   @Override
   public void beforeAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     ConfigProperties config = AutoConfigureUtil.getConfig(autoConfiguredOpenTelemetrySdk);
-    boolean enabled =
-        config.getBoolean("otel.instrumentation.runtime-telemetry.package-emitter.enabled", false);
+    boolean enabled = config.getBoolean("otel.instrumentation.runtime-telemetry.package-emitter.enabled", false);
     if (!enabled) {
       return;
     }
@@ -29,10 +28,8 @@ public class JarAnalyzerInstaller implements BeforeAgentListener {
     if (inst == null) {
       return;
     }
-    int jarsPerSecond =
-        config.getInt("otel.instrumentation.runtime-telemetry.package-emitter.jars-per-second", 10);
-    JarAnalyzer jarAnalyzer =
-        JarAnalyzer.create(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk(), jarsPerSecond);
+    int jarsPerSecond = config.getInt("otel.instrumentation.runtime-telemetry.package-emitter.jars-per-second", 10);
+    JarAnalyzer jarAnalyzer = JarAnalyzer.create(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk(), jarsPerSecond);
     inst.addTransformer(jarAnalyzer);
   }
 }

@@ -21,11 +21,11 @@ public final class OpenTelemetryInstaller {
    *
    * @return the {@link AutoConfiguredOpenTelemetrySdk}
    */
-  public static AutoConfiguredOpenTelemetrySdk installOpenTelemetrySdk(
-      ClassLoader extensionClassLoader) {
+  public static AutoConfiguredOpenTelemetrySdk installOpenTelemetrySdk(ClassLoader extensionClassLoader) {
 
-    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
-        AutoConfiguredOpenTelemetrySdk.builder()
+    // 首先通过builder方法实例化AutoConfiguredOpenTelemetrySdkBuilder，然后设置ServiceClassLoader等属性
+    // 最终调用AutoConfiguredOpenTelemetrySdkBuilder的build
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = AutoConfiguredOpenTelemetrySdk.builder()
             .setResultAsGlobal()
             .setServiceClassLoader(extensionClassLoader)
             // disable the logs exporter by default for the time being
@@ -39,10 +39,8 @@ public final class OpenTelemetryInstaller {
           CompletableResultCode traceResult = sdk.getSdkTracerProvider().forceFlush();
           CompletableResultCode metricsResult = sdk.getSdkMeterProvider().forceFlush();
           CompletableResultCode logsResult = sdk.getSdkLoggerProvider().forceFlush();
-          CompletableResultCode.ofAll(Arrays.asList(traceResult, metricsResult, logsResult))
-              .join(timeout, unit);
+          CompletableResultCode.ofAll(Arrays.asList(traceResult, metricsResult, logsResult)).join(timeout, unit);
         });
-
     return autoConfiguredSdk;
   }
 

@@ -70,8 +70,7 @@ public final class OpenTelemetryAgent {
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
-    URL url =
-        classLoader.getResource(OpenTelemetryAgent.class.getName().replace('.', '/') + ".class");
+    URL url = classLoader.getResource(OpenTelemetryAgent.class.getName().replace('.', '/') + ".class");
     if (url == null || !"jar".equals(url.getProtocol())) {
       throw new IllegalStateException("could not get agent jar location from url " + url);
     }

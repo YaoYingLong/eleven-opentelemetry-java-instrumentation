@@ -51,8 +51,7 @@ public final class HttpServerMetrics implements OperationListener {
 
   private HttpServerMetrics(Meter meter) {
     if (SemconvStability.emitStableHttpSemconv()) {
-      DoubleHistogramBuilder stableDurationBuilder =
-          createStableDurationHistogramBuilder(
+      DoubleHistogramBuilder stableDurationBuilder = createStableDurationHistogramBuilder(
               meter, "http.server.request.duration", "Duration of HTTP server requests.");
       HttpMetricsAdvice.applyStableServerDurationAdvice(stableDurationBuilder);
       stableDuration = stableDurationBuilder.build();

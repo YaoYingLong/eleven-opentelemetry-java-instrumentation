@@ -20,8 +20,7 @@ public class TomcatServerHandlerInstrumentation implements TypeInstrumentation {
   private final String handlerAdviceClassName;
   private final String attachResponseAdviceClassName;
 
-  public TomcatServerHandlerInstrumentation(
-      String handlerAdviceClassName, String attachResponseAdviceClassName) {
+  public TomcatServerHandlerInstrumentation(String handlerAdviceClassName, String attachResponseAdviceClassName) {
     this.handlerAdviceClassName = handlerAdviceClassName;
     this.attachResponseAdviceClassName = attachResponseAdviceClassName;
   }

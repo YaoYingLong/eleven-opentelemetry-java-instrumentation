@@ -50,8 +50,7 @@ public final class Cpu {
 
   static {
     OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-    Supplier<Double> processCpuSupplier =
-        methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_PROCESS_CPU_LOAD);
+    Supplier<Double> processCpuSupplier = methodInvoker(osBean, OS_BEAN_HOTSPOT, METHOD_PROCESS_CPU_LOAD);
     if (processCpuSupplier == null) {
       // More users will be on hotspot than j9, so check for j9 second
       processCpuSupplier = methodInvoker(osBean, OS_BEAN_J9, METHOD_PROCESS_CPU_LOAD);
@@ -73,8 +72,7 @@ public final class Cpu {
 
   /** Register observers for java runtime class metrics. */
   public static List<AutoCloseable> registerObservers(OpenTelemetry openTelemetry) {
-    return INSTANCE.registerObservers(
-        openTelemetry, ManagementFactory.getOperatingSystemMXBean(), systemCpu, processCpu);
+    return INSTANCE.registerObservers(openTelemetry, ManagementFactory.getOperatingSystemMXBean(), systemCpu, processCpu);
   }
 
   // Visible for testing
@@ -132,8 +130,7 @@ public final class Cpu {
 
   @Nullable
   @SuppressWarnings("ReturnValueIgnored")
-  private static Supplier<Double> methodInvoker(
-      OperatingSystemMXBean osBean, String osBeanClassName, String methodName) {
+  private static Supplier<Double> methodInvoker(OperatingSystemMXBean osBean, String osBeanClassName, String methodName) {
     try {
       Class<?> osBeanClass = Class.forName(osBeanClassName);
       osBeanClass.cast(osBean);

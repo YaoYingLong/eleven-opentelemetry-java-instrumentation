@@ -144,9 +144,7 @@ final class JarAnalyzer implements ClassFileTransformer {
     private Worker(EventEmitter eventEmitter, BlockingQueue<URL> toProcess, int jarsPerSecond) {
       this.eventEmitter = eventEmitter;
       this.toProcess = toProcess;
-      this.rateLimiter =
-          new io.opentelemetry.sdk.internal.RateLimiter(
-              jarsPerSecond, jarsPerSecond, Clock.getDefault());
+      this.rateLimiter = new io.opentelemetry.sdk.internal.RateLimiter(jarsPerSecond, jarsPerSecond, Clock.getDefault());
     }
 
     /**

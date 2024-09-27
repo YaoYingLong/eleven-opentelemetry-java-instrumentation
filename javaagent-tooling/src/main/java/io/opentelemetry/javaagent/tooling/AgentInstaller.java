@@ -84,8 +84,7 @@ public class AgentInstaller {
 
   private static final Map<String, List<Runnable>> CLASS_LOAD_CALLBACKS = new HashMap<>();
 
-  public static void installBytebuddyAgent(
-      Instrumentation inst, ClassLoader extensionClassLoader, EarlyInitAgentConfig earlyConfig) {
+  public static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader, EarlyInitAgentConfig earlyConfig) {
     addByteBuddyRawSetting();
 
     Integer strictContextStressorMillis = Integer.getInteger(STRICT_CONTEXT_STRESSOR_MILLIS);
@@ -104,9 +103,7 @@ public class AgentInstaller {
     }
   }
 
-  private static void installBytebuddyAgent(
-      Instrumentation inst,
-      ClassLoader extensionClassLoader,
+  private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
       Iterable<AgentListener> agentListeners) {
 
     WeakRefAsyncOperationEndStrategies.initialize();
@@ -115,19 +112,20 @@ public class AgentInstaller {
 
     setDefineClassHandler();
 
-    // If noop OpenTelemetry is enabled, autoConfiguredSdk will be null and AgentListeners are not
-    // called
-    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk =
-        installOpenTelemetrySdk(extensionClassLoader);
+    // If noop OpenTelemetry is enabled, autoConfiguredSdk will be null and AgentListeners are not called
+    /**
+     * 通过调用OpenTelemetryInstaller的installOpenTelemetrySdk方法，最中通过AutoConfiguredOpenTelemetrySdk的build OpenTelemetry对象
+     *
+     */
+    AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = installOpenTelemetrySdk(extensionClassLoader);
 
     ConfigProperties sdkConfig = AutoConfigureUtil.getConfig(autoConfiguredSdk);
     InstrumentationConfig.internalInitializeConfig(new ConfigPropertiesBridge(sdkConfig));
     copyNecessaryConfigToSystemProperties(sdkConfig);
 
     setBootstrapPackages(sdkConfig, extensionClassLoader);
-
-    for (BeforeAgentListener agentListener :
-        loadOrdered(BeforeAgentListener.class, extensionClassLoader)) {
+    // 这个地方是一个扩展点
+    for (BeforeAgentListener agentListener : loadOrdered(BeforeAgentListener.class, extensionClassLoader)) {
       agentListener.beforeAgent(autoConfiguredSdk);
     }
 
@@ -286,8 +284,7 @@ public class AgentInstaller {
     // Once we see the LogManager class loading, it's safe to run AgentListener#afterAgent() because
     // the application is already setting the global LogManager and AgentListener won't be able
     // to touch it due to class loader locking.
-    boolean shouldForceSynchronousAgentListenersCalls =
-        AutoConfigureUtil.getConfig(autoConfiguredSdk)
+    boolean shouldForceSynchronousAgentListenersCalls = AutoConfigureUtil.getConfig(autoConfiguredSdk)
             .getBoolean(FORCE_SYNCHRONOUS_AGENT_LISTENERS_CONFIG, false);
     boolean javaBefore9 = isJavaBefore9();
     if (!shouldForceSynchronousAgentListenersCalls && javaBefore9 && isAppUsingCustomLogManager()) {
