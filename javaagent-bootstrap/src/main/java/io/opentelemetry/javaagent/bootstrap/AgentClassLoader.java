@@ -84,16 +84,19 @@ public class AgentClassLoader extends URLClassLoader {
    */
   public AgentClassLoader(File javaagentFile, String internalJarFileName, boolean isSecurityManagerSupportEnabled) {
     super(new URL[] {}, getParentClassLoader());
+    // javaagentFile就是**/opentelemetry-javaagent-1.31.0.jar
     if (javaagentFile == null) {
       throw new IllegalArgumentException("Agent jar location should be set");
     }
+    // 这里传入的internalJarFileName固定为inst
     if (internalJarFileName == null) {
       throw new IllegalArgumentException("Internal jar file name should be set");
     }
 
+    // 默认为false
     this.isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled;
     bootstrapProxy = new BootstrapClassLoaderProxy(this);
-
+    // jarEntryPrefix默认为inst，其实就是加载inst目录下的类
     jarEntryPrefix = internalJarFileName + (internalJarFileName.isEmpty() || internalJarFileName.endsWith("/") ? "" : "/");
     try {
       jarFile = new JarFile(javaagentFile, false);
@@ -114,7 +117,6 @@ public class AgentClassLoader extends URLClassLoader {
       } catch (MalformedURLException e) {
         throw new IllegalStateException("Filename could not be parsed: " + AGENT_INITIALIZER_JAR + ". Initializer is not installed", e);
       }
-
       addURL(url);
     }
   }
@@ -231,10 +233,11 @@ public class AgentClassLoader extends URLClassLoader {
   private JarEntry findJarEntry(String name) {
     // shading renames .class to .classdata
     boolean isClass = name.endsWith(".class");
+    // 将.class后缀修改为.classdata后缀
     if (isClass) {
       name += getClassSuffix();
     }
-
+    // 加载inst目录下的类
     JarEntry jarEntry = jarFile.getJarEntry(jarEntryPrefix + name);
     if (MULTI_RELEASE_JAR_ENABLE) {
       jarEntry = findVersionedJarEntry(jarEntry, name);
@@ -254,8 +257,7 @@ public class AgentClassLoader extends URLClassLoader {
       // search for versioned entry by looping over possible versions form high to low
       int version = JAVA_VERSION;
       while (version >= MIN_MULTI_RELEASE_JAR_JAVA_VERSION) {
-        JarEntry versionedJarEntry =
-            jarFile.getJarEntry(jarEntryPrefix + META_INF_VERSIONS + version + "/" + name);
+        JarEntry versionedJarEntry = jarFile.getJarEntry(jarEntryPrefix + META_INF_VERSIONS + version + "/" + name);
         if (versionedJarEntry != null) {
           return versionedJarEntry;
         }

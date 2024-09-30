@@ -38,6 +38,7 @@ public final class AgentInitializer {
       throw new IllegalStateException("agent initializer should be loaded in boot loader");
     }
 
+    // 默认为false
     isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled();
 
     // this call deliberately uses anonymous class instead of lambda because using lambdas too
