@@ -53,16 +53,11 @@ public final class InstrumentationModuleInstaller {
     this.instrumentation = instrumentation;
   }
 
-  AgentBuilder install(
-      InstrumentationModule instrumentationModule,
-      AgentBuilder parentAgentBuilder,
-      ConfigProperties config) {
-    if (!AgentConfig.isInstrumentationEnabled(
-        config,
+  AgentBuilder install(InstrumentationModule instrumentationModule, AgentBuilder parentAgentBuilder, ConfigProperties config) {
+    if (!AgentConfig.isInstrumentationEnabled(config,
         instrumentationModule.instrumentationNames(),
         instrumentationModule.defaultEnabled(config))) {
-      logger.log(
-          FINE, "Instrumentation {0} is disabled", instrumentationModule.instrumentationName());
+      logger.log(FINE, "Instrumentation {0} is disabled", instrumentationModule.instrumentationName());
       return parentAgentBuilder;
     }
 
@@ -73,8 +68,7 @@ public final class InstrumentationModuleInstaller {
     }
   }
 
-  private AgentBuilder installIndyModule(
-      InstrumentationModule instrumentationModule, AgentBuilder parentAgentBuilder) {
+  private AgentBuilder installIndyModule(InstrumentationModule instrumentationModule, AgentBuilder parentAgentBuilder) {
 
     IndyModuleRegistry.registerIndyModule(instrumentationModule);
 
@@ -108,23 +102,15 @@ public final class InstrumentationModuleInstaller {
     return agentBuilder;
   }
 
-  private AgentBuilder installInjectingModule(
-      InstrumentationModule instrumentationModule,
-      AgentBuilder parentAgentBuilder,
-      ConfigProperties config) {
-    List<String> helperClassNames =
-        InstrumentationModuleMuzzle.getHelperClassNames(instrumentationModule);
+  private AgentBuilder installInjectingModule(InstrumentationModule instrumentationModule, AgentBuilder parentAgentBuilder, ConfigProperties config) {
+    List<String> helperClassNames = InstrumentationModuleMuzzle.getHelperClassNames(instrumentationModule);
     HelperResourceBuilderImpl helperResourceBuilder = new HelperResourceBuilderImpl();
     instrumentationModule.registerHelperResources(helperResourceBuilder);
     List<TypeInstrumentation> typeInstrumentations = instrumentationModule.typeInstrumentations();
     if (typeInstrumentations.isEmpty()) {
       if (!helperClassNames.isEmpty() || !helperResourceBuilder.getResources().isEmpty()) {
-        logger.log(
-            WARNING,
-            "Helper classes and resources won't be injected if no types are instrumented: {0}",
-            instrumentationModule.instrumentationName());
+        logger.log(WARNING, "Helper classes and resources won't be injected if no types are instrumented: {0}", instrumentationModule.instrumentationName());
       }
-
       return parentAgentBuilder;
     }
 
@@ -136,8 +122,7 @@ public final class InstrumentationModuleInstaller {
             helperResourceBuilder.getResources(),
             Utils.getExtensionsClassLoader(),
             instrumentation);
-    VirtualFieldImplementationInstaller contextProvider =
-        virtualFieldInstallerFactory.create(instrumentationModule);
+    VirtualFieldImplementationInstaller contextProvider = virtualFieldInstallerFactory.create(instrumentationModule);
 
     AgentBuilder agentBuilder = parentAgentBuilder;
     for (TypeInstrumentation typeInstrumentation : typeInstrumentations) {
@@ -153,10 +138,8 @@ public final class InstrumentationModuleInstaller {
       typeInstrumentation.transform(typeTransformer);
       extendableAgentBuilder = typeTransformer.getAgentBuilder();
       extendableAgentBuilder = contextProvider.injectFields(extendableAgentBuilder);
-
       agentBuilder = extendableAgentBuilder;
     }
-
     return agentBuilder;
   }
 

@@ -38,6 +38,7 @@ public final class AgentInitializer {
       throw new IllegalStateException("agent initializer should be loaded in boot loader");
     }
 
+    // 默认为false
     isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled();
 
     // this call deliberately uses anonymous class instead of lambda because using lambdas too
@@ -50,6 +51,9 @@ public final class AgentInitializer {
             agentClassLoader = createAgentClassLoader("inst", javaagentFile);
             // 通过AgentClassLoader加载AgentStarterImpl并调用其构造方法
             agentStarter = createAgentStarter(agentClassLoader, inst, javaagentFile);
+            // 这里如果是agentmain则fromPremain为false，如果是通过premain则fromPremain为true
+            // 这里其实是判断如果不是通过agent的方法启动的，或JDK版本小于1.8.0_40则会延迟启动
+            // 延迟启动的时机是sun.launcher.LauncherHelper的checkAndLoadMain方法执行完成后
             if (!fromPremain || !delayAgentStart()) {
               // 这里调用AgentStarterImpl的start方法
               agentStarter.start();
@@ -128,10 +132,11 @@ public final class AgentInitializer {
   }
 
   private static boolean delayAgentStart() {
+    // 判断JDK版本如果不是HotSpot且也不是OpenJDK，或者版本小于1.8.0_40 则isEarlyOracle18返回false
     if (!isEarlyOracle18()) {
       return false;
     }
-
+    // 延迟执行
     return agentStarter.delayStart();
   }
 

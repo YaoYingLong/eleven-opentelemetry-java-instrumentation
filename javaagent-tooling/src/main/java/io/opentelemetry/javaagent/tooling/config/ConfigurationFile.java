@@ -42,14 +42,13 @@ final class ConfigurationFile {
   // visible for tests
   static Map<String, String> loadConfigFile() {
     // Reading from system property first and from env after
+    // 从系统环境变量和用户环境变量中获取otel.javaagent.configuration-file配置的配置文件路径
     String configurationFilePath = ConfigPropertiesUtil.getString(CONFIGURATION_FILE_PROPERTY);
     if (configurationFilePath == null) {
       return emptyMap();
     }
-
     // Normalizing tilde (~) paths for unix systems
-    configurationFilePath =
-        configurationFilePath.replaceFirst("^~", System.getProperty("user.home"));
+    configurationFilePath = configurationFilePath.replaceFirst("^~", System.getProperty("user.home"));
 
     // Configuration properties file is optional
     File configurationFile = new File(configurationFilePath);
@@ -59,18 +58,13 @@ final class ConfigurationFile {
     }
 
     Properties properties = new Properties();
-    try (InputStreamReader reader =
-        new InputStreamReader(new FileInputStream(configurationFile), StandardCharsets.UTF_8)) {
+    try (InputStreamReader reader = new InputStreamReader(new FileInputStream(configurationFile), StandardCharsets.UTF_8)) {
       properties.load(reader);
     } catch (FileNotFoundException fnf) {
       fileLoadErrorMessage = "Configuration file \"" + configurationFilePath + "\" not found.";
     } catch (IOException ioe) {
-      fileLoadErrorMessage =
-          "Configuration file \""
-              + configurationFilePath
-              + "\" cannot be accessed or correctly parsed.";
+      fileLoadErrorMessage = "Configuration file \"" + configurationFilePath + "\" cannot be accessed or correctly parsed.";
     }
-
     return properties.entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey().toString(), e -> e.getValue().toString()));
   }

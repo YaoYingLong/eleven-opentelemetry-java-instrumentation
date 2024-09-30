@@ -92,10 +92,12 @@ public class AgentInstaller {
       io.opentelemetry.context.ContextStorage.addWrapper(
           storage -> new StrictContextStressor(storage, strictContextStressorMillis));
     }
-
+    // 打印版本相关的日志
     logVersionInfo();
+    // 可以通过otel.javaagent.enabled配置不使用OTel
     if (earlyConfig.getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
       setupUnsafe(inst);
+      // 通过SPI机制加载实现了AgentListener接口的类
       List<AgentListener> agentListeners = loadOrdered(AgentListener.class, extensionClassLoader);
       installBytebuddyAgent(inst, extensionClassLoader, agentListeners);
     } else {
@@ -103,8 +105,7 @@ public class AgentInstaller {
     }
   }
 
-  private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
-      Iterable<AgentListener> agentListeners) {
+  private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader, Iterable<AgentListener> agentListeners) {
 
     WeakRefAsyncOperationEndStrategies.initialize();
 
@@ -113,18 +114,18 @@ public class AgentInstaller {
     setDefineClassHandler();
 
     // If noop OpenTelemetry is enabled, autoConfiguredSdk will be null and AgentListeners are not called
-    /**
+    /*
      * 通过调用OpenTelemetryInstaller的installOpenTelemetrySdk方法，最中通过AutoConfiguredOpenTelemetrySdk的build OpenTelemetry对象
-     *
      */
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = installOpenTelemetrySdk(extensionClassLoader);
 
+    // 通过反射的方式调用AutoConfiguredOpenTelemetrySdk的getConfig方法
     ConfigProperties sdkConfig = AutoConfigureUtil.getConfig(autoConfiguredSdk);
     InstrumentationConfig.internalInitializeConfig(new ConfigPropertiesBridge(sdkConfig));
     copyNecessaryConfigToSystemProperties(sdkConfig);
 
     setBootstrapPackages(sdkConfig, extensionClassLoader);
-    // 这个地方是一个扩展点
+    // 这个地方是一个扩展点，
     for (BeforeAgentListener agentListener : loadOrdered(BeforeAgentListener.class, extensionClassLoader)) {
       agentListener.beforeAgent(autoConfiguredSdk);
     }
@@ -162,25 +163,16 @@ public class AgentInstaller {
     }
 
     int numberOfLoadedExtensions = 0;
+    // 这里加载了InstrumentationLoader
     for (AgentExtension agentExtension : loadOrdered(AgentExtension.class, extensionClassLoader)) {
       if (logger.isLoggable(FINE)) {
-        logger.log(
-            FINE,
-            "Loading extension {0} [class {1}]",
-            new Object[] {agentExtension.extensionName(), agentExtension.getClass().getName()});
+        logger.log(FINE, "Loading extension {0} [class {1}]", new Object[] {agentExtension.extensionName(), agentExtension.getClass().getName()});
       }
-      try {
+      try { // 执行InstrumentationLoader的extend方法，通过SPI机制加载所有的InstrumentationModule
         agentBuilder = agentExtension.extend(agentBuilder, sdkConfig);
         numberOfLoadedExtensions++;
       } catch (Exception | LinkageError e) {
-        logger.log(
-            SEVERE,
-            "Unable to load extension "
-                + agentExtension.extensionName()
-                + " [class "
-                + agentExtension.getClass().getName()
-                + "]",
-            e);
+        logger.log(SEVERE, "Unable to load extension " + agentExtension.extensionName() + " [class " + agentExtension.getClass().getName() + "]", e);
       }
     }
     logger.log(FINE, "Installed {0} extension(s)", numberOfLoadedExtensions);
@@ -190,7 +182,7 @@ public class AgentInstaller {
     ClassFileTransformerHolder.setClassFileTransformer(resettableClassFileTransformer);
 
     addHttpServerResponseCustomizers(extensionClassLoader);
-
+    // 最后才真正执行通过SPI加载的AgentListener实现类，左右大多是用来创建Meter
     runAfterAgentListeners(agentListeners, autoConfiguredSdk);
   }
 
@@ -215,11 +207,9 @@ public class AgentInstaller {
     }
   }
 
-  private static void setBootstrapPackages(
-      ConfigProperties config, ClassLoader extensionClassLoader) {
+  private static void setBootstrapPackages(ConfigProperties config, ClassLoader extensionClassLoader) {
     BootstrapPackagesBuilderImpl builder = new BootstrapPackagesBuilderImpl();
-    for (BootstrapPackagesConfigurer configurer :
-        load(BootstrapPackagesConfigurer.class, extensionClassLoader)) {
+    for (BootstrapPackagesConfigurer configurer : load(BootstrapPackagesConfigurer.class, extensionClassLoader)) {
       configurer.configure(builder, config);
     }
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(builder.build());
@@ -229,11 +219,9 @@ public class AgentInstaller {
     DefineClassHelper.internalSetHandler(DefineClassHandler.INSTANCE);
   }
 
-  private static AgentBuilder configureIgnoredTypes(
-      ConfigProperties config, ClassLoader extensionClassLoader, AgentBuilder agentBuilder) {
+  private static AgentBuilder configureIgnoredTypes(ConfigProperties config, ClassLoader extensionClassLoader, AgentBuilder agentBuilder) {
     IgnoredTypesBuilderImpl builder = new IgnoredTypesBuilderImpl();
-    for (IgnoredTypesConfigurer configurer :
-        loadOrdered(IgnoredTypesConfigurer.class, extensionClassLoader)) {
+    for (IgnoredTypesConfigurer configurer : loadOrdered(IgnoredTypesConfigurer.class, extensionClassLoader)) {
       configurer.configure(builder, config);
     }
 

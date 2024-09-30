@@ -22,8 +22,7 @@ public class UnsafeInitializer {
     initialize(instrumentation, classLoader, true);
   }
 
-  private static void initialize(
-      Instrumentation instrumentation, ClassLoader classLoader, boolean testUnsafePresent) {
+  private static void initialize(Instrumentation instrumentation, ClassLoader classLoader, boolean testUnsafePresent) {
     Class<?> unsafeClass;
     try {
       unsafeClass = Class.forName("jdk.internal.misc.Unsafe");
@@ -35,8 +34,7 @@ public class UnsafeInitializer {
     // expose jdk.internal.misc.Unsafe to our agent
     // this is used to generate our replacement sun.misc.Unsafe and also by grpc/netty to call
     // jdk.internal.misc.Unsafe.allocateUninitializedArray
-    exports.put(
-        unsafeClass.getPackage().getName(),
+    exports.put(unsafeClass.getPackage().getName(),
         Collections.singleton(UnsafeInitializer.class.getModule()));
     instrumentation.redefineModule(
         unsafeClass.getModule(),

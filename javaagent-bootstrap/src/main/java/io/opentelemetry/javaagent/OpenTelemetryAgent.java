@@ -51,6 +51,7 @@ public final class OpenTelemetryAgent {
 
   private static void startAgent(Instrumentation inst, boolean fromPremain) {
     try {
+      // javaagentFile其实就是**/opentelemetry-javaagent-1.31.0.jar
       File javaagentFile = installBootstrapJar(inst);
       InstrumentationHolder.setInstrumentation(inst);
       JavaagentFileHolder.setJavaagentFile(javaagentFile);
@@ -70,27 +71,30 @@ public final class OpenTelemetryAgent {
     if (classLoader == null) {
       classLoader = ClassLoader.getSystemClassLoader();
     }
+    // file:**/opentelemetry-javaagent-1.31.0.jar!/io/opentelemetry/javaagent/OpenTelemetryAgent.class
     URL url = classLoader.getResource(OpenTelemetryAgent.class.getName().replace('.', '/') + ".class");
     if (url == null || !"jar".equals(url.getProtocol())) {
       throw new IllegalStateException("could not get agent jar location from url " + url);
     }
+    // file:**/opentelemetry-javaagent-1.31.0.jar!/io/opentelemetry/javaagent/OpenTelemetryAgent.class
     String resourcePath = url.toURI().getSchemeSpecificPart();
     int protocolSeparatorIndex = resourcePath.indexOf(":");
     int resourceSeparatorIndex = resourcePath.indexOf("!/");
     if (protocolSeparatorIndex == -1 || resourceSeparatorIndex == -1) {
       throw new IllegalStateException("could not get agent location from url " + url);
     }
+    // **/opentelemetry-javaagent-1.31.0.jar，就是jar包的绝对路径
     String agentPath = resourcePath.substring(protocolSeparatorIndex + 1, resourceSeparatorIndex);
     File javaagentFile = new File(agentPath);
 
     if (!javaagentFile.isFile()) {
-      throw new IllegalStateException(
-          "agent jar location doesn't appear to be a file: " + javaagentFile.getAbsolutePath());
+      throw new IllegalStateException("agent jar location doesn't appear to be a file: " + javaagentFile.getAbsolutePath());
     }
 
-    // verification is very slow before the JIT compiler starts up, which on Java 8 is not until
-    // after premain execution completes
+    // verification is very slow before the JIT compiler starts up, which on Java 8 is not until after premain execution completes
+    // 这里的agentJar就是opentelemetry-javaagent-1.31.0.jar
     JarFile agentJar = new JarFile(javaagentFile, false);
+    // 校验opentelemetry-javaagent-1.31.0.jar中是否有配置Premain-Class
     verifyJarManifestMainClassIsThis(javaagentFile, agentJar);
     inst.appendToBootstrapClassLoaderSearch(agentJar);
     return javaagentFile;
@@ -106,13 +110,10 @@ public final class OpenTelemetryAgent {
   // jar file to the bootstrap class loader, that can cause some applications to break, as there's a
   // lot of application and library code that doesn't handle getClassLoader() returning null
   // (e.g. https://github.com/qos-ch/logback/pull/291)
-  private static void verifyJarManifestMainClassIsThis(File jarFile, JarFile agentJar)
-      throws IOException {
+  private static void verifyJarManifestMainClassIsThis(File jarFile, JarFile agentJar) throws IOException {
     Manifest manifest = agentJar.getManifest();
     if (manifest.getMainAttributes().getValue("Premain-Class") == null) {
-      throw new IllegalStateException(
-          "The agent was not installed, because the agent was found in '"
-              + jarFile
+      throw new IllegalStateException("The agent was not installed, because the agent was found in '" + jarFile
               + "', which doesn't contain a Premain-Class manifest attribute. Make sure that you"
               + " haven't included the agent jar file inside of an application uber jar.");
     }

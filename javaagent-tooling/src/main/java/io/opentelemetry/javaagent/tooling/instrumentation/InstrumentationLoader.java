@@ -22,36 +22,24 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 public class InstrumentationLoader implements AgentExtension {
   private static final Logger logger = Logger.getLogger(InstrumentationLoader.class.getName());
 
-  private final InstrumentationModuleInstaller instrumentationModuleInstaller =
-      new InstrumentationModuleInstaller(InstrumentationHolder.getInstrumentation());
+  private final InstrumentationModuleInstaller instrumentationModuleInstaller = new InstrumentationModuleInstaller(InstrumentationHolder.getInstrumentation());
 
   @Override
   public AgentBuilder extend(AgentBuilder agentBuilder, ConfigProperties config) {
     int numberOfLoadedModules = 0;
-    for (InstrumentationModule instrumentationModule :
-        loadOrdered(InstrumentationModule.class, Utils.getExtensionsClassLoader())) {
+    for (InstrumentationModule instrumentationModule : loadOrdered(InstrumentationModule.class, Utils.getExtensionsClassLoader())) {
       if (logger.isLoggable(FINE)) {
-        logger.log(
-            FINE,
-            "Loading instrumentation {0} [class {1}]",
-            new Object[] {
+        logger.log(FINE, "Loading instrumentation {0} [class {1}]", new Object[] {
               instrumentationModule.instrumentationName(),
               instrumentationModule.getClass().getName()
             });
       }
       try {
-        agentBuilder =
-            instrumentationModuleInstaller.install(instrumentationModule, agentBuilder, config);
+        agentBuilder = instrumentationModuleInstaller.install(instrumentationModule, agentBuilder, config);
         numberOfLoadedModules++;
       } catch (Exception | LinkageError e) {
-        logger.log(
-            SEVERE,
-            "Unable to load instrumentation "
-                + instrumentationModule.instrumentationName()
-                + " [class "
-                + instrumentationModule.getClass().getName()
-                + "]",
-            e);
+        logger.log(SEVERE, "Unable to load instrumentation " + instrumentationModule.instrumentationName()
+                + " [class " + instrumentationModule.getClass().getName() + "]", e);
       }
     }
     logger.log(FINE, "Installed {0} instrumenter(s)", numberOfLoadedModules);

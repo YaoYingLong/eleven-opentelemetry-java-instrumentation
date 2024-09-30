@@ -82,6 +82,7 @@ public class ExtensionClassLoader extends URLClassLoader {
         String name = jarEntry.getName();
 
         if (name.startsWith(prefix) && !jarEntry.isDirectory()) {
+          System.out.println("extensions load:" + name);
           tempDirectory = ensureTempDirectoryExists(tempDirectory);
 
           File tempFile = new File(tempDirectory, name.substring(prefix.length()));
@@ -112,8 +113,7 @@ public class ExtensionClassLoader extends URLClassLoader {
     return tempDirectory;
   }
 
-  private static URLClassLoader getDelegate(
-      ClassLoader parent, URL extensionUrl, boolean isSecurityManagerSupportEnabled) {
+  private static URLClassLoader getDelegate(ClassLoader parent, URL extensionUrl, boolean isSecurityManagerSupportEnabled) {
     return new ExtensionClassLoader(extensionUrl, parent, isSecurityManagerSupportEnabled);
   }
 

@@ -156,8 +156,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
    * response} is the response object of the operation, and {@code error} is an exception that was
    * thrown by the operation or {@code null} if no error occurred.
    */
-  public void end(
-      Context context, REQUEST request, @Nullable RESPONSE response, @Nullable Throwable error) {
+  public void end(Context context, REQUEST request, @Nullable RESPONSE response, @Nullable Throwable error) {
     doEnd(context, request, response, error, null);
   }
 
@@ -191,7 +190,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
       spanLinksExtractor.extract(spanLinksBuilder, parentContext, request);
     }
 
-    /**
+    /*
      * 通过调用DbClientAttributesExtractor从而调用JedisDbAttributesGetter中的方法获取statement和operation相关的属性
      * 通过调用ServerAttributesExtractor从而调用JedisNetworkAttributesGetter中的方法获取属性
      *
@@ -213,7 +212,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
 
     // context customizers run before span start, so that they can have access to the parent span
     // context, and so that their additions to the context will be visible to span processors
-    /**
+    /*
      * contextCustomizers是在span start之前执行，因此可以访问span的父context，且contextCustomizers添加的属性对span可见
      */
     for (ContextCustomizer<? super REQUEST> contextCustomizer : contextCustomizers) {
@@ -232,6 +231,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
       // operation listeners run after span start, so that they have access to the current span
       // for capturing exemplars
       long startNanos = getNanos(startTime);
+      // 这里是对Metrics进行处理
       for (OperationListener operationListener : operationListeners) {
         context = operationListener.onStart(context, attributes, startNanos);
       }
@@ -267,8 +267,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
 
     if (!operationListeners.isEmpty()) {
       long endNanos = getNanos(endTime);
-      ListIterator<? extends OperationListener> i =
-          operationListeners.listIterator(operationListeners.size());
+      ListIterator<? extends OperationListener> i = operationListeners.listIterator(operationListeners.size());
       while (i.hasPrevious()) {
         i.previous().onEnd(context, attributes, endNanos);
       }
