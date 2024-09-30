@@ -286,8 +286,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   Tracer buildTracer() {
-    TracerBuilder tracerBuilder =
-        openTelemetry.getTracerProvider().tracerBuilder(instrumentationName);
+    TracerBuilder tracerBuilder = openTelemetry.getTracerProvider().tracerBuilder(instrumentationName);
     if (instrumentationVersion != null) {
       tracerBuilder.setInstrumentationVersion(instrumentationVersion);
     }
@@ -304,8 +303,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
       return new ArrayList<>(operationListeners);
     }
 
-    List<OperationListener> listeners =
-        new ArrayList<>(operationListeners.size() + operationMetrics.size());
+    List<OperationListener> listeners = new ArrayList<>(operationListeners.size() + operationMetrics.size());
     listeners.addAll(operationListeners);
 
     MeterBuilder meterBuilder = openTelemetry.getMeterProvider().meterBuilder(instrumentationName);
@@ -330,8 +328,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
     if (schemaUrl != null) {
       return schemaUrl;
     }
-    Set<String> computedSchemaUrls =
-        attributesExtractors.stream()
+    Set<String> computedSchemaUrls = attributesExtractors.stream()
             .filter(SchemaUrlProvider.class::isInstance)
             .map(SchemaUrlProvider.class::cast)
             .flatMap(
@@ -346,10 +343,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
       case 1:
         return computedSchemaUrls.iterator().next();
       default:
-        logger.log(
-            WARNING,
-            "Multiple schemaUrls were detected: {0}. The built Instrumenter will have no schemaUrl assigned.",
-            computedSchemaUrls);
+        logger.log(WARNING, "Multiple schemaUrls were detected: {0}. The built Instrumenter will have no schemaUrl assigned.", computedSchemaUrls);
         return null;
     }
   }
@@ -363,9 +357,6 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
    * attributesExtractors默认是添加的：
    *    - DbClientAttributesExtractor
    *    - ServerAttributesExtractor
-   *
-   *
-   * @return
    */
   private Set<SpanKey> getSpanKeysFromAttributesExtractors() {
     return attributesExtractors.stream()

@@ -116,8 +116,7 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
   }
 
   @Override
-  public AgentBuilder.Identified.Extendable injectHelperClasses(
-      AgentBuilder.Identified.Extendable builder) {
+  public AgentBuilder.Identified.Extendable injectHelperClasses(AgentBuilder.Identified.Extendable builder) {
     if (!virtualFieldMappings.isEmpty()) {
       builder = injectHelpersIntoBootstrapClassloader(builder);
     }

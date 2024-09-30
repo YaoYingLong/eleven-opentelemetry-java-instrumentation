@@ -44,16 +44,19 @@ public class AgentStarterImpl implements AgentStarter {
 
   @Override
   public boolean delayStart() {
+    // 先对sun.launcher.LauncherHelper做字节码增强，执行完其checkAndLoadMain方法后执行AgentInitializer的delayedStartHook方法
     LaunchHelperClassFileTransformer transformer = new LaunchHelperClassFileTransformer();
     instrumentation.addTransformer(transformer, true);
 
     try {
       Class<?> clazz = Class.forName("sun.launcher.LauncherHelper", false, null);
+      // 如果LaunchHelperClassFileTransformer中的增强已经被执行过了，则不在执行返回true
       if (transformer.transformed) {
         // LauncherHelper was loaded and got transformed
         return transformer.hookInserted;
       }
       // LauncherHelper was already loaded before we set up transformer
+      // 如果LaunchHelperClassFileTransformer中的增强未被执行过，则重新加载LauncherHelper执行增强代码
       instrumentation.retransformClasses(clazz);
       return transformer.hookInserted;
     } catch (ClassNotFoundException | UnmodifiableClassException ignore) {
@@ -67,6 +70,7 @@ public class AgentStarterImpl implements AgentStarter {
 
   @Override
   public void start() {
+    // 从系统环境变量和用户环境变量中获取otel.javaagent.configuration-file配置的配置文件路径并加载
     EarlyInitAgentConfig earlyConfig = EarlyInitAgentConfig.create();
     extensionClassLoader = createExtensionClassLoader(getClass().getClassLoader(), earlyConfig);
 
@@ -93,7 +97,7 @@ public class AgentStarterImpl implements AgentStarter {
     try {
       loggingCustomizer.init(earlyConfig);
       earlyConfig.logEarlyConfigErrorsIfAny();
-
+      // 核心逻辑
       AgentInstaller.installBytebuddyAgent(instrumentation, extensionClassLoader, earlyConfig);
       WeakConcurrentMapCleaner.start();
 
@@ -116,8 +120,7 @@ public class AgentStarterImpl implements AgentStarter {
   @SuppressWarnings("SystemOut")
   private static void logUnrecognizedLoggerImplWarning(String loggerImplementationName) {
     System.err.println(
-        "Unrecognized value of 'otel.javaagent.logging': '"
-            + loggerImplementationName
+        "Unrecognized value of 'otel.javaagent.logging': '" + loggerImplementationName
             + "'. The agent will use the no-op implementation.");
   }
 
@@ -127,6 +130,8 @@ public class AgentStarterImpl implements AgentStarter {
   }
 
   private ClassLoader createExtensionClassLoader(ClassLoader agentClassLoader, EarlyInitAgentConfig earlyConfig) {
+    System.out.println("agentClassLoader: " + agentClassLoader);
+    System.out.println("earlyConfig: " + earlyConfig);
     return ExtensionClassLoader.getInstance(agentClassLoader, javaagentFile, isSecurityManagerSupportEnabled, earlyConfig);
   }
 
@@ -135,35 +140,30 @@ public class AgentStarterImpl implements AgentStarter {
     boolean transformed = false;
 
     @Override
-    public byte[] transform(
-        ClassLoader loader,
-        String className,
-        Class<?> classBeingRedefined,
-        ProtectionDomain protectionDomain,
-        byte[] classfileBuffer) {
+    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
+        ProtectionDomain protectionDomain, byte[] classfileBuffer) {
       if (!"sun/launcher/LauncherHelper".equals(className)) {
         return null;
       }
       transformed = true;
       ClassReader cr = new ClassReader(classfileBuffer);
       ClassWriter cw = new ClassWriter(cr, 0);
-      ClassVisitor cv =
-          new ClassVisitor(Opcodes.ASM7, cw) {
+      // 执行完成sun/launcher/LauncherHelper的checkAndLoadMain方法后执行AgentInitializer的delayedStartHook方法
+      ClassVisitor cv = new ClassVisitor(Opcodes.ASM7, cw) {
             @Override
-            public MethodVisitor visitMethod(
-                int access, String name, String descriptor, String signature, String[] exceptions) {
+            public MethodVisitor visitMethod(int access, String name, String descriptor,
+                String signature, String[] exceptions) {
               MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
               if ("checkAndLoadMain".equals(name)) {
                 return new MethodVisitor(api, mv) {
                   @Override
                   public void visitCode() {
+                    // 获取checkAndLoadMain方法原始的自驾吗
                     super.visitCode();
                     hookInserted = true;
-                    mv.visitMethodInsn(
-                        Opcodes.INVOKESTATIC,
-                        Type.getInternalName(AgentInitializer.class),
-                        "delayedStartHook",
-                        "()V",
+                    // 调用AgentInitializer的delayedStartHook方法实现延迟加载，其实还是调用AgentInitializer的start方法
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC,
+                        Type.getInternalName(AgentInitializer.class), "delayedStartHook", "()V",
                         false);
                   }
                 };
@@ -172,7 +172,7 @@ public class AgentStarterImpl implements AgentStarter {
             }
           };
       cr.accept(cv, 0);
-
+      // 返回最终的字节码
       return hookInserted ? cw.toByteArray() : null;
     }
   }

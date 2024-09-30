@@ -50,12 +50,7 @@ public final class HttpSpanStatusExtractor<REQUEST, RESPONSE>
   }
 
   @Override
-  public void extract(
-      SpanStatusBuilder spanStatusBuilder,
-      REQUEST request,
-      @Nullable RESPONSE response,
-      @Nullable Throwable error) {
-
+  public void extract(SpanStatusBuilder spanStatusBuilder, REQUEST request, @Nullable RESPONSE response, @Nullable Throwable error) {
     if (response != null) {
       Integer statusCode = getter.getHttpResponseStatusCode(request, response, error);
       if (statusCode != null) {
