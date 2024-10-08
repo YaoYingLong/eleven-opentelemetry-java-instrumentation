@@ -10,13 +10,11 @@ import io.opentelemetry.instrumentation.lettuce.v5_1.OpenTelemetryTracing.OpenTe
 import java.net.InetSocketAddress;
 import javax.annotation.Nullable;
 
-final class LettuceNetworkAttributesGetter
-    implements ServerAttributesGetter<OpenTelemetryEndpoint, Void> {
+final class LettuceNetworkAttributesGetter implements ServerAttributesGetter<OpenTelemetryEndpoint, Void> {
 
   @Nullable
   @Override
-  public InetSocketAddress getServerInetSocketAddress(
-      OpenTelemetryEndpoint openTelemetryEndpoint, @Nullable Void unused) {
+  public InetSocketAddress getServerInetSocketAddress(OpenTelemetryEndpoint openTelemetryEndpoint, @Nullable Void unused) {
     return openTelemetryEndpoint.address;
   }
 }

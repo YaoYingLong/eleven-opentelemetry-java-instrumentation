@@ -174,7 +174,14 @@ public class Instrumenter<REQUEST, RESPONSE> {
   }
 
   private Context doStart(Context parentContext, REQUEST request, @Nullable Instant startTime) {
-    // 默认是SpanKind.INTERNAL 在build时被设置为SpanKind.CLIENT
+    /*
+     * 默认是SpanKind.INTERNAL 在build时被设置为SpanKind.CLIENT，其实就是标识Span的类型
+     *  - server 用于服务器操作，例如 HTTP 服务器处理程序。
+     *  - client 用于客户端操作，例如 HTTP 客户端请求。
+     *  - producer 对于消息生产者，例如 Kafka producer。
+     *  - consumer 一般用于消息消费者和异步处理，例如 Kafka consumer。
+     *  - internal 用于内部操作。
+     */
     SpanKind spanKind = spanKindExtractor.extract(request);
     // spanNameExtractor是通过DbClientSpanNameExtractor.create(RedissonDbAttributesGetter)生成的GenericDbClientSpanNameExtractor
     // tracer默认为SdkTracer，通过spanBuilder生成具体名称的SpanBuilder
