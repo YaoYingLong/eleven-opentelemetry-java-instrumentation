@@ -131,7 +131,6 @@ public class AgentStarterImpl implements AgentStarter {
 
   private ClassLoader createExtensionClassLoader(ClassLoader agentClassLoader, EarlyInitAgentConfig earlyConfig) {
     System.out.println("agentClassLoader: " + agentClassLoader);
-    System.out.println("earlyConfig: " + earlyConfig);
     return ExtensionClassLoader.getInstance(agentClassLoader, javaagentFile, isSecurityManagerSupportEnabled, earlyConfig);
   }
 

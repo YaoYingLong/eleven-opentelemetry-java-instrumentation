@@ -556,3 +556,6 @@ include(":instrumentation:zio:zio-2.0:javaagent")
 // benchmark
 include(":benchmark-overhead-jmh")
 include(":benchmark-jfr-analyzer")
+
+
+include(":instrumentation:eleven:demo-first:javaagent")
