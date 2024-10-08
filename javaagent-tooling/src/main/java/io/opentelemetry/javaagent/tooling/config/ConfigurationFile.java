@@ -36,6 +36,9 @@ final class ConfigurationFile {
     if (configFileContents == null) {
       configFileContents = loadConfigFile();
     }
+    for (Map.Entry<String, String> entry : configFileContents.entrySet()) {
+      System.out.println("configFileContents: " + entry.getKey() + "=" + entry.getValue());
+    }
     return configFileContents;
   }
 
@@ -71,8 +74,7 @@ final class ConfigurationFile {
 
   static void logErrorIfAny() {
     if (fileLoadErrorMessage != null) {
-      Logger.getLogger(ConfigurationPropertiesSupplier.class.getName())
-          .log(SEVERE, fileLoadErrorMessage);
+      Logger.getLogger(ConfigurationPropertiesSupplier.class.getName()).log(SEVERE, fileLoadErrorMessage);
     }
   }
 

@@ -72,6 +72,9 @@ public class AgentStarterImpl implements AgentStarter {
   public void start() {
     // 从系统环境变量和用户环境变量中获取otel.javaagent.configuration-file配置的配置文件路径并加载
     EarlyInitAgentConfig earlyConfig = EarlyInitAgentConfig.create();
+    // 这里的getClass().getClassLoader()获取到的是AgentClassLoader
+    // 将AgentClassLoader作为ExtensionClassLoader的父类加载器，并创建ExtensionClassLoader类加载器
+    // 因为使用的是双亲委派模型，所有后面使用的都是extensionClassLoader
     extensionClassLoader = createExtensionClassLoader(getClass().getClassLoader(), earlyConfig);
 
     String loggerImplementationName = earlyConfig.getString("otel.javaagent.logging");
@@ -89,6 +92,7 @@ public class AgentStarterImpl implements AgentStarter {
     }
     // unsupported logger implementation; defaulting to noop
     if (loggingCustomizer == null) {
+      System.out.println("No logging customizer found");
       logUnrecognizedLoggerImplWarning(loggerImplementationName);
       loggingCustomizer = new NoopLoggingCustomizer();
     }
@@ -96,6 +100,8 @@ public class AgentStarterImpl implements AgentStarter {
     Throwable startupError = null;
     try {
       loggingCustomizer.init(earlyConfig);
+      // 如果上面EarlyInitAgentConfig.create()加载配置文件有任何错误，都会在这里被通过日志被打印
+      // 之所有前面不直接打印，是因为前面日志还没有被初始化
       earlyConfig.logEarlyConfigErrorsIfAny();
       // 核心逻辑
       AgentInstaller.installBytebuddyAgent(instrumentation, extensionClassLoader, earlyConfig);
@@ -131,7 +137,6 @@ public class AgentStarterImpl implements AgentStarter {
 
   private ClassLoader createExtensionClassLoader(ClassLoader agentClassLoader, EarlyInitAgentConfig earlyConfig) {
     System.out.println("agentClassLoader: " + agentClassLoader);
-    System.out.println("earlyConfig: " + earlyConfig);
     return ExtensionClassLoader.getInstance(agentClassLoader, javaagentFile, isSecurityManagerSupportEnabled, earlyConfig);
   }
 

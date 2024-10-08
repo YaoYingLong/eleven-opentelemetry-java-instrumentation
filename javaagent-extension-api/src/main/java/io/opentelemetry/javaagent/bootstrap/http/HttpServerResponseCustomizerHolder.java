@@ -29,7 +29,6 @@ public final class HttpServerResponseCustomizerHolder {
   private static class NoOpCustomizer implements HttpServerResponseCustomizer {
 
     @Override
-    public <T> void customize(
-        Context serverContext, T response, HttpServerResponseMutator<T> responseMutator) {}
+    public <T> void customize(Context serverContext, T response, HttpServerResponseMutator<T> responseMutator) {}
   }
 }

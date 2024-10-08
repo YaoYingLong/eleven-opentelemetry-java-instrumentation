@@ -20,10 +20,8 @@ final class TypeTransformerImpl implements TypeTransformer {
   }
 
   @Override
-  public void applyAdviceToMethod(
-      ElementMatcher<? super MethodDescription> methodMatcher, String adviceClassName) {
-    agentBuilder =
-        agentBuilder.transform(
+  public void applyAdviceToMethod(ElementMatcher<? super MethodDescription> methodMatcher, String adviceClassName) {
+    agentBuilder = agentBuilder.transform(
             new AgentBuilder.Transformer.ForAdvice()
                 .include(
                     Utils.getBootstrapProxy(),

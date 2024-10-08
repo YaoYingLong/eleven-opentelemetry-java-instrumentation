@@ -183,8 +183,7 @@ public class ExtensionClassLoader extends URLClassLoader {
     return super.getPermissions(codesource);
   }
 
-  private ExtensionClassLoader(
-      URL url, ClassLoader parent, boolean isSecurityManagerSupportEnabled) {
+  private ExtensionClassLoader(URL url, ClassLoader parent, boolean isSecurityManagerSupportEnabled) {
     super(new URL[] {url}, parent);
     this.isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled;
   }
