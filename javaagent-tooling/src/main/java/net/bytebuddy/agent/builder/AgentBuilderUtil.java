@@ -88,12 +88,8 @@ public class AgentBuilderUtil {
       }
     }
 
-    List<?> list =
-        (List<?>)
-            Proxy.newProxyInstance(
-                AgentBuilderUtil.class.getClassLoader(),
-                new Class<?>[] {List.class},
-                (proxy, method, args) -> {
+    List<?> list = (List<?>) Proxy.newProxyInstance(AgentBuilderUtil.class.getClassLoader(),
+                new Class<?>[] {List.class}, (proxy, method, args) -> {
                   String name = TransformContext.getTransformedClassName();
                   // iterator() is the only method we expect to be called on this List
                   if (name != null && "iterator".equals(method.getName())) {

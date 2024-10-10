@@ -43,8 +43,7 @@ public class AgentClassLoader extends URLClassLoader {
     ClassLoader.registerAsParallelCapable();
   }
 
-  private static final String AGENT_INITIALIZER_JAR =
-      System.getProperty("otel.javaagent.experimental.initializer.jar", "");
+  private static final String AGENT_INITIALIZER_JAR = System.getProperty("otel.javaagent.experimental.initializer.jar", "");
 
   private static final String META_INF = "META-INF/";
   private static final String META_INF_VERSIONS = META_INF + "versions/";
@@ -53,8 +52,7 @@ public class AgentClassLoader extends URLClassLoader {
   private static final int MIN_MULTI_RELEASE_JAR_JAVA_VERSION = 9;
   // current java version
   private static final int JAVA_VERSION = getJavaVersion();
-  private static final boolean MULTI_RELEASE_JAR_ENABLE =
-      JAVA_VERSION >= MIN_MULTI_RELEASE_JAR_JAVA_VERSION;
+  private static final boolean MULTI_RELEASE_JAR_ENABLE = JAVA_VERSION >= MIN_MULTI_RELEASE_JAR_JAVA_VERSION;
 
   // Calling java.lang.instrument.Instrumentation#appendToBootstrapClassLoaderSearch
   // adds a jar to the bootstrap class lookup, but not to the resource lookup.
@@ -103,6 +101,7 @@ public class AgentClassLoader extends URLClassLoader {
       // base url for constructing jar entry urls
       // we use a custom protocol instead of typical jar:file: because we don't want to be affected
       // by user code disabling URLConnection caching for jar protocol e.g. tomcat does this
+      // 这里自定义了一个URL的protocol为x-internal-jar，目的是防止用户代码的干扰，目的是做jar包隔离
       jarBase = new URL("x-internal-jar", null, 0, "/", new AgentClassLoaderUrlStreamHandler(jarFile));
       codeSource = new CodeSource(javaagentFile.toURI().toURL(), (Certificate[]) null);
       manifest = jarFile.getManifest();
@@ -122,9 +121,14 @@ public class AgentClassLoader extends URLClassLoader {
   }
 
   private static ClassLoader getParentClassLoader() {
+    // JDK版本大于1.8
     if (JAVA_VERSION > 8) {
+      // PlatformDelegatingClassLoader的父类加载器其实也是指定的null，即BootstrapClassLoader
+      // JDK1.9及以后的版本中ExtClassLoader更名为PlatFromClassLoader，加载lib/modules目录下的class
+      // 这个我理解只是一种规范上的变化，即要求所有Java SE平台上的类都需要保证对PlatFromClassLoader可见，应该是另外一种类型的划分
       return new PlatformDelegatingClassLoader();
     }
+    // JDK版本小于等于1.8，这里null其实是表示BootstrapClassLoader
     return null;
   }
 
@@ -145,8 +149,10 @@ public class AgentClassLoader extends URLClassLoader {
     }
 
     synchronized (getClassLoadingLock(name)) {
+      // 还是先从父类加载器中去寻找
       Class<?> clazz = findLoadedClass(name);
       // first search agent classes
+      // 如果没有找到再从inst目录中查找
       if (clazz == null) {
         clazz = findAgentClass(name);
       }
@@ -163,6 +169,7 @@ public class AgentClassLoader extends URLClassLoader {
   }
 
   private Class<?> findAgentClass(String name) throws ClassNotFoundException {
+    // 这里是加载inst目录下的类
     JarEntry jarEntry = findJarEntry(name.replace('.', '/') + ".class");
     if (jarEntry != null) {
       byte[] bytes;
@@ -239,6 +246,7 @@ public class AgentClassLoader extends URLClassLoader {
     }
     // 加载inst目录下的类
     JarEntry jarEntry = jarFile.getJarEntry(jarEntryPrefix + name);
+    // JDK版本大于等于9
     if (MULTI_RELEASE_JAR_ENABLE) {
       jarEntry = findVersionedJarEntry(jarEntry, name);
     }

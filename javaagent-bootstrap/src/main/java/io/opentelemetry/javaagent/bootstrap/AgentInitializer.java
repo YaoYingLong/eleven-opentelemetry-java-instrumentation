@@ -31,14 +31,12 @@ public final class AgentInitializer {
     if (agentClassLoader != null) {
       return;
     }
-
     // we expect that at this point agent jar has been appended to boot class path and all agent
     // classes are loaded in boot loader
     if (AgentInitializer.class.getClassLoader() != null) {
       throw new IllegalStateException("agent initializer should be loaded in boot loader");
     }
-
-    // 默认为false
+    // 默认为false，读取的otel.javaagent.experimental.security-manager-support.enabled配置
     isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled();
 
     // this call deliberately uses anonymous class instead of lambda because using lambdas too
@@ -88,8 +86,7 @@ public final class AgentInitializer {
   }
 
   @SuppressWarnings("removal") // AccessController is deprecated for removal
-  private static <T> T doPrivilegedExceptionAction(PrivilegedExceptionAction<T> action)
-      throws Exception {
+  private static <T> T doPrivilegedExceptionAction(PrivilegedExceptionAction<T> action) throws Exception {
     return java.security.AccessController.doPrivileged(action);
   }
 

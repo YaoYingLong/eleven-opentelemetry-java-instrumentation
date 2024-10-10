@@ -27,6 +27,7 @@ public class InstrumentationLoader implements AgentExtension {
   @Override
   public AgentBuilder extend(AgentBuilder agentBuilder, ConfigProperties config) {
     int numberOfLoadedModules = 0;
+    // 这里Utils.getExtensionsClassLoader()其实就是获取的前面的extensionClassLoader
     for (InstrumentationModule instrumentationModule : loadOrdered(InstrumentationModule.class, Utils.getExtensionsClassLoader())) {
       if (logger.isLoggable(FINE)) {
         logger.log(FINE, "Loading instrumentation {0} [class {1}]", new Object[] {

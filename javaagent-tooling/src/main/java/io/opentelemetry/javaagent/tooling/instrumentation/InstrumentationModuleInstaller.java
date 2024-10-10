@@ -115,8 +115,7 @@ public final class InstrumentationModuleInstaller {
     }
 
     MuzzleMatcher muzzleMatcher = new MuzzleMatcher(logger, instrumentationModule, config);
-    AgentBuilder.Transformer helperInjector =
-        new HelperInjector(
+    AgentBuilder.Transformer helperInjector = new HelperInjector(
             instrumentationModule.instrumentationName(),
             helperClassNames,
             helperResourceBuilder.getResources(),
@@ -135,6 +134,7 @@ public final class InstrumentationModuleInstaller {
       extendableAgentBuilder = contextProvider.injectHelperClasses(extendableAgentBuilder);
       extendableAgentBuilder = contextProvider.rewriteVirtualFieldsCalls(extendableAgentBuilder);
       TypeTransformerImpl typeTransformer = new TypeTransformerImpl(extendableAgentBuilder);
+      // 这里其实是调用具体的实现的TypeInstrumentation的transform从而调用TypeTransformerImpl的applyAdviceToMethod
       typeInstrumentation.transform(typeTransformer);
       extendableAgentBuilder = typeTransformer.getAgentBuilder();
       extendableAgentBuilder = contextProvider.injectFields(extendableAgentBuilder);

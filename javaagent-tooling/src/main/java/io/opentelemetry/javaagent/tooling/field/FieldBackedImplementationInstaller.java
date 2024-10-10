@@ -176,8 +176,7 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
       new HashSet<>();
 
   @Override
-  public AgentBuilder.Identified.Extendable injectFields(
-      AgentBuilder.Identified.Extendable builder) {
+  public AgentBuilder.Identified.Extendable injectFields(AgentBuilder.Identified.Extendable builder) {
 
     if (FIELD_INJECTION_ENABLED) {
       for (Map.Entry<String, String> entry : virtualFieldMappings.entrySet()) {

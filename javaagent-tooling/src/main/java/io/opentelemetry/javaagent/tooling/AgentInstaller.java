@@ -89,8 +89,7 @@ public class AgentInstaller {
 
     Integer strictContextStressorMillis = Integer.getInteger(STRICT_CONTEXT_STRESSOR_MILLIS);
     if (strictContextStressorMillis != null) {
-      io.opentelemetry.context.ContextStorage.addWrapper(
-          storage -> new StrictContextStressor(storage, strictContextStressorMillis));
+      io.opentelemetry.context.ContextStorage.addWrapper(storage -> new StrictContextStressor(storage, strictContextStressorMillis));
     }
     // 打印版本相关的日志
     logVersionInfo();
@@ -119,9 +118,12 @@ public class AgentInstaller {
      */
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = installOpenTelemetrySdk(extensionClassLoader);
 
-    // 通过反射的方式调用AutoConfiguredOpenTelemetrySdk的getConfig方法
+    // 通过反射的方式调用AutoConfiguredOpenTelemetrySdk的getConfig方法获取OTel系统配置
     ConfigProperties sdkConfig = AutoConfigureUtil.getConfig(autoConfiguredSdk);
+    // 这个地方仅仅就是将sdkConfig包装了一下到InstrumentationConfig
     InstrumentationConfig.internalInitializeConfig(new ConfigPropertiesBridge(sdkConfig));
+    // 从sdkConfig中将otel.instrumentation.experimental.span-suppression-strategy、otel.instrumentation.http.prefer-forwarded-url-scheme
+    // 以及otel.semconv-stability.opt-in三个配置设置到环境变量中
     copyNecessaryConfigToSystemProperties(sdkConfig);
 
     setBootstrapPackages(sdkConfig, extensionClassLoader);
@@ -135,9 +137,15 @@ public class AgentInstaller {
                 // default method graph compiler inspects the class hierarchy, we don't need it, so
                 // we use a simpler and faster strategy instead
                 new ByteBuddy()
-                    .with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE)
+                    // MethodGraph 是一个表示方法调用的图结构，它可以帮助开发者更好地理解和分析类的结构
+                    // Compiler 部分则负责将这个图编译成实际的字节码，使得开发者可以动态地修改和增强Java程序的行为‌
+                    // 用于处理类的直接方法，不包括继承的方法
+                    .with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE)  // bytebuddy的默认编译器
+                    // 作用是阻止构造函数调用父类的构造函数
                     .with(VisibilityBridgeStrategy.Default.NEVER)
+                    // 作用‌是用于创建一个不可变的类定义
                     .with(InstrumentedType.Factory.Default.FROZEN))
+            // 在类加载时，当ByteBuddy检测到一个类需要被增强时，它会使用这个类来代理原始类，从而在不修改原始代码的情况下增加新的行为
             .with(AgentBuilder.TypeStrategy.Default.DECORATE)
             .disableClassFormatChanges()
             .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
@@ -147,16 +155,17 @@ public class AgentInstaller {
             .with(new ClassLoadListener())
             .with(AgentTooling.transformListener())
             .with(AgentTooling.locationStrategy());
+    // 如果JDK版小于等于9
     if (JavaModule.isSupported()) {
       agentBuilder = agentBuilder.with(new ExposeAgentBootstrapListener(inst));
     }
 
+    // 这里配置一些忽略的类或者类加载器的前缀
     agentBuilder = configureIgnoredTypes(sdkConfig, extensionClassLoader, agentBuilder);
 
+    // 判断otel.javaagent.debug配置是否为true
     if (AgentConfig.isDebugModeEnabled(sdkConfig)) {
-      agentBuilder =
-          agentBuilder
-              .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+      agentBuilder = agentBuilder.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
               .with(new RedefinitionDiscoveryStrategy())
               .with(new RedefinitionLoggingListener())
               .with(new TransformLoggingListener());
@@ -182,14 +191,12 @@ public class AgentInstaller {
     ClassFileTransformerHolder.setClassFileTransformer(resettableClassFileTransformer);
 
     addHttpServerResponseCustomizers(extensionClassLoader);
-    // 最后才真正执行通过SPI加载的AgentListener实现类，左右大多是用来创建Meter
+    // 最后才真正执行通过SPI加载的AgentListener实现类，作用大多是用来创建Meter来获取指标
     runAfterAgentListeners(agentListeners, autoConfiguredSdk);
   }
 
   private static void copyNecessaryConfigToSystemProperties(ConfigProperties config) {
-    for (String property :
-        asList(
-            "otel.instrumentation.experimental.span-suppression-strategy",
+    for (String property : asList("otel.instrumentation.experimental.span-suppression-strategy",
             "otel.instrumentation.http.prefer-forwarded-url-scheme",
             "otel.semconv-stability.opt-in")) {
       String value = config.getString(property);
@@ -231,8 +238,7 @@ public class AgentInstaller {
     return agentBuilder
         .ignore(any(), new IgnoredClassLoadersMatcher(builder.buildIgnoredClassLoadersTrie()))
         .or(new IgnoredTypesMatcher(builder.buildIgnoredTypesTrie()))
-        .or(
-            (typeDescription, classLoader, module, classBeingRedefined, protectionDomain) -> {
+        .or((typeDescription, classLoader, module, classBeingRedefined, protectionDomain) -> {
               return HelperInjector.isInjectedClass(classLoader, typeDescription.getName());
             });
   }
@@ -243,8 +249,7 @@ public class AgentInstaller {
     HttpServerResponseCustomizerHolder.setCustomizer(
         new HttpServerResponseCustomizer() {
           @Override
-          public <T> void customize(
-              Context serverContext, T response, HttpServerResponseMutator<T> responseMutator) {
+          public <T> void customize(Context serverContext, T response, HttpServerResponseMutator<T> responseMutator) {
 
             for (HttpServerResponseCustomizer modifier : customizers) {
               modifier.customize(serverContext, response, responseMutator);
@@ -296,8 +301,10 @@ public class AgentInstaller {
   }
 
   private static void addByteBuddyRawSetting() {
+    // 系统环境变量中读取net.bytebuddy.raw配置
     String savedPropertyValue = System.getProperty(TypeDefinition.RAW_TYPES_PROPERTY);
     try {
+      // 设置net.bytebuddy.raw为true配置
       System.setProperty(TypeDefinition.RAW_TYPES_PROPERTY, "true");
       boolean rawTypes = TypeDescription.AbstractBase.RAW_TYPES;
       if (!rawTypes) {
@@ -314,8 +321,7 @@ public class AgentInstaller {
 
   static class RedefinitionLoggingListener implements AgentBuilder.RedefinitionStrategy.Listener {
 
-    private static final Logger logger =
-        Logger.getLogger(RedefinitionLoggingListener.class.getName());
+    private static final Logger logger = Logger.getLogger(RedefinitionLoggingListener.class.getName());
 
     @Override
     public void onBatch(int index, List<Class<?>> batch, List<Class<?>> types) {}
@@ -339,36 +345,19 @@ public class AgentInstaller {
 
   static class TransformLoggingListener extends AgentBuilder.Listener.Adapter {
 
-    private static final TransformSafeLogger logger =
-        TransformSafeLogger.getLogger(TransformLoggingListener.class);
+    private static final TransformSafeLogger logger = TransformSafeLogger.getLogger(TransformLoggingListener.class);
 
     @Override
-    public void onError(
-        String typeName,
-        ClassLoader classLoader,
-        JavaModule module,
-        boolean loaded,
-        Throwable throwable) {
-
+    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
       if (logger.isLoggable(FINE)) {
-        logger.log(
-            FINE,
-            "Failed to handle {0} for transformation on class loader {1}",
-            new Object[] {typeName, classLoader},
-            throwable);
+        logger.log(FINE, "Failed to handle {0} for transformation on class loader {1}", new Object[] {typeName, classLoader}, throwable);
       }
     }
 
     @Override
-    public void onTransformation(
-        TypeDescription typeDescription,
-        ClassLoader classLoader,
-        JavaModule module,
-        boolean loaded,
-        DynamicType dynamicType) {
+    public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, boolean loaded, DynamicType dynamicType) {
       if (logger.isLoggable(FINE)) {
-        logger.log(
-            FINE, "Transformed {0} -- {1}", new Object[] {typeDescription.getName(), classLoader});
+        logger.log(FINE, "Transformed {0} -- {1}", new Object[] {typeDescription.getName(), classLoader});
       }
     }
   }
@@ -444,16 +433,14 @@ public class AgentInstaller {
     }
   }
 
-  private static class RedefinitionDiscoveryStrategy
-      implements AgentBuilder.RedefinitionStrategy.DiscoveryStrategy {
+  private static class RedefinitionDiscoveryStrategy implements AgentBuilder.RedefinitionStrategy.DiscoveryStrategy {
     private static final AgentBuilder.RedefinitionStrategy.DiscoveryStrategy delegate =
         AgentBuilder.RedefinitionStrategy.DiscoveryStrategy.Reiterating.INSTANCE;
 
     @Override
     public Iterable<Iterable<Class<?>>> resolve(Instrumentation instrumentation) {
       // filter out our agent classes and injected helper classes
-      return () ->
-          streamOf(delegate.resolve(instrumentation))
+      return () -> streamOf(delegate.resolve(instrumentation))
               .map(RedefinitionDiscoveryStrategy::filterClasses)
               .iterator();
     }

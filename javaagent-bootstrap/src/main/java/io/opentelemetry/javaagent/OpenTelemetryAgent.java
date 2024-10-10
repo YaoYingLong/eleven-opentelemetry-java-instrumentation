@@ -53,7 +53,9 @@ public final class OpenTelemetryAgent {
     try {
       // javaagentFile其实就是**/opentelemetry-javaagent-1.31.0.jar
       File javaagentFile = installBootstrapJar(inst);
+      // 将Instrumentation对象保存到InstrumentationHolder，方便其他地方使用直接获取
       InstrumentationHolder.setInstrumentation(inst);
+      // 将opentelemetry-javaagent-1.31.0.jar对应File保存到JavaagentFileHolder，方便其他地方使用直接获取
       JavaagentFileHolder.setJavaagentFile(javaagentFile);
       AgentInitializer.initialize(inst, javaagentFile, fromPremain);
     } catch (Throwable ex) {
