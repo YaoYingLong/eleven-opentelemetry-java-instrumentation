@@ -96,6 +96,9 @@ public final class OpenTelemetryAgent {
     JarFile agentJar = new JarFile(javaagentFile, false);
     // 校验opentelemetry-javaagent-1.31.0.jar中是否有配置Premain-Class
     verifyJarManifestMainClassIsThis(javaagentFile, agentJar);
+    // 把打包后的javaagent包整个加入到bootstrap classloader的搜索路径中，javaagent中里面所有的类都可以在bootstrap classloader中被找到
+    // 在打包的时候，对于一些可能和用户依赖产生冲突的工具类(比如json处理类)，OTel agent会把这些类编译后的class文件单独挪到一个inst目录下
+    // 且inst目录下的所有.class文件都被重命名为.classdata，bootstrap classloader就没法识别这些.classdata文件，也就不会加载inst这个文件夹里面的类
     inst.appendToBootstrapClassLoaderSearch(agentJar);
     return javaagentFile;
   }

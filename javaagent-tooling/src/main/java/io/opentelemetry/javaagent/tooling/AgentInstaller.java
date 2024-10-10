@@ -238,8 +238,7 @@ public class AgentInstaller {
   }
 
   private static void addHttpServerResponseCustomizers(ClassLoader extensionClassLoader) {
-    List<HttpServerResponseCustomizer> customizers =
-        load(HttpServerResponseCustomizer.class, extensionClassLoader);
+    List<HttpServerResponseCustomizer> customizers = load(HttpServerResponseCustomizer.class, extensionClassLoader);
 
     HttpServerResponseCustomizerHolder.setCustomizer(
         new HttpServerResponseCustomizer() {
