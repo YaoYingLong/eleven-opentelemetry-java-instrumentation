@@ -61,8 +61,8 @@ public final class ExecutorAdviceHelper {
         return null;
       }
     }
-
     context = ContextPropagationDebug.addDebugInfo(context, task);
+    // 将Context绑定到PropagatedContext
     propagatedContext.setContext(context);
     return propagatedContext;
   }

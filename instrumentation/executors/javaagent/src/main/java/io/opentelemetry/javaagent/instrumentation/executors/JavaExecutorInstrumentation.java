@@ -104,11 +104,13 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
       }
       VirtualField<Runnable, PropagatedContext> virtualField =
           VirtualField.find(Runnable.class, PropagatedContext.class);
+      // 非lambdas匿名类，这里是将Runnable与PropagatedContext绑定，并将context设置到PropagatedContext中
       return ExecutorAdviceHelper.attachContextToTask(context, virtualField, task);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void exitJobSubmit(@Advice.Enter PropagatedContext propagatedContext, @Advice.Thrown Throwable throwable) {
+      // propagatedContext不为空且出现异常的情况才会清理掉propagatedContext中的context
       ExecutorAdviceHelper.cleanUpAfterSubmit(propagatedContext, throwable);
     }
   }
