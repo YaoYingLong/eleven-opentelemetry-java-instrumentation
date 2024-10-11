@@ -65,8 +65,7 @@ public final class ContextPropagationDebug {
     return context;
   }
 
-  public static Context appendLocations(
-      Context context, StackTraceElement[] locations, Object carrier) {
+  public static Context appendLocations(Context context, StackTraceElement[] locations, Object carrier) {
     ContextPropagationDebug propagationDebug = ContextPropagationDebug.getPropagations(context);
     if (propagationDebug == null) {
       propagationDebug = new ContextPropagationDebug(context);

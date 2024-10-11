@@ -38,6 +38,8 @@ final class ExecutorMatchers {
    * Some frameworks have their executors defined as anon classes inside other classes. Referencing
    * anon classes by name would be fragile, so instead we will use list of class prefix names. Since
    * checking this list is more expensive (O(n)) we should try to keep it short.
+   *
+   * 一些框架的 executor 被定义为其他类中的匿名类。按名称引用 anon 类会很脆弱，因此我们将使用类前缀名称列表。由于检查此列表的成本更高 （O（n）），因此我们应该尽量保持简短。
    */
   private static final List<String> INSTRUMENTED_EXECUTOR_PREFIXES;
 
@@ -113,10 +115,12 @@ final class ExecutorMatchers {
     return new ElementMatcher.Junction.AbstractBase<TypeDescription>() {
       @Override
       public boolean matches(TypeDescription target) {
+        // 这里INSTRUMENTED_EXECUTOR_NAMES枚举了目前所有的可能得线程池类型，如果包含在内则为true
         boolean allowed = INSTRUMENTED_EXECUTOR_NAMES.contains(target.getName());
 
         // Check for possible prefixes match only if not allowed already
         if (!allowed) {
+          // 这里针对一些框架的 executor 被定义为其他类中的匿名类的情况，通过判断前缀
           for (String name : INSTRUMENTED_EXECUTOR_PREFIXES) {
             if (target.getName().startsWith(name)) {
               allowed = true;

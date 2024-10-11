@@ -21,6 +21,7 @@ public class ThreadPoolExtendingExecutorInstrumentation implements TypeInstrumen
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
+    // 这里其实就是判断是否是线程池类，且类型是java.util.concurrent.ThreadPoolExecutor
     return executorNameMatcher().and(isThreadPoolExecutor());
   }
 

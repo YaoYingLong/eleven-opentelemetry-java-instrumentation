@@ -36,6 +36,7 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
+    // 这里其实就是判断是否是线程池类，且类型是java.util.concurrent.Executor
     return executorNameMatcher().and(isExecutor()); // Apply expensive matcher last.
   }
 
@@ -91,10 +92,13 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
     public static PropagatedContext enterJobSubmit(
         @Advice.Argument(value = 0, readOnly = false) Runnable task) {
       Context context = Java8BytecodeBridge.currentContext();
+      // 如果这里的Runnable对应的task是被AgentClassLoader加载，则返回false
       if (!ExecutorAdviceHelper.shouldPropagateContext(context, task)) {
         return null;
       }
+      // 判断当前task是一个lambdas匿名类且不是一个ContextPropagatingRunnable时，进行包装
       if (ContextPropagatingRunnable.shouldDecorateRunnable(task)) {
+        // 这里包装的其实就是对task的run方法进行一次包装
         task = ContextPropagatingRunnable.propagateContext(task, context);
         return null;
       }
@@ -104,8 +108,7 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void exitJobSubmit(
-        @Advice.Enter PropagatedContext propagatedContext, @Advice.Thrown Throwable throwable) {
+    public static void exitJobSubmit(@Advice.Enter PropagatedContext propagatedContext, @Advice.Thrown Throwable throwable) {
       ExecutorAdviceHelper.cleanUpAfterSubmit(propagatedContext, throwable);
     }
   }
@@ -116,6 +119,7 @@ public class JavaExecutorInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodEnter(suppress = Throwable.class)
     public static PropagatedContext enterJobSubmit(@Advice.Argument(0) ForkJoinTask<?> task) {
       Context context = Java8BytecodeBridge.currentContext();
+      // 如果这里的Runnable对应的task是被AgentClassLoader加载，则返回false
       if (ExecutorAdviceHelper.shouldPropagateContext(context, task)) {
         VirtualField<ForkJoinTask<?>, PropagatedContext> virtualField =
             VirtualField.find(ForkJoinTask.class, PropagatedContext.class);
