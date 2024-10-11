@@ -71,6 +71,7 @@ public class JedisConnectionInstrumentation implements TypeInstrumentation {
         @Advice.Local("otelJedisRequest") JedisRequest request,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
+      // 其实就是从ThreadLocal中获取Context
       Context parentContext = currentContext();
       request = JedisRequest.create(command, asList(args));
       if (!instrumenter().shouldStart(parentContext, request)) {
@@ -79,6 +80,7 @@ public class JedisConnectionInstrumentation implements TypeInstrumentation {
 
       // 最终的目的是调用SdkSpanBuilder的startSpan生成Span，并将span设置到context中，以便在end方法中使用
       context = instrumenter().start(parentContext, request);
+      // 这里的目的是将Context存储到ThreadLocal中
       scope = context.makeCurrent();
     }
 
@@ -95,6 +97,7 @@ public class JedisConnectionInstrumentation implements TypeInstrumentation {
 
       request.setSocket(socket);
       // 注意必须在退出的是调用scope.close()，否则可能造成内存泄漏或上一下文混乱
+      // 将之前的Context设置会ThreadLocal中
       scope.close();
       // 这里做了封装，最终的目的是调用Span.end方法
       JedisRequestContext.endIfNotAttached(instrumenter(), context, request, throwable);

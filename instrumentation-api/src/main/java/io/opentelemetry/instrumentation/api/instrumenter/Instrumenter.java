@@ -225,13 +225,13 @@ public class Instrumenter<REQUEST, RESPONSE> {
     for (ContextCustomizer<? super REQUEST> contextCustomizer : contextCustomizers) {
       context = contextCustomizer.onStart(context, request, attributes);
     }
-
+    // 这里判断context为空或父Span是一个远程Span，则localRoot返回true
     boolean localRoot = LocalRootSpan.isLocalRoot(context);
 
     spanBuilder.setAllAttributes(attributes);
-    // 通过spanBuilder的startSpan方法生SdkSpan对象
+    // 通过spanBuilder的startSpan方法生SdkSpan对象，这里虽然设置了父context,但是设置到Span中被处理了只剩下了SpanContext
     Span span = spanBuilder.setParent(context).startSpan();
-    // 这里是创建了一个新的Context并将span设置到Context中
+    // 这里是创建了一个新的Context并将span设置到Context中，其实这里是将span或更新到context
     context = context.with(span);
 
     if (!operationListeners.isEmpty()) {
@@ -244,9 +244,10 @@ public class Instrumenter<REQUEST, RESPONSE> {
       }
     }
 
-    if (localRoot) {
+    if (localRoot) {  // 这里也是调用context.with(span)
       context = LocalRootSpan.store(context, span);
     }
+    // 这里其实针对不同的组件可能自定义了SpanKey，这里将span设置到对应的SpanKey中
     return spanSuppressor.storeInContext(context, spanKind, span);
   }
 
