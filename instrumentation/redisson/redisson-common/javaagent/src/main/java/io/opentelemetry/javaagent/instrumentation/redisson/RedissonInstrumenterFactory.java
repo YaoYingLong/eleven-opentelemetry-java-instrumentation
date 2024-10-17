@@ -26,7 +26,7 @@ public final class RedissonInstrumenterFactory {
             DbClientSpanNameExtractor.create(dbAttributesGetter))
         .addAttributesExtractor(DbClientAttributesExtractor.create(dbAttributesGetter))
         .addAttributesExtractor(ServerAttributesExtractor.create(netAttributesGetter))
-        // 默认SpanKind.CLIENT
+        // 将允许的父Span类型即SpanKind设置为SpanKind.CLIENT
         .buildInstrumenter(SpanKindExtractor.alwaysClient());
   }
 

@@ -9,6 +9,7 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /**
  * Makes span keys for specific instrumentation accessible to enrich and suppress spans.
@@ -19,6 +20,8 @@ import javax.annotation.Nullable;
 public final class SpanKey {
 
   /* Context keys */
+  public static final ContextKey<Set<String>> EXCLUDE_SPAN_KEYS =
+      ContextKey.named("opentelemetry-traces-exclude-span-keys");
 
   // span kind keys
   private static final ContextKey<Span> KIND_SERVER_KEY =

@@ -34,6 +34,10 @@ public class LettuceInstrumentationModule extends InstrumentationModule {
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return asList(
-        new DefaultClientResourcesInstrumentation(), new LettuceAsyncCommandInstrumentation());
+        new DefaultClientResourcesInstrumentation(),
+        new LettuceAsyncCommandInstrumentation(),
+        new LettuceConnectionInstrumentation(),
+        new ClusterTopologyRefreshInstrumentation()
+    );
   }
 }

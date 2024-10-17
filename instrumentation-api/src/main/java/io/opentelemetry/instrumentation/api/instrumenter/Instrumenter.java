@@ -126,7 +126,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     SpanKind spanKind = spanKindExtractor.extract(request);
     // 这里实际调用的是DelegateBySpanKind的shouldSuppress方法，即spanSuppressor是DelegateBySpanKind
     boolean suppressed = spanSuppressor.shouldSuppress(parentContext, spanKind);
-    // suppressed从逻辑上看默认是false
+    // suppressed从逻辑上看默认是false，即不抑制
     if (suppressed) {
       supportability.recordSuppressedSpan(spanKind, instrumentationName);
     }
