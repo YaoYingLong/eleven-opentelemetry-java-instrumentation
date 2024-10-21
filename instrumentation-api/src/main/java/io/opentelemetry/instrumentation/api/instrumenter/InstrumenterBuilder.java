@@ -44,11 +44,9 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
 
   private static final Logger logger = Logger.getLogger(InstrumenterBuilder.class.getName());
 
-  // 默认应该是SpanSuppressionStrategy.SPAN_KIND
-  private static final SpanSuppressionStrategy spanSuppressionStrategy =
-      SpanSuppressionStrategy.fromConfig(
-          ConfigPropertiesUtil.getString(
-              "otel.instrumentation.experimental.span-suppression-strategy"));
+  // 默认策略是SpanSuppressionStrategy.SEMCONV
+  private static final SpanSuppressionStrategy spanSuppressionStrategy = SpanSuppressionStrategy.fromConfig(
+          ConfigPropertiesUtil.getString("otel.instrumentation.experimental.span-suppression-strategy"));
 
   final OpenTelemetry openTelemetry;
   final String instrumentationName;
@@ -57,15 +55,17 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   final List<SpanLinksExtractor<? super REQUEST>> spanLinksExtractors = new ArrayList<>();
   final List<AttributesExtractor<? super REQUEST, ? super RESPONSE>> attributesExtractors =
       new ArrayList<>();
+  // 用于修改Context内容的函数表达式，会在Instrumenter的start方法中执行
   final List<ContextCustomizer<? super REQUEST>> contextCustomizers = new ArrayList<>();
   private final List<OperationListener> operationListeners = new ArrayList<>();
   private final List<OperationMetrics> operationMetrics = new ArrayList<>();
 
   @Nullable private String instrumentationVersion;
   @Nullable private String schemaUrl = null;
+  // 当前组件的SpanKind，默认是SpanKind.INTERNAL即内部组件
   SpanKindExtractor<? super REQUEST> spanKindExtractor = SpanKindExtractor.alwaysInternal();
-  SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor =
-      SpanStatusExtractor.getDefault();
+  // 这里返回的default是当有异常抛出时将状态设置为ERROR
+  SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor = SpanStatusExtractor.getDefault();
   ErrorCauseExtractor errorCauseExtractor = ErrorCauseExtractor.getDefault();
   boolean enabled = true;
 
@@ -349,7 +349,11 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   SpanSuppressor buildSpanSuppressor() {
-    // 返回SPAN_KIND中构建的DelegateBySpanKind
+    /**
+     * 如果是SEMCONV策略，若获取到的SpanKey列表为空，则默认返回Noop.INSTANCE
+     * 如果是SPAN_KIND策略，则不会使用到解析出的SpanKey列表，而是一个被包装成DelegateBySpanKind的固定列表
+     * NONE策略，其实就是默认非抑制
+     */
     return spanSuppressionStrategy.create(getSpanKeysFromAttributesExtractors());
   }
 
@@ -359,6 +363,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
    *    - ServerAttributesExtractor
    */
   private Set<SpanKey> getSpanKeysFromAttributesExtractors() {
+    // 遍历addAttributesExtractor添加的AttributesExtractor列表，过滤出AttributesExtractor中实现了SpanKeyProvider接口的
     return attributesExtractors.stream()
         // 只有DbClientAttributesExtractor是SpanKeyProvider
         .filter(SpanKeyProvider.class::isInstance)

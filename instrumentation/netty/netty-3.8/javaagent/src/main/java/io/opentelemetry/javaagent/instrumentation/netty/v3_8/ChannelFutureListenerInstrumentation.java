@@ -58,8 +58,7 @@ public class ChannelFutureListenerInstrumentation implements TypeInstrumentation
         return null;
       }
 
-      VirtualField<Channel, NettyConnectionContext> virtualField =
-          VirtualField.find(Channel.class, NettyConnectionContext.class);
+      VirtualField<Channel, NettyConnectionContext> virtualField = VirtualField.find(Channel.class, NettyConnectionContext.class);
 
       NettyConnectionContext connectionContext = virtualField.get(future.getChannel());
       if (connectionContext == null) {

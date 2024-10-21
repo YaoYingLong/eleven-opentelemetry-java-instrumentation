@@ -7,8 +7,7 @@ package io.opentelemetry.javaagent.bootstrap;
 
 final class CallDepthThreadLocalMap {
 
-  private static final ClassValue<ThreadLocalDepth> TLS =
-      new ClassValue<ThreadLocalDepth>() {
+  private static final ClassValue<ThreadLocalDepth> TLS = new ClassValue<ThreadLocalDepth>() {
         @Override
         protected ThreadLocalDepth computeValue(Class<?> type) {
           return new ThreadLocalDepth();

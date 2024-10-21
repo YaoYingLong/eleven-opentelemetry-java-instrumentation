@@ -22,8 +22,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class NettyHttpClientAttributesGetter
-    implements HttpClientAttributesGetter<HttpRequestAndChannel, HttpResponse> {
+final class NettyHttpClientAttributesGetter implements HttpClientAttributesGetter<HttpRequestAndChannel, HttpResponse> {
 
   @Override
   @Nullable

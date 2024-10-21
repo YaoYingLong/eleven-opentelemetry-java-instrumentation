@@ -129,8 +129,7 @@ public final class DecoratorFunctions {
   }
 
   @Nullable
-  private static Context getChannelContext(
-      reactor.util.context.Context reactorContext, @Nullable Channel channel) {
+  private static Context getChannelContext(reactor.util.context.Context reactorContext, @Nullable Channel channel) {
     // try to get the client span context from the channel if it's available
     if (channel != null) {
       Context context = channel.attr(AttributeKeys.CLIENT_CONTEXT).get();

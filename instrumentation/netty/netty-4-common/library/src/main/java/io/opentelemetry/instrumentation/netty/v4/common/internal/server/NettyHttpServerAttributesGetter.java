@@ -20,8 +20,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import javax.annotation.Nullable;
 
-final class NettyHttpServerAttributesGetter
-    implements HttpServerAttributesGetter<HttpRequestAndChannel, HttpResponse> {
+final class NettyHttpServerAttributesGetter implements HttpServerAttributesGetter<HttpRequestAndChannel, HttpResponse> {
 
   @Override
   public String getHttpRequestMethod(HttpRequestAndChannel requestAndChannel) {

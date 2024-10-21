@@ -42,14 +42,10 @@ public final class InternalNetworkAttributesExtractor<REQUEST, RESPONSE> {
 
     if (emitStableUrlAttributes) {
       String transport = lowercase(getter.getNetworkTransport(request, response));
-      if (networkTransportFilter.shouldAddNetworkTransport(
-          protocolName, protocolVersion, transport)) {
+      if (networkTransportFilter.shouldAddNetworkTransport(protocolName, protocolVersion, transport)) {
         internalSet(attributes, SemanticAttributes.NETWORK_TRANSPORT, transport);
       }
-      internalSet(
-          attributes,
-          SemanticAttributes.NETWORK_TYPE,
-          lowercase(getter.getNetworkType(request, response)));
+      internalSet(attributes, SemanticAttributes.NETWORK_TYPE, lowercase(getter.getNetworkType(request, response)));
       internalSet(attributes, SemanticAttributes.NETWORK_PROTOCOL_NAME, protocolName);
       internalSet(attributes, SemanticAttributes.NETWORK_PROTOCOL_VERSION, protocolVersion);
     }

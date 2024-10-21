@@ -26,35 +26,35 @@ public final class FutureListenerWrappers {
   // which will create a memory leak. which is not a problem in the javaagent's implementation of
   // VirtualField, since it injects the value directly into the key as a field, and so the value is
   // only retained strongly by the key, and so they can be collected together.
-  private static final VirtualField<
-          GenericFutureListener<? extends Future<?>>,
-          WeakReference<GenericFutureListener<? extends Future<?>>>>
+  private static final VirtualField<GenericFutureListener<? extends Future<?>>, WeakReference<GenericFutureListener<? extends Future<?>>>>
       wrapperVirtualField = VirtualField.find(GenericFutureListener.class, WeakReference.class);
 
-  private static final ClassValue<Boolean> shouldWrap =
-      new ClassValue<Boolean>() {
+  private static final ClassValue<Boolean> shouldWrap = new ClassValue<Boolean>() {
         @Override
         protected Boolean computeValue(Class<?> type) {
           // we only want to wrap user callbacks
           String className = type.getName();
-          return !className.startsWith("io.opentelemetry.javaagent.")
-              && !className.startsWith("io.netty.");
+          return !className.startsWith("io.opentelemetry.javaagent.") && !className.startsWith("io.netty.");
         }
       };
 
+  // 判断当前的listener对应的类如果是io.opentelemetry.javaagent或io.netty下的类，则返回false
   public static boolean shouldWrap(GenericFutureListener<? extends Future<?>> listener) {
     return shouldWrap.get(listener.getClass());
   }
 
+  /**
+   * 该方法其实就是对GenericFutureListener的operationComplete方法调用进行一次context.makeCurrent()的包装，保证context在GenericFutureListener中的传递
+   * @param context
+   * @param delegate
+   * @return
+   */
   @SuppressWarnings("unchecked")
-  public static GenericFutureListener<?> wrap(
-      Context context, GenericFutureListener<? extends Future<?>> delegate) {
+  public static GenericFutureListener<?> wrap(Context context, GenericFutureListener<? extends Future<?>> delegate) {
 
     // note: not using computeIfAbsent because that leaves window where WeakReference can be
     // collected before we have a chance to make (and return) a strong reference to the wrapper
-
-    WeakReference<GenericFutureListener<? extends Future<?>>> resultReference =
-        wrapperVirtualField.get(delegate);
+    WeakReference<GenericFutureListener<? extends Future<?>>> resultReference = wrapperVirtualField.get(delegate);
 
     if (resultReference != null) {
       GenericFutureListener<? extends Future<?>> wrapper = resultReference.get();
@@ -69,9 +69,7 @@ public final class FutureListenerWrappers {
 
     GenericFutureListener<? extends Future<?>> wrapper;
     if (delegate instanceof GenericProgressiveFutureListener) {
-      wrapper =
-          new WrappedProgressiveFutureListener(
-              context, (GenericProgressiveFutureListener<ProgressiveFuture<?>>) delegate);
+      wrapper = new WrappedProgressiveFutureListener(context, (GenericProgressiveFutureListener<ProgressiveFuture<?>>) delegate);
     } else {
       wrapper = new WrappedFutureListener(context, (GenericFutureListener<Future<?>>) delegate);
     }
@@ -79,10 +77,8 @@ public final class FutureListenerWrappers {
     return wrapper;
   }
 
-  public static GenericFutureListener<? extends Future<?>> getWrapper(
-      GenericFutureListener<? extends Future<?>> delegate) {
-    WeakReference<GenericFutureListener<? extends Future<?>>> wrapperReference =
-        wrapperVirtualField.get(delegate);
+  public static GenericFutureListener<? extends Future<?>> getWrapper(GenericFutureListener<? extends Future<?>> delegate) {
+    WeakReference<GenericFutureListener<? extends Future<?>>> wrapperReference = wrapperVirtualField.get(delegate);
     if (wrapperReference == null) {
       return delegate;
     }

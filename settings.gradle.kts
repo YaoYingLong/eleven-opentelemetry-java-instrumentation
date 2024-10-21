@@ -10,8 +10,9 @@ pluginManagement {
     id("org.graalvm.buildtools.native") version "0.9.27"
   }
 }
-
+// 声明应用所需的插件
 plugins {
+  // 用于构建扫描： ./gradlew build --scan
   id("com.gradle.enterprise") version "3.15.1"
   id("com.gradle.common-custom-user-data-gradle-plugin") version "1.11.3"
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"

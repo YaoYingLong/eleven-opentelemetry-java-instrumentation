@@ -44,8 +44,7 @@ public class Netty41ClientExtension implements BeforeAllCallback, AfterAllCallba
     this(channelPipelineConfigurer, NioEventLoopGroup::new, NioSocketChannel.class);
   }
 
-  public Netty41ClientExtension(
-      Consumer<ChannelPipeline> channelPipelineConfigurer,
+  public Netty41ClientExtension(Consumer<ChannelPipeline> channelPipelineConfigurer,
       Supplier<EventLoopGroup> eventLoopGroupSupplier,
       Class<? extends Channel> channelClass) {
     this.channelPipelineConfigurer = channelPipelineConfigurer;
@@ -65,8 +64,7 @@ public class Netty41ClientExtension implements BeforeAllCallback, AfterAllCallba
     return buildBootstrap(eventLoopGroupSupplier.get(), https, readTimeout);
   }
 
-  private Bootstrap buildBootstrap(
-      EventLoopGroup eventLoopGroup, boolean https, boolean readTimeout) {
+  private Bootstrap buildBootstrap(EventLoopGroup eventLoopGroup, boolean https, boolean readTimeout) {
     Bootstrap bootstrap = new Bootstrap();
     bootstrap
         .group(eventLoopGroup)
@@ -82,8 +80,7 @@ public class Netty41ClientExtension implements BeforeAllCallback, AfterAllCallba
                   pipeline.addLast(sslContext.newHandler(socketChannel.alloc()));
                 }
                 if (readTimeout) {
-                  pipeline.addLast(
-                      new ReadTimeoutHandler(READ_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
+                  pipeline.addLast(new ReadTimeoutHandler(READ_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS));
                 }
                 pipeline.addLast(new HttpClientCodec());
                 channelPipelineConfigurer.accept(pipeline);

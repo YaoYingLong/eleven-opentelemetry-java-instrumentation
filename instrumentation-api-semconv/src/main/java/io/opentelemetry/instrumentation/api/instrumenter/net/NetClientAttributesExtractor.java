@@ -41,17 +41,14 @@ public final class NetClientAttributesExtractor<REQUEST, RESPONSE>
   }
 
   private NetClientAttributesExtractor(NetClientAttributesGetter<REQUEST, RESPONSE> getter) {
-    internalExtractor =
-        new InternalNetClientAttributesExtractor<>(
+    internalExtractor = new InternalNetClientAttributesExtractor<>(
             getter, FallbackAddressPortExtractor.noop(), SemconvStability.emitOldHttpSemconv());
-    internalNetworkExtractor =
-        new InternalNetworkAttributesExtractor<>(
+    internalNetworkExtractor = new InternalNetworkAttributesExtractor<>(
             getter,
             NetworkTransportFilter.alwaysTrue(),
             SemconvStability.emitStableHttpSemconv(),
             SemconvStability.emitOldHttpSemconv());
-    internalServerExtractor =
-        new InternalServerAttributesExtractor<>(
+    internalServerExtractor = new InternalServerAttributesExtractor<>(
             getter,
             (port, request) -> true,
             FallbackAddressPortExtractor.noop(),

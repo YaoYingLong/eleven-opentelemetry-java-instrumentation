@@ -35,8 +35,7 @@ public class SingleNettyConnection implements SingleConnection {
   private final Consumer<Channel> channelConsumer;
   private final Channel channel;
 
-  public SingleNettyConnection(
-      Bootstrap bootstrap, String host, int port, Consumer<Channel> channelConsumer) {
+  public SingleNettyConnection(Bootstrap bootstrap, String host, int port, Consumer<Channel> channelConsumer) {
     this.host = host;
     this.port = port;
     this.channelConsumer = channelConsumer;

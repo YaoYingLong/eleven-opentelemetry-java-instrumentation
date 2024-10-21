@@ -33,8 +33,7 @@ import io.opentelemetry.javaagent.extension.instrumentation.TypeTransformer;
 import io.opentelemetry.javaagent.instrumentation.netty.v4.common.AbstractNettyChannelPipelineInstrumentation;
 import net.bytebuddy.asm.Advice;
 
-public class NettyChannelPipelineInstrumentation
-    extends AbstractNettyChannelPipelineInstrumentation {
+public class NettyChannelPipelineInstrumentation extends AbstractNettyChannelPipelineInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {

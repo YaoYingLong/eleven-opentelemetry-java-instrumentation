@@ -37,9 +37,7 @@ public final class CommonConfig {
   private final boolean emitExperimentalHttpServerMetrics;
 
   CommonConfig(InstrumentationConfig config) {
-    peerServiceResolver =
-        PeerServiceResolver.create(
-            config.getMap("otel.instrumentation.common.peer-service-mapping", emptyMap()));
+    peerServiceResolver = PeerServiceResolver.create(config.getMap("otel.instrumentation.common.peer-service-mapping", emptyMap()));
 
     // TODO (mateusz): remove the old config names in 2.0
     clientRequestHeaders =
@@ -69,8 +67,7 @@ public final class CommonConfig {
                 new ArrayList<>(HttpConstants.KNOWN_METHODS)));
     statementSanitizationEnabled =
         config.getBoolean("otel.instrumentation.common.db-statement-sanitizer.enabled", true);
-    emitExperimentalHttpClientMetrics =
-        config.getBoolean("otel.instrumentation.http.client.emit-experimental-metrics", false);
+    emitExperimentalHttpClientMetrics = config.getBoolean("otel.instrumentation.http.client.emit-experimental-metrics", false);
     emitExperimentalHttpServerMetrics =
         config.getBoolean("otel.instrumentation.http.server.emit-experimental-metrics", false);
   }

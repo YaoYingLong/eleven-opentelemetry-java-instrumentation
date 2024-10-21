@@ -32,8 +32,7 @@ public final class NettyClientSingletons {
   static {
     NettyHttpClientAttributesGetter httpAttributesGetter = new NettyHttpClientAttributesGetter();
 
-    InstrumenterBuilder<HttpRequestAndChannel, HttpResponse> builder =
-        Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(
+    InstrumenterBuilder<HttpRequestAndChannel, HttpResponse> builder = Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(
                 GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
                 HttpSpanNameExtractor.builder(httpAttributesGetter)
@@ -50,8 +49,7 @@ public final class NettyClientSingletons {
                 HttpClientPeerServiceAttributesExtractor.create(
                     httpAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
             .addOperationMetrics(HttpClientMetrics.get())
-            .addContextCustomizer(
-                (context, requestAndChannel, startAttributes) -> NettyErrorHolder.init(context));
+            .addContextCustomizer((context, requestAndChannel, startAttributes) -> NettyErrorHolder.init(context));
     if (CommonConfig.get().shouldEmitExperimentalHttpClientMetrics()) {
       builder.addOperationMetrics(HttpClientExperimentalMetrics.get());
     }

@@ -32,8 +32,7 @@ import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerRe
 import io.opentelemetry.javaagent.instrumentation.netty.v4_0.server.HttpServerTracingHandler;
 import net.bytebuddy.asm.Advice;
 
-public class NettyChannelPipelineInstrumentation
-    extends AbstractNettyChannelPipelineInstrumentation {
+public class NettyChannelPipelineInstrumentation extends AbstractNettyChannelPipelineInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
@@ -55,22 +54,21 @@ public class NettyChannelPipelineInstrumentation
 
     @Advice.OnMethodEnter
     public static void trackCallDepth(@Advice.Local("otelCallDepth") CallDepth callDepth) {
+      // 获取当前调用深度
       callDepth = CallDepth.forClass(ChannelPipeline.class);
+      // 调用深度+1
       callDepth.getAndIncrement();
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void addHandler(
-        @Advice.This ChannelPipeline pipeline,
+    public static void addHandler(@Advice.This ChannelPipeline pipeline,
         @Advice.Argument(2) ChannelHandler handler,
         @Advice.Local("otelCallDepth") CallDepth callDepth) {
       if (callDepth.decrementAndGet() > 0) {
         return;
       }
 
-      VirtualField<ChannelHandler, ChannelHandler> instrumentationHandlerField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
-
+      VirtualField<ChannelHandler, ChannelHandler> instrumentationHandlerField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       // don't add another instrumentation handler if there already is one attached
       if (instrumentationHandlerField.get(handler) != null) {
         return;

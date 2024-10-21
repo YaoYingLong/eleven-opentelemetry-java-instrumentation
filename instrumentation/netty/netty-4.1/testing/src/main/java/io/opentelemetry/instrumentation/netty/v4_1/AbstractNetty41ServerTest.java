@@ -50,8 +50,7 @@ import java.util.Collections;
 
 public abstract class AbstractNetty41ServerTest extends AbstractHttpServerTest<EventLoopGroup> {
 
-  static final LoggingHandler LOGGING_HANDLER =
-      new LoggingHandler(AbstractNetty41ServerTest.class, LogLevel.DEBUG);
+  static final LoggingHandler LOGGING_HANDLER = new LoggingHandler(AbstractNetty41ServerTest.class, LogLevel.DEBUG);
 
   protected abstract void configurePipeline(ChannelPipeline channelPipeline);
 

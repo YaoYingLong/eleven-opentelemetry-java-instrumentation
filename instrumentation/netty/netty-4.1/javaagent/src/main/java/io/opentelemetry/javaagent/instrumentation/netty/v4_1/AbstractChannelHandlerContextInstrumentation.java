@@ -25,6 +25,9 @@ import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.matcher.ElementMatcher;
 
+/**
+ * 对于出现异常的情况的拦截增强
+ */
 public class AbstractChannelHandlerContextInstrumentation implements TypeInstrumentation {
 
   @Override
@@ -38,16 +41,14 @@ public class AbstractChannelHandlerContextInstrumentation implements TypeInstrum
         isMethod()
             .and(named("invokeExceptionCaught"))
             .and(takesArgument(0, named(Throwable.class.getName()))),
-        AbstractChannelHandlerContextInstrumentation.class.getName()
-            + "$InvokeExceptionCaughtAdvice");
+        AbstractChannelHandlerContextInstrumentation.class.getName() + "$InvokeExceptionCaughtAdvice");
   }
 
   @SuppressWarnings("unused")
   public static class InvokeExceptionCaughtAdvice {
 
     @Advice.OnMethodEnter
-    public static void onEnter(
-        @Advice.This ChannelHandlerContext ctx, @Advice.Argument(0) Throwable throwable) {
+    public static void onEnter(@Advice.This ChannelHandlerContext ctx, @Advice.Argument(0) Throwable throwable) {
 
       // we can't rely on exception handling in HttpClientTracingHandler because it can't catch
       // exceptions from handlers that run after it, for example ratpack has ReadTimeoutHandler

@@ -41,8 +41,7 @@ public final class InstrumenterUtil {
       Instant startTime,
       Instant endTime) {
     // instrumenterAccess is guaranteed to be non-null here
-    return instrumenterAccess.startAndEnd(
-        instrumenter, parentContext, request, response, error, startTime, endTime);
+    return instrumenterAccess.startAndEnd(instrumenter, parentContext, request, response, error, startTime, endTime);
   }
 
   public static <REQUEST, RESPONSE> Instrumenter<REQUEST, RESPONSE> buildUpstreamInstrumenter(

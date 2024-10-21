@@ -18,14 +18,11 @@ public final class AttributeKeys {
   // this is the context that has the server span
   //
   // note: this attribute key is also used by ratpack instrumentation
-  public static final AttributeKey<Deque<ServerContext>> SERVER_CONTEXT =
-      AttributeKey.valueOf(AttributeKeys.class, "server-context");
+  public static final AttributeKey<Deque<ServerContext>> SERVER_CONTEXT = AttributeKey.valueOf(AttributeKeys.class, "server-context");
 
-  public static final AttributeKey<Context> CLIENT_CONTEXT =
-      AttributeKey.valueOf(AttributeKeys.class, "client-context");
+  public static final AttributeKey<Context> CLIENT_CONTEXT = AttributeKey.valueOf(AttributeKeys.class, "client-context");
 
-  public static final AttributeKey<Context> CLIENT_PARENT_CONTEXT =
-      AttributeKey.valueOf(AttributeKeys.class, "client-parent-context");
+  public static final AttributeKey<Context> CLIENT_PARENT_CONTEXT = AttributeKey.valueOf(AttributeKeys.class, "client-parent-context");
 
   private AttributeKeys() {}
 }

@@ -30,8 +30,7 @@ final class NettyConnectionInstrumenterImpl implements NettyConnectionInstrument
   }
 
   @Override
-  public void end(
-      Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error) {
+  public void end(Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error) {
     instrumenter.end(context, request, channel, error);
   }
 }

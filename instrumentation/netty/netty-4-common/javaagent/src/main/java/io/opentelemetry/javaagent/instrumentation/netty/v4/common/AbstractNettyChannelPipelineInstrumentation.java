@@ -42,7 +42,9 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
             .and(takesArgument(0, named("io.netty.channel.ChannelHandler"))),
         AbstractNettyChannelPipelineInstrumentation.class.getName() + "$RemoveAdvice");
     transformer.applyAdviceToMethod(
-        isMethod().and(named("remove").or(named("replace"))).and(takesArgument(0, String.class)),
+        isMethod()
+            .and(named("remove").or(named("replace")))
+            .and(takesArgument(0, String.class)),
         AbstractNettyChannelPipelineInstrumentation.class.getName() + "$RemoveByNameAdvice");
     transformer.applyAdviceToMethod(
         isMethod().and(named("remove").or(named("replace"))).and(takesArgument(0, Class.class)),
@@ -65,13 +67,13 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class RemoveAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void removeHandler(
-        @Advice.This ChannelPipeline pipeline, @Advice.Argument(0) ChannelHandler handler) {
-      VirtualField<ChannelHandler, ChannelHandler> virtualField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+    public static void removeHandler(@Advice.This ChannelPipeline pipeline, @Advice.Argument(0) ChannelHandler handler) {
+      VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       ChannelHandler ourHandler = virtualField.get(handler);
       if (ourHandler != null) {
+        // 遍历pipeline的双向链表，获取ChannelHandlerContext中的ChannelHandler为ourHandler的ChannelHandlerContext
         if (pipeline.context(ourHandler) != null) {
+          // 如果ourHandler对应的ChannelHandlerContext在pipeline的双向链表中，则移除
           pipeline.remove(ourHandler);
         }
         virtualField.set(handler, null);
@@ -83,18 +85,18 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class RemoveByNameAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void removeHandler(
-        @Advice.This ChannelPipeline pipeline, @Advice.Argument(0) String name) {
+    public static void removeHandler(@Advice.This ChannelPipeline pipeline, @Advice.Argument(0) String name) {
       ChannelHandler handler = pipeline.get(name);
       if (handler == null) {
         return;
       }
 
-      VirtualField<ChannelHandler, ChannelHandler> virtualField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+      VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       ChannelHandler ourHandler = virtualField.get(handler);
       if (ourHandler != null) {
+        // 遍历pipeline的双向链表，获取ChannelHandlerContext中的ChannelHandler为ourHandler的ChannelHandlerContext
         if (pipeline.context(ourHandler) != null) {
+          // 如果ourHandler对应的ChannelHandlerContext在pipeline的双向链表中，则移除
           pipeline.remove(ourHandler);
         }
         virtualField.set(handler, null);
@@ -106,19 +108,19 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class RemoveByClassAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void removeHandler(
-        @Advice.This ChannelPipeline pipeline,
+    public static void removeHandler(@Advice.This ChannelPipeline pipeline,
         @Advice.Argument(0) Class<ChannelHandler> handlerClass) {
       ChannelHandler handler = pipeline.get(handlerClass);
       if (handler == null) {
         return;
       }
 
-      VirtualField<ChannelHandler, ChannelHandler> virtualField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+      VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       ChannelHandler ourHandler = virtualField.get(handler);
       if (ourHandler != null) {
+        // 遍历pipeline的双向链表，获取ChannelHandlerContext中的ChannelHandler为ourHandler的ChannelHandlerContext
         if (pipeline.context(ourHandler) != null) {
+          // 如果ourHandler对应的ChannelHandlerContext在pipeline的双向链表中，则移除
           pipeline.remove(ourHandler);
         }
         virtualField.set(handler, null);
@@ -130,13 +132,13 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class RemoveFirstAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void removeHandler(
-        @Advice.This ChannelPipeline pipeline, @Advice.Return ChannelHandler handler) {
-      VirtualField<ChannelHandler, ChannelHandler> virtualField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+    public static void removeHandler(@Advice.This ChannelPipeline pipeline, @Advice.Return ChannelHandler handler) {
+      VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       ChannelHandler ourHandler = virtualField.get(handler);
       if (ourHandler != null) {
+        // 遍历pipeline的双向链表，获取ChannelHandlerContext中的ChannelHandler为ourHandler的ChannelHandlerContext
         if (pipeline.context(ourHandler) != null) {
+          // 如果ourHandler对应的ChannelHandlerContext在pipeline的双向链表中，则移除
           pipeline.remove(ourHandler);
         }
         virtualField.set(handler, null);
@@ -148,29 +150,22 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class RemoveLastAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void removeHandler(
-        @Advice.This ChannelPipeline pipeline,
-        @Advice.Return(readOnly = false) ChannelHandler handler) {
-      VirtualField<ChannelHandler, ChannelHandler> virtualField =
-          VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+    public static void removeHandler(@Advice.This ChannelPipeline pipeline, @Advice.Return(readOnly = false) ChannelHandler handler) {
+      VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
       ChannelHandler ourHandler = virtualField.get(handler);
       if (ourHandler != null) {
         // Context is null when our handler has already been removed. This happens when calling
         // removeLast first removed our handler and we called removeLast again to remove the http
         // handler.
+        // 遍历pipeline的双向链表，获取ChannelHandlerContext中的ChannelHandler为ourHandler的ChannelHandlerContext
         if (pipeline.context(ourHandler) != null) {
+          // 如果ourHandler对应的ChannelHandlerContext在pipeline的双向链表中，则移除
           pipeline.remove(ourHandler);
         }
         virtualField.set(handler, null);
-      } else if (handler
-          .getClass()
-          .getName()
-          .startsWith("io.opentelemetry.javaagent.instrumentation.netty.")) {
+      } else if (handler.getClass().getName().startsWith("io.opentelemetry.javaagent.instrumentation.netty.")) {
         handler = pipeline.removeLast();
-      } else if (handler
-          .getClass()
-          .getName()
-          .startsWith("io.opentelemetry.instrumentation.netty.")) {
+      } else if (handler.getClass().getName().startsWith("io.opentelemetry.instrumentation.netty.")) {
         handler = pipeline.removeLast();
       }
     }
@@ -180,13 +175,10 @@ public abstract class AbstractNettyChannelPipelineInstrumentation implements Typ
   public static class AddAfterAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void addAfterHandler(
-        @Advice.This ChannelPipeline pipeline,
-        @Advice.Argument(value = 1, readOnly = false) String name) {
+    public static void addAfterHandler(@Advice.This ChannelPipeline pipeline, @Advice.Argument(value = 1, readOnly = false) String name) {
       ChannelHandler handler = pipeline.get(name);
       if (handler != null) {
-        VirtualField<ChannelHandler, ChannelHandler> virtualField =
-            VirtualField.find(ChannelHandler.class, ChannelHandler.class);
+        VirtualField<ChannelHandler, ChannelHandler> virtualField = VirtualField.find(ChannelHandler.class, ChannelHandler.class);
         ChannelHandler ourHandler = virtualField.get(handler);
         if (ourHandler != null) {
           name = ourHandler.getClass().getName();

@@ -19,8 +19,7 @@ import javax.annotation.Nullable;
 
 class PeerServiceResolverImpl implements PeerServiceResolver {
 
-  private static final Comparator<ServiceMatcher> matcherComparator =
-      nullsFirst(
+  private static final Comparator<ServiceMatcher> matcherComparator = nullsFirst(
           comparing(ServiceMatcher::getPort, nullsFirst(naturalOrder()))
               .thenComparing(comparing(ServiceMatcher::getPath, nullsFirst(naturalOrder()))));
 
@@ -33,8 +32,7 @@ class PeerServiceResolverImpl implements PeerServiceResolver {
           String host = UrlParser.getHost(url);
           Integer port = UrlParser.getPort(url);
           String path = UrlParser.getPath(url);
-          Map<ServiceMatcher, String> matchers =
-              mapping.computeIfAbsent(host, x -> new HashMap<>());
+          Map<ServiceMatcher, String> matchers = mapping.computeIfAbsent(host, x -> new HashMap<>());
           matchers.putIfAbsent(ServiceMatcher.create(port, path), serviceName);
         });
   }
@@ -46,8 +44,7 @@ class PeerServiceResolverImpl implements PeerServiceResolver {
 
   @Override
   @Nullable
-  public String resolveService(
-      String host, @Nullable Integer port, @Nullable Supplier<String> pathSupplier) {
+  public String resolveService(String host, @Nullable Integer port, @Nullable Supplier<String> pathSupplier) {
     Map<ServiceMatcher, String> matchers = mapping.get(host);
     if (matchers == null) {
       return null;

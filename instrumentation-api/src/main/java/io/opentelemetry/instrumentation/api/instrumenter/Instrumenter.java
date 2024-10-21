@@ -248,6 +248,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
       context = LocalRootSpan.store(context, span);
     }
     // 这里其实针对不同的组件可能自定义了SpanKey，这里将span设置到对应的SpanKey中
+    // 如果是
     return spanSuppressor.storeInContext(context, spanKind, span);
   }
 
@@ -312,8 +313,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
               @Nullable Throwable error,
               Instant startTime,
               Instant endTime) {
-            return instrumenter.startAndEnd(
-                parentContext, request, response, error, startTime, endTime);
+            return instrumenter.startAndEnd(parentContext, request, response, error, startTime, endTime);
           }
         });
   }

@@ -38,6 +38,7 @@ public class NettyInstrumentationModule extends InstrumentationModule {
   @Override
   public List<TypeInstrumentation> typeInstrumentations() {
     return asList(
+        // BootstrapInstrumentation主要是针对Netty客户端做增强，其中主要是对连接录制导出Span作增强
         new BootstrapInstrumentation(),
         new NettyFutureInstrumentation(),
         new NettyChannelPipelineInstrumentation(),

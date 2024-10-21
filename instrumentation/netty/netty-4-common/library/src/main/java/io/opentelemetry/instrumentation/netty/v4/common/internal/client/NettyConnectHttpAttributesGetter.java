@@ -19,8 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.annotation.Nullable;
 
-enum NettyConnectHttpAttributesGetter
-    implements HttpClientAttributesGetter<NettyConnectionRequest, Channel> {
+enum NettyConnectHttpAttributesGetter implements HttpClientAttributesGetter<NettyConnectionRequest, Channel> {
   INSTANCE;
 
   @Nullable

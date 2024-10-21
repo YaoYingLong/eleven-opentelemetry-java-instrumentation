@@ -56,18 +56,17 @@ public class BootstrapInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onExit(@Advice.This Bootstrap bootstrap) {
-      // this is already the default value, but we're calling the resolver() method to invoke its
-      // instrumentation
+      // this is already the default value, but we're calling the resolver() method to invoke its instrumentation
+      // DefaultAddressResolverGroup.INSTANCE已经是其默认值了，这里执行的目的是为了为bootstrap.resolver埋点
       bootstrap.resolver(DefaultAddressResolverGroup.INSTANCE);
     }
   }
 
   @SuppressWarnings("unused")
   public static class SetResolverAdvice {
-
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void onEnter(
-        @Advice.Argument(value = 0, readOnly = false) AddressResolverGroup<?> resolver) {
+    public static void onEnter(@Advice.Argument(value = 0, readOnly = false) AddressResolverGroup<?> resolver) {
+      // 这里的resolver其实就是上面传入的DefaultAddressResolverGroup.INSTANCE
       resolver = InstrumentedAddressResolverGroup.wrap(connectionInstrumenter(), resolver);
     }
   }
@@ -75,8 +74,7 @@ public class BootstrapInstrumentation implements TypeInstrumentation {
   @SuppressWarnings("unused")
   public static class ConnectAdvice {
     @Advice.OnMethodEnter
-    public static void startConnect(
-        @Advice.Argument(0) SocketAddress remoteAddress,
+    public static void startConnect(@Advice.Argument(0) SocketAddress remoteAddress,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelRequest") NettyConnectionRequest request,
         @Advice.Local("otelScope") Scope scope) {
@@ -92,8 +90,7 @@ public class BootstrapInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void endConnect(
-        @Advice.Thrown Throwable throwable,
+    public static void endConnect(@Advice.Thrown Throwable throwable,
         @Advice.Argument(2) ChannelPromise channelPromise,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelRequest") NettyConnectionRequest request,
@@ -107,8 +104,7 @@ public class BootstrapInstrumentation implements TypeInstrumentation {
       if (throwable != null) {
         connectionInstrumenter().end(context, request, null, throwable);
       } else {
-        channelPromise.addListener(
-            new ConnectionCompleteListener(connectionInstrumenter(), context, request));
+        channelPromise.addListener(new ConnectionCompleteListener(connectionInstrumenter(), context, request));
       }
     }
   }

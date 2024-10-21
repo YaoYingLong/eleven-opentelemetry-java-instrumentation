@@ -17,8 +17,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.function.Supplier;
 
-public final class InstrumentedAddressResolverGroup<T extends SocketAddress>
-    extends AddressResolverGroup<T> {
+public final class InstrumentedAddressResolverGroup<T extends SocketAddress> extends AddressResolverGroup<T> {
 
   public static <T extends SocketAddress> AddressResolverGroup<T> wrap(
       NettyConnectionInstrumenter instrumenter, AddressResolverGroup<T> delegate) {
@@ -31,8 +30,7 @@ public final class InstrumentedAddressResolverGroup<T extends SocketAddress>
   private final NettyConnectionInstrumenter instrumenter;
   private final AddressResolverGroup<T> delegate;
 
-  private InstrumentedAddressResolverGroup(
-      NettyConnectionInstrumenter instrumenter, AddressResolverGroup<T> delegate) {
+  private InstrumentedAddressResolverGroup(NettyConnectionInstrumenter instrumenter, AddressResolverGroup<T> delegate) {
     this.instrumenter = instrumenter;
     this.delegate = delegate;
   }
@@ -60,8 +58,7 @@ public final class InstrumentedAddressResolverGroup<T extends SocketAddress>
     private final NettyConnectionInstrumenter instrumenter;
     private final AddressResolver<T> delegate;
 
-    private InstrumentedResolver(
-        NettyConnectionInstrumenter instrumenter, AddressResolver<T> delegate) {
+    private InstrumentedResolver(NettyConnectionInstrumenter instrumenter, AddressResolver<T> delegate) {
       this.instrumenter = instrumenter;
       this.delegate = delegate;
     }
@@ -96,8 +93,7 @@ public final class InstrumentedAddressResolverGroup<T extends SocketAddress>
       return instrumentResolve(socketAddress, () -> delegate.resolveAll(socketAddress, promise));
     }
 
-    private <U> Future<U> instrumentResolve(
-        SocketAddress socketAddress, Supplier<Future<U>> resolveFunc) {
+    private <U> Future<U> instrumentResolve(SocketAddress socketAddress, Supplier<Future<U>> resolveFunc) {
       Context parentContext = Context.current();
       NettyConnectionRequest request = NettyConnectionRequest.resolve(socketAddress);
       if (!instrumenter.shouldStart(parentContext, request)) {

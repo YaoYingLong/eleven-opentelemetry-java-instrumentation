@@ -31,8 +31,7 @@ public final class NettyServerInstrumenterFactory {
   public static Instrumenter<HttpRequestAndChannel, HttpResponse> create(
       OpenTelemetry openTelemetry,
       String instrumentationName,
-      Consumer<HttpServerAttributesExtractorBuilder<HttpRequestAndChannel, HttpResponse>>
-          extractorConfigurer,
+      Consumer<HttpServerAttributesExtractorBuilder<HttpRequestAndChannel, HttpResponse>> extractorConfigurer,
       Consumer<HttpSpanNameExtractorBuilder<HttpRequestAndChannel>> spanNameExtractorConfigurer,
       Consumer<HttpServerRouteBuilder<HttpRequestAndChannel>> httpServerRouteConfigurer,
       boolean emitExperimentalHttpServerMetrics) {
@@ -48,8 +47,7 @@ public final class NettyServerInstrumenterFactory {
     spanNameExtractorConfigurer.accept(httpSpanNameExtractorBuilder);
 
     InstrumenterBuilder<HttpRequestAndChannel, HttpResponse> builder =
-        Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(
-                openTelemetry, instrumentationName, httpSpanNameExtractorBuilder.build())
+        Instrumenter.<HttpRequestAndChannel, HttpResponse>builder(openTelemetry, instrumentationName, httpSpanNameExtractorBuilder.build())
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
             .addAttributesExtractor(extractorBuilder.build())
             .addOperationMetrics(HttpServerMetrics.get());

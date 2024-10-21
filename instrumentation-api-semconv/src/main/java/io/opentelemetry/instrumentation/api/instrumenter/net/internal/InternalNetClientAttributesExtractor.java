@@ -26,22 +26,16 @@ public final class InternalNetClientAttributesExtractor<REQUEST, RESPONSE> {
   private final FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor;
   private final boolean emitOldHttpAttributes;
 
-  public InternalNetClientAttributesExtractor(
-      io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter<
-              REQUEST, RESPONSE>
-          getter,
-      FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor,
-      boolean emitOldHttpAttributes) {
+  public InternalNetClientAttributesExtractor(io.opentelemetry.instrumentation.api.instrumenter.net.NetClientAttributesGetter<REQUEST, RESPONSE>
+          getter, FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor, boolean emitOldHttpAttributes) {
     this.getter = getter;
     this.fallbackAddressPortExtractor = fallbackAddressPortExtractor;
     this.emitOldHttpAttributes = emitOldHttpAttributes;
   }
 
   public void onEnd(AttributesBuilder attributes, REQUEST request, @Nullable RESPONSE response) {
-
     if (emitOldHttpAttributes) {
-      internalSet(
-          attributes, SemanticAttributes.NET_TRANSPORT, getter.getTransport(request, response));
+      internalSet(attributes, SemanticAttributes.NET_TRANSPORT, getter.getTransport(request, response));
 
       String peerName = extractPeerName(request);
       String sockPeerAddr = getter.getServerSocketAddress(request, response);

@@ -26,14 +26,11 @@ public final class NettyClientSingletons {
 
   static {
     InstrumentationConfig config = InstrumentationConfig.get();
-    connectionTelemetryEnabled =
-        DeprecatedConfigProperties.getBoolean(
-            config,
+    connectionTelemetryEnabled = DeprecatedConfigProperties.getBoolean(config,
             "otel.instrumentation.netty.always-create-connect-span",
             "otel.instrumentation.netty.connection-telemetry.enabled",
             false);
-    sslTelemetryEnabled =
-        config.getBoolean("otel.instrumentation.netty.ssl-telemetry.enabled", false);
+    sslTelemetryEnabled = config.getBoolean("otel.instrumentation.netty.ssl-telemetry.enabled", false);
   }
 
   private static final Instrumenter<HttpRequestAndChannel, HttpResponse> INSTRUMENTER;
@@ -41,18 +38,15 @@ public final class NettyClientSingletons {
   private static final NettySslInstrumenter SSL_INSTRUMENTER;
 
   static {
-    NettyClientInstrumenterFactory factory =
-        new NettyClientInstrumenterFactory(
+    NettyClientInstrumenterFactory factory = new NettyClientInstrumenterFactory(
             GlobalOpenTelemetry.get(),
             "io.opentelemetry.netty-4.1",
             enabledOrErrorOnly(connectionTelemetryEnabled),
             enabledOrErrorOnly(sslTelemetryEnabled),
             CommonConfig.get().getPeerServiceResolver(),
             CommonConfig.get().shouldEmitExperimentalHttpClientMetrics());
-    INSTRUMENTER =
-        factory.createHttpInstrumenter(
-            builder ->
-                builder
+    INSTRUMENTER = factory.createHttpInstrumenter(
+            builder -> builder
                     .setCapturedRequestHeaders(CommonConfig.get().getClientRequestHeaders())
                     .setCapturedResponseHeaders(CommonConfig.get().getClientResponseHeaders())
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods()),

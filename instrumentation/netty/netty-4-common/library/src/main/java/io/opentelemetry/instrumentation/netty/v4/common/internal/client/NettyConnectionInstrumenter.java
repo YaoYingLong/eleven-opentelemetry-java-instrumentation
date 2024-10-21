@@ -20,6 +20,5 @@ public interface NettyConnectionInstrumenter {
 
   Context start(Context parentContext, NettyConnectionRequest request);
 
-  void end(
-      Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error);
+  void end(Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error);
 }

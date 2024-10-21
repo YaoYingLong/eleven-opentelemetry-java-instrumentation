@@ -29,16 +29,15 @@ final class NettyErrorOnlyConnectionInstrumenter implements NettyConnectionInstr
 
   @Override
   public Context start(Context parentContext, NettyConnectionRequest request) {
+    // 往parentContext存入key为opentelemetry-timer-key，value为Timer
     return parentContext.with(Timer.start());
   }
 
   @Override
-  public void end(
-      Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error) {
+  public void end(Context context, NettyConnectionRequest request, Channel channel, @Nullable Throwable error) {
     if (error != null && instrumenter.shouldStart(context, request)) {
       Timer timer = Timer.get(context);
-      InstrumenterUtil.startAndEnd(
-          instrumenter, context, request, channel, error, timer.startTime(), timer.now());
+      InstrumenterUtil.startAndEnd(instrumenter, context, request, channel, error, timer.startTime(), timer.now());
     }
   }
 }

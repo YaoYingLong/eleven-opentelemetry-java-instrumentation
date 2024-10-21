@@ -22,15 +22,12 @@ import io.opentelemetry.instrumentation.netty.v4_1.internal.AttributeKeys;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class HttpClientTracingHandler
-    extends CombinedChannelDuplexHandler<
+public class HttpClientTracingHandler extends CombinedChannelDuplexHandler<
         HttpClientResponseTracingHandler, HttpClientRequestTracingHandler> {
   private final Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter;
 
   public HttpClientTracingHandler(Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter) {
-    super(
-        new HttpClientResponseTracingHandler(instrumenter),
-        new HttpClientRequestTracingHandler(instrumenter));
+    super(new HttpClientResponseTracingHandler(instrumenter), new HttpClientRequestTracingHandler(instrumenter));
     this.instrumenter = instrumenter;
   }
 
