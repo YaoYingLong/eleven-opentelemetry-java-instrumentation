@@ -349,7 +349,7 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   SpanSuppressor buildSpanSuppressor() {
-    /**
+    /*
      * 如果是SEMCONV策略，若获取到的SpanKey列表为空，则默认返回Noop.INSTANCE
      * 如果是SPAN_KIND策略，则不会使用到解析出的SpanKey列表，而是一个被包装成DelegateBySpanKind的固定列表
      * NONE策略，其实就是默认非抑制

@@ -45,9 +45,6 @@ public final class FutureListenerWrappers {
 
   /**
    * 该方法其实就是对GenericFutureListener的operationComplete方法调用进行一次context.makeCurrent()的包装，保证context在GenericFutureListener中的传递
-   * @param context
-   * @param delegate
-   * @return
    */
   @SuppressWarnings("unchecked")
   public static GenericFutureListener<?> wrap(Context context, GenericFutureListener<? extends Future<?>> delegate) {
