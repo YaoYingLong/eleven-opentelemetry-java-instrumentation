@@ -20,11 +20,9 @@ public final class DataSourceInstrumenterFactory {
 
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.jdbc";
 
-  public static Instrumenter<DataSource, DbInfo> createDataSourceInstrumenter(
-      OpenTelemetry openTelemetry) {
+  public static Instrumenter<DataSource, DbInfo> createDataSourceInstrumenter(OpenTelemetry openTelemetry) {
     DataSourceCodeAttributesGetter getter = DataSourceCodeAttributesGetter.INSTANCE;
-    return Instrumenter.<DataSource, DbInfo>builder(
-            openTelemetry, INSTRUMENTATION_NAME, CodeSpanNameExtractor.create(getter))
+    return Instrumenter.<DataSource, DbInfo>builder(openTelemetry, INSTRUMENTATION_NAME, CodeSpanNameExtractor.create(getter))
         .addAttributesExtractor(CodeAttributesExtractor.create(getter))
         .addAttributesExtractor(DataSourceDbAttributesExtractor.INSTANCE)
         .buildInstrumenter();
