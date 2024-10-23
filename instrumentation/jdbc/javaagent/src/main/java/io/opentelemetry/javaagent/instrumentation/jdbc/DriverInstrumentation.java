@@ -37,6 +37,7 @@ public class DriverInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
+    // Driver的connect方法、且该方法必须满足第一个参数类型为String、第二个参数类型为Properties，返回类型为Connection
     transformer.applyAdviceToMethod(
         nameStartsWith("connect")
             .and(takesArgument(0, String.class))
@@ -57,7 +58,9 @@ public class DriverInstrumentation implements TypeInstrumentation {
         // Exception was probably thrown.
         return;
       }
+      // 经过一系列的解析，将url和Properties解析分装到DbInfo
       DbInfo dbInfo = JdbcConnectionUrlParser.parse(url, props);
+      // 这里其实是通过VirtualField将connection实例与dbInfo绑定，JdbcData.intern只是做了一次弱引用缓存，若缓存有数据直接获取
       JdbcData.connectionInfo.set(connection, JdbcData.intern(dbInfo));
     }
   }

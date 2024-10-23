@@ -40,36 +40,23 @@ public final class CommonConfig {
     peerServiceResolver = PeerServiceResolver.create(config.getMap("otel.instrumentation.common.peer-service-mapping", emptyMap()));
 
     // TODO (mateusz): remove the old config names in 2.0
-    clientRequestHeaders =
-        DeprecatedConfigProperties.getList(
-            config,
+    clientRequestHeaders = DeprecatedConfigProperties.getList(config,
             "otel.instrumentation.http.capture-headers.client.request",
             "otel.instrumentation.http.client.capture-request-headers");
-    clientResponseHeaders =
-        DeprecatedConfigProperties.getList(
-            config,
+    clientResponseHeaders = DeprecatedConfigProperties.getList(config,
             "otel.instrumentation.http.capture-headers.client.response",
             "otel.instrumentation.http.client.capture-response-headers");
-    serverRequestHeaders =
-        DeprecatedConfigProperties.getList(
-            config,
+    serverRequestHeaders = DeprecatedConfigProperties.getList(config,
             "otel.instrumentation.http.capture-headers.server.request",
             "otel.instrumentation.http.server.capture-request-headers");
-    serverResponseHeaders =
-        DeprecatedConfigProperties.getList(
-            config,
+    serverResponseHeaders = DeprecatedConfigProperties.getList(config,
             "otel.instrumentation.http.capture-headers.server.response",
             "otel.instrumentation.http.server.capture-response-headers");
-    knownHttpRequestMethods =
-        new HashSet<>(
-            config.getList(
-                "otel.instrumentation.http.known-methods",
+    knownHttpRequestMethods = new HashSet<>(config.getList("otel.instrumentation.http.known-methods",
                 new ArrayList<>(HttpConstants.KNOWN_METHODS)));
-    statementSanitizationEnabled =
-        config.getBoolean("otel.instrumentation.common.db-statement-sanitizer.enabled", true);
+    statementSanitizationEnabled = config.getBoolean("otel.instrumentation.common.db-statement-sanitizer.enabled", true);
     emitExperimentalHttpClientMetrics = config.getBoolean("otel.instrumentation.http.client.emit-experimental-metrics", false);
-    emitExperimentalHttpServerMetrics =
-        config.getBoolean("otel.instrumentation.http.server.emit-experimental-metrics", false);
+    emitExperimentalHttpServerMetrics = config.getBoolean("otel.instrumentation.http.server.emit-experimental-metrics", false);
   }
 
   public PeerServiceResolver getPeerServiceResolver() {

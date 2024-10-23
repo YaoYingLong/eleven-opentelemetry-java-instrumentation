@@ -34,6 +34,7 @@ public class ConnectionInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
+    // 拦截所有以prepare为前缀、第一个参数类型为string、返回类型为PreparedStatement或实现了PreparedStatement的方法
     transformer.applyAdviceToMethod(
         nameStartsWith("prepare")
             .and(takesArgument(0, String.class))
@@ -48,6 +49,7 @@ public class ConnectionInstrumentation implements TypeInstrumentation {
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void addDbInfo(
         @Advice.Argument(0) String sql, @Advice.Return PreparedStatement statement) {
+      // 通过VirtualField将实际执行传入的SQL语句与对应的PreparedStatement实例绑定
       JdbcData.preparedStatement.set(statement, sql);
     }
   }

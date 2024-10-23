@@ -82,9 +82,13 @@ public final class JdbcUtils {
     // lock, and computeDbInfo() calls back to the application code via Connection.getMetaData()
     // which could then result in a deadlock
     // (e.g. https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/4188)
+    // 是在DriverInstrumentation中拦截connect方法、且该方法必须满足第一个参数类型为String、第二个参数类型为Properties，返回类型为Connection
+    // 时将解析的DbInfo与Connection绑定的，这里直接获取绑定的内容
     DbInfo dbInfo = JdbcData.connectionInfo.get(connection);
     if (dbInfo == null) {
+      // 如果未获取到绑定的数据，则直接从connection中获取url和Properties并解析为DbInfo
       dbInfo = computeDbInfo(connection);
+      // 将解析后的DbInfo再次绑定到connection
       JdbcData.connectionInfo.set(connection, JdbcData.intern(dbInfo));
     }
     return dbInfo;
@@ -106,6 +110,7 @@ public final class JdbcUtils {
       String url = metaData.getURL();
       if (url != null) {
         try {
+          // 这里再次解析从connection中获取的url和Properties
           return JdbcConnectionUrlParser.parse(url, connection.getClientInfo());
         } catch (Throwable ex) {
           // getClientInfo is likely not allowed.

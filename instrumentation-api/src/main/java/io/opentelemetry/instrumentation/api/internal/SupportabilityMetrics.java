@@ -112,8 +112,7 @@ public final class SupportabilityMetrics {
    * any time.
    */
   public static final class CounterNames {
-    public static final String SQL_STATEMENT_SANITIZER_CACHE_MISS =
-        "SqlStatementSanitizer cache miss";
+    public static final String SQL_STATEMENT_SANITIZER_CACHE_MISS = "SqlStatementSanitizer cache miss";
 
     private CounterNames() {}
   }

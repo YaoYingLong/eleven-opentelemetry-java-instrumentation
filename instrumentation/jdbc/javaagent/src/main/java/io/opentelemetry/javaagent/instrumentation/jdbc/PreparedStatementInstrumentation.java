@@ -56,8 +56,9 @@ public class PreparedStatementInstrumentation implements TypeInstrumentation {
         @Advice.Local("otelRequest") DbRequest request,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
-      // skip prepared statements without attached sql, probably a wrapper around the actual
-      // prepared statement
+      // skip prepared statements without attached sql, probably a wrapper around the actual prepared statement
+      // 在ConnectionInstrumentation中对Connection的以prepare为前缀、第一个参数类型为string
+      // 返回类型为PreparedStatement或实现了PreparedStatement的方法进行拦截时绑定了执行的SQL与PreparedStatement的绑定
       if (JdbcData.preparedStatement.get(statement) == null) {
         return;
       }
@@ -75,6 +76,14 @@ public class PreparedStatementInstrumentation implements TypeInstrumentation {
       }
 
       Context parentContext = currentContext();
+      /**
+       * 1、获取在ConnectionInstrumentation中对Connection的以prepare为前缀、第一个参数类型为string
+       * 返回类型为PreparedStatement或实现了PreparedStatement的方法进行拦截时绑定的PreparedStatement实例与SQL语句
+       * 通过PreparedStatement实例获取到对应的SQL语句封装到DbRequest中
+       *
+       * 2、获取在DriverInstrumentation中拦截connect方法、且该方法必须满足第一个参数类型为String、第二个参数类型为Properties，
+       * 返回类型为Connection时将解析的DbInfo与Connection实例绑定关系中获取DbInfo，并封装到DbRequest
+       */
       request = DbRequest.create(statement);
 
       if (request == null || !statementInstrumenter().shouldStart(parentContext, request)) {

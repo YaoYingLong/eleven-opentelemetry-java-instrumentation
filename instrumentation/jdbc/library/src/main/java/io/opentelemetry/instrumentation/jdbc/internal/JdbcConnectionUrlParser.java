@@ -269,9 +269,11 @@ public enum JdbcConnectionUrlParser {
     DbInfo.Builder doParse(String jdbcUrl, DbInfo.Builder builder) {
       DbInfo dbInfo = builder.build();
       if (dbInfo.getHost() == null) {
+        // 如果host为空默认为localhost
         builder.host(DEFAULT_HOST);
       }
       if (dbInfo.getPort() == null) {
+        // 如果端口为空默认为3306
         builder.port(DEFAULT_PORT);
       }
 
@@ -857,6 +859,7 @@ public enum JdbcConnectionUrlParser {
   abstract DbInfo.Builder doParse(String jdbcUrl, DbInfo.Builder builder);
 
   public static DbInfo parse(String connectionUrl, Properties props) {
+    // connectionUrl示例：jdbc:mysql://localhost:3306/db_user
     if (connectionUrl == null) {
       return DEFAULT;
     }
@@ -879,9 +882,12 @@ public enum JdbcConnectionUrlParser {
       return DEFAULT;
     }
 
+    // 数据库类型
     String type = jdbcUrl.substring(0, typeLoc);
+    // 这里做了一些转换，主流数据库基本没什么变化
     String system = toDbSystem(type);
     DbInfo.Builder parsedProps = DEFAULT.toBuilder().system(system);
+    // 向DbInfo中填充Properties中包含的值
     populateStandardProperties(parsedProps, props);
 
     try {

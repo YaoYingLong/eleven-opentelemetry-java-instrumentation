@@ -40,16 +40,18 @@ public final class JdbcSingletons {
                 DbClientSpanNameExtractor.create(dbAttributesGetter))
             .addAttributesExtractor(
                 SqlClientAttributesExtractor.builder(dbAttributesGetter)
-                    .setStatementSanitizationEnabled(
-                        InstrumentationConfig.get()
+                    // 默认为true
+                    .setStatementSanitizationEnabled(InstrumentationConfig.get()
                             .getBoolean(
                                 "otel.instrumentation.jdbc.statement-sanitizer.enabled",
-                                CommonConfig.get().isStatementSanitizationEnabled()))
-                    .build())
+                                CommonConfig.get().isStatementSanitizationEnabled()
+                            )
+                    ).build())
             .addAttributesExtractor(ServerAttributesExtractor.create(netAttributesGetter))
             .addAttributesExtractor(
-                PeerServiceAttributesExtractor.create(
-                    netAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
+                PeerServiceAttributesExtractor.create(netAttributesGetter,
+                CommonConfig.get().getPeerServiceResolver())
+            )
             .buildInstrumenter(SpanKindExtractor.alwaysClient());
   }
 

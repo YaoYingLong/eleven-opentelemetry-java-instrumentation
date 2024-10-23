@@ -29,6 +29,7 @@ public abstract class DbRequest {
 
   @Nullable
   public static DbRequest create(Statement statement, String dbStatementString) {
+    // 将从Statement中获取Connection并解包装
     Connection connection = connectionFromStatement(statement);
     if (connection == null) {
       return null;
