@@ -25,8 +25,7 @@ public final class PeerServiceAttributesExtractor<REQUEST, RESPONSE>
   private final PeerServiceResolver peerServiceResolver;
 
   // visible for tests
-  PeerServiceAttributesExtractor(
-      ServerAttributesGetter<REQUEST, RESPONSE> attributesGetter,
+  PeerServiceAttributesExtractor(ServerAttributesGetter<REQUEST, RESPONSE> attributesGetter,
       PeerServiceResolver peerServiceResolver) {
     this.attributesGetter = attributesGetter;
     this.peerServiceResolver = peerServiceResolver;

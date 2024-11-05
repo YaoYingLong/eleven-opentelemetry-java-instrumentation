@@ -26,9 +26,7 @@ public final class InternalNetServerAttributesExtractor<REQUEST, RESPONSE> {
   private final boolean emitOldHttpAttributes;
 
   public InternalNetServerAttributesExtractor(
-      io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesGetter<
-              REQUEST, RESPONSE>
-          getter,
+      io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesGetter<REQUEST, RESPONSE> getter,
       FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor,
       boolean emitOldHttpAttributes) {
     this.getter = getter;
@@ -37,8 +35,9 @@ public final class InternalNetServerAttributesExtractor<REQUEST, RESPONSE> {
   }
 
   public void onStart(AttributesBuilder attributes, REQUEST request) {
-
+    // emitOldHttpAttributes默认为true
     if (emitOldHttpAttributes) {
+      // 将net.transport设置到attributes中
       internalSet(attributes, SemanticAttributes.NET_TRANSPORT, getter.getTransport(request));
 
       boolean setSockFamily = false;
@@ -56,7 +55,9 @@ public final class InternalNetServerAttributesExtractor<REQUEST, RESPONSE> {
 
       if (setSockFamily) {
         String sockFamily = getter.getSockFamily(request);
+        // sockFamily不为空且不等于inet
         if (sockFamily != null && !SemanticAttributes.NetSockFamilyValues.INET.equals(sockFamily)) {
+          // 将net.sock.family设置到attributes中
           internalSet(attributes, SemanticAttributes.NET_SOCK_FAMILY, sockFamily);
         }
       }

@@ -22,8 +22,7 @@ import org.jboss.netty.channel.socket.DatagramChannel;
 import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 
-final class NettyHttpClientAttributesGetter
-    implements HttpClientAttributesGetter<HttpRequestAndChannel, HttpResponse> {
+final class NettyHttpClientAttributesGetter implements HttpClientAttributesGetter<HttpRequestAndChannel, HttpResponse> {
 
   @Override
   @Nullable

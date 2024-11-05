@@ -24,10 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 public final class Servlet3Singletons {
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.servlet-3.0";
 
-  private static final Instrumenter<
-          ServletRequestContext<HttpServletRequest>, ServletResponseContext<HttpServletResponse>>
-      INSTRUMENTER =
-          ServletInstrumenterBuilder.<HttpServletRequest, HttpServletResponse>create()
+  private static final Instrumenter<ServletRequestContext<HttpServletRequest>, ServletResponseContext<HttpServletResponse>>
+      INSTRUMENTER = ServletInstrumenterBuilder.<HttpServletRequest, HttpServletResponse>create()
               .build(INSTRUMENTATION_NAME, Servlet3Accessor.INSTANCE);
 
   private static final ServletHelper<HttpServletRequest, HttpServletResponse> HELPER =

@@ -27,8 +27,7 @@ import javax.annotation.Nullable;
  * href="https://github.com/open-telemetry/semantic-conventions/blob/main/docs/http/http-spans.md#common-attributes">HTTP
  * attributes</a> that are common to client and server instrumentations.
  */
-abstract class HttpCommonAttributesExtractor<
-        REQUEST, RESPONSE, GETTER extends HttpCommonAttributesGetter<REQUEST, RESPONSE>>
+abstract class HttpCommonAttributesExtractor<REQUEST, RESPONSE, GETTER extends HttpCommonAttributesGetter<REQUEST, RESPONSE>>
     implements AttributesExtractor<REQUEST, RESPONSE> {
 
   final GETTER getter;
@@ -37,8 +36,7 @@ abstract class HttpCommonAttributesExtractor<
   private final List<String> capturedResponseHeaders;
   private final Set<String> knownMethods;
 
-  HttpCommonAttributesExtractor(
-      GETTER getter,
+  HttpCommonAttributesExtractor(GETTER getter,
       HttpStatusCodeConverter statusCodeConverter,
       List<String> capturedRequestHeaders,
       List<String> capturedResponseHeaders,
@@ -53,7 +51,9 @@ abstract class HttpCommonAttributesExtractor<
   @Override
   @SuppressWarnings("deprecation") // until old http semconv are dropped in 2.0
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
+    // 调用HttpServletRequest.getMethod方法获取method
     String method = getter.getHttpRequestMethod(request);
+    // 默认false
     if (SemconvStability.emitStableHttpSemconv()) {
       if (method == null || knownMethods.contains(method)) {
         internalSet(attributes, SemanticAttributes.HTTP_REQUEST_METHOD, method);
@@ -62,9 +62,12 @@ abstract class HttpCommonAttributesExtractor<
         internalSet(attributes, SemanticAttributes.HTTP_REQUEST_METHOD_ORIGINAL, method);
       }
     }
+    // 默认true
     if (SemconvStability.emitOldHttpSemconv()) {
+      // 将method设置到attributes的http.method属性中
       internalSet(attributes, SemanticAttributes.HTTP_METHOD, method);
     }
+    // 从HttpServletRequest的header中提取user_agent.original并设置到attributes属性中
     internalSet(attributes, SemanticAttributes.USER_AGENT_ORIGINAL, userAgent(request));
 
     for (String name : capturedRequestHeaders) {
@@ -77,18 +80,18 @@ abstract class HttpCommonAttributesExtractor<
 
   @Override
   @SuppressWarnings("deprecation") // until old http semconv are dropped in 2.0
-  public void onEnd(
-      AttributesBuilder attributes,
-      Context context,
-      REQUEST request,
-      @Nullable RESPONSE response,
-      @Nullable Throwable error) {
+  public void onEnd(AttributesBuilder attributes, Context context, REQUEST request,
+      @Nullable RESPONSE response, @Nullable Throwable error) {
 
+    // 从HttpServletRequest的header中提取content-length
     Long requestBodySize = requestBodySize(request);
+    // 默认false
     if (SemconvStability.emitStableHttpSemconv()) {
       internalSet(attributes, SemanticAttributes.HTTP_REQUEST_BODY_SIZE, requestBodySize);
     }
+    // 默认true
     if (SemconvStability.emitOldHttpSemconv()) {
+      // 将content-length值设置到attributes属性http.request_content_length中
       internalSet(attributes, SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH, requestBodySize);
     }
 
@@ -96,19 +99,25 @@ abstract class HttpCommonAttributesExtractor<
     if (response != null) {
       statusCode = getter.getHttpResponseStatusCode(request, response, error);
       if (statusCode != null && statusCode > 0) {
+        // 默认false
         if (SemconvStability.emitStableHttpSemconv()) {
           internalSet(attributes, SemanticAttributes.HTTP_RESPONSE_STATUS_CODE, (long) statusCode);
         }
+        // 默认true
         if (SemconvStability.emitOldHttpSemconv()) {
+          // 设置到attributes属性http.status_code值
           internalSet(attributes, SemanticAttributes.HTTP_STATUS_CODE, (long) statusCode);
         }
       }
 
       Long responseBodySize = responseBodySize(request, response);
+      // 默认false
       if (SemconvStability.emitStableHttpSemconv()) {
         internalSet(attributes, SemanticAttributes.HTTP_RESPONSE_BODY_SIZE, responseBodySize);
       }
+      // 默认true
       if (SemconvStability.emitOldHttpSemconv()) {
+        // 设置到attributes属性http.response_content_length值
         internalSet(attributes, SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH, responseBodySize);
       }
 
@@ -119,7 +128,7 @@ abstract class HttpCommonAttributesExtractor<
         }
       }
     }
-
+    // 默认false
     if (SemconvStability.emitStableHttpSemconv()) {
       String errorType = null;
       if (statusCode != null && statusCode > 0) {

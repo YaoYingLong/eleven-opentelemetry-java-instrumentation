@@ -59,7 +59,9 @@ public final class HttpSpanNameExtractor<REQUEST> implements SpanNameExtractor<R
 
   @Nullable
   private String extractRoute(REQUEST request) {
+    // 通过构造函数传入的getter默认是HttpServerAttributesGetter实现类ServletHttpAttributesGetter，调用getHttpRoute
     if (getter instanceof HttpServerAttributesGetter) {
+      // 这里调用ServletHttpAttributesGetter的getHttpRoute，但并没有重写，超类HttpServerAttributesGetter中默认返回null
       return ((HttpServerAttributesGetter<REQUEST, ?>) getter).getHttpRoute(request);
     }
     return null;

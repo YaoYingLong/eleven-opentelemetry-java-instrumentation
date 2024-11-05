@@ -21,8 +21,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-public class Servlet5Accessor
-    implements ServletAccessor<HttpServletRequest, HttpServletResponse>,
+public class Servlet5Accessor implements ServletAccessor<HttpServletRequest, HttpServletResponse>,
         HttpServerResponseMutator<HttpServletResponse> {
   public static final Servlet5Accessor INSTANCE = new Servlet5Accessor();
 

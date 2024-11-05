@@ -18,8 +18,7 @@ import javax.annotation.Nullable;
 public final class InetSocketAddressUtil {
 
   @Nullable
-  public static String getSockFamily(
-      @Nullable InetSocketAddress address, @Nullable InetSocketAddress otherAddress) {
+  public static String getSockFamily(@Nullable InetSocketAddress address, @Nullable InetSocketAddress otherAddress) {
     if (address == null) {
       address = otherAddress;
     }
@@ -34,8 +33,7 @@ public final class InetSocketAddressUtil {
   }
 
   @Nullable
-  public static String getNetworkType(
-      @Nullable InetSocketAddress address, @Nullable InetSocketAddress otherAddress) {
+  public static String getNetworkType(@Nullable InetSocketAddress address, @Nullable InetSocketAddress otherAddress) {
     if (address == null) {
       address = otherAddress;
     }

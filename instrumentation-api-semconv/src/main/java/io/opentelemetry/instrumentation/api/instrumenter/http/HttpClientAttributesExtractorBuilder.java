@@ -101,8 +101,7 @@ public final class HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> {
    * @param knownMethods A set of recognized HTTP request methods.
    */
   @CanIgnoreReturnValue
-  public HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> setKnownMethods(
-      Set<String> knownMethods) {
+  public HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> setKnownMethods(Set<String> knownMethods) {
     this.knownMethods = new HashSet<>(knownMethods);
     return this;
   }
@@ -124,8 +123,8 @@ public final class HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> {
   }
 
   InternalNetClientAttributesExtractor<REQUEST, RESPONSE> buildNetExtractor() {
-    return new InternalNetClientAttributesExtractor<>(
-        netAttributesGetter, addressPortExtractor, SemconvStability.emitOldHttpSemconv());
+    return new InternalNetClientAttributesExtractor<>(netAttributesGetter,
+        addressPortExtractor, SemconvStability.emitOldHttpSemconv());
   }
 
   InternalNetworkAttributesExtractor<REQUEST, RESPONSE> buildNetworkExtractor() {
@@ -137,8 +136,7 @@ public final class HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> {
   }
 
   InternalServerAttributesExtractor<REQUEST, RESPONSE> buildServerExtractor() {
-    return new InternalServerAttributesExtractor<>(
-        netAttributesGetter,
+    return new InternalServerAttributesExtractor<>(netAttributesGetter,
         new ClientSideServerPortCondition<>(httpAttributesGetter),
         addressPortExtractor,
         SemconvStability.emitStableHttpSemconv(),

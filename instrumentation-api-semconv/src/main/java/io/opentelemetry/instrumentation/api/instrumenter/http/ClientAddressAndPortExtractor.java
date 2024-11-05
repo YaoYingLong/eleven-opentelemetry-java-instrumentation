@@ -17,6 +17,9 @@ final class ClientAddressAndPortExtractor<REQUEST>
     this.getter = getter;
   }
 
+  /**
+   * 从Header中获取forwarded或x-forwarded-for中对应的地址
+   */
   @Override
   public void extract(AddressPortSink sink, REQUEST request) {
     // try Forwarded
@@ -63,8 +66,7 @@ final class ClientAddressAndPortExtractor<REQUEST>
   //  "It is important to note that an IPv6 address and any nodename with
   //   node-port specified MUST be quoted, since ':' is not an allowed
   //   character in 'token'."
-  private static boolean extractClientInfo(
-      AddressPortSink sink, String forwarded, int start, int end) {
+  private static boolean extractClientInfo(AddressPortSink sink, String forwarded, int start, int end) {
     if (start >= end) {
       return false;
     }

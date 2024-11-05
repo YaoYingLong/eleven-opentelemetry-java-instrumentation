@@ -28,19 +28,24 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
   private final Mode oldSemconvMode;
   private final boolean captureServerSocketAttributes;
 
-  public InternalServerAttributesExtractor(
-      ServerAttributesGetter<REQUEST, RESPONSE> getter,
+  public InternalServerAttributesExtractor(ServerAttributesGetter<REQUEST, RESPONSE> getter,
       BiPredicate<Integer, REQUEST> captureServerPortCondition,
       FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor,
       boolean emitStableUrlAttributes,
       boolean emitOldHttpAttributes,
+      // 若是lettuce过来的，则mode为InternalServerAttributesExtractor.Mode.PEER
       Mode oldSemconvMode,
       boolean captureServerSocketAttributes) {
     this.getter = getter;
     this.captureServerPortCondition = captureServerPortCondition;
+    // Tomcat中fallbackAddressPortExtractor一般传入的是HttpAddressPortExtractor
+    // ServerAttributesExtractor中构建时传入的FallbackAddressPortExtractor.noop()
     this.fallbackAddressPortExtractor = fallbackAddressPortExtractor;
+    // emitStableUrlAttributes默认为false
     this.emitStableUrlAttributes = emitStableUrlAttributes;
+    // emitOldHttpAttributes默认为true
     this.emitOldHttpAttributes = emitOldHttpAttributes;
+    // 若是lettuce过来的，则mode为InternalServerAttributesExtractor.Mode.PEER
     this.oldSemconvMode = oldSemconvMode;
     this.captureServerSocketAttributes = captureServerSocketAttributes;
   }
@@ -48,20 +53,25 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
   public void onStart(AttributesBuilder attributes, REQUEST request) {
     AddressAndPort serverAddressAndPort = extractServerAddressAndPort(request);
 
+    // emitStableUrlAttributes默认为false
     if (emitStableUrlAttributes) {
       internalSet(attributes, SemanticAttributes.SERVER_ADDRESS, serverAddressAndPort.address);
     }
+    // emitOldHttpAttributes默认为true
     if (emitOldHttpAttributes) {
+      // 这里的oldSemconvMode默认为Mode.HOST或Mode.PEER，address为net.host.name或net.peer.name
       internalSet(attributes, oldSemconvMode.address, serverAddressAndPort.address);
     }
 
-    if (serverAddressAndPort.port != null
-        && serverAddressAndPort.port > 0
+    if (serverAddressAndPort.port != null && serverAddressAndPort.port > 0
         && captureServerPortCondition.test(serverAddressAndPort.port, request)) {
+      // emitStableUrlAttributes默认为false
       if (emitStableUrlAttributes) {
         internalSet(attributes, SemanticAttributes.SERVER_PORT, (long) serverAddressAndPort.port);
       }
+      // emitOldHttpAttributes默认为true
       if (emitOldHttpAttributes) {
+        // 这里的oldSemconvMode默认为Mode.HOST或Mode.PEER，port为net.host.port或net.peer.port
         internalSet(attributes, oldSemconvMode.port, (long) serverAddressAndPort.port);
       }
     }
@@ -69,34 +79,42 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
 
   public void onEnd(AttributesBuilder attributes, REQUEST request, @Nullable RESPONSE response) {
     AddressAndPort serverAddressAndPort = extractServerAddressAndPort(request);
-
+    // 调用HttpServletRequest的getLocalAddr方法，获取当前处理请求的服务器接口绑定的IP地址
     String serverSocketAddress = getter.getServerSocketAddress(request, response);
+    // 如果getLocalAddr获取到的地址不为空，且与getServerAddress获取到的地址不相等
     if (serverSocketAddress != null && !serverSocketAddress.equals(serverAddressAndPort.address)) {
+      // emitStableUrlAttributes默认为false, emitOldHttpAttributes默认为true
       if (emitStableUrlAttributes && captureServerSocketAttributes) {
         internalSet(attributes, SemanticAttributes.SERVER_SOCKET_ADDRESS, serverSocketAddress);
       }
+      // emitOldHttpAttributes默认为true
       if (emitOldHttpAttributes) {
+        // 这里的oldSemconvMode默认为Mode.HOST或Mode.PEER，socketAddress为net.sock.host.addr或net.sock.peer.addr
         internalSet(attributes, oldSemconvMode.socketAddress, serverSocketAddress);
       }
     }
 
+    // 调用HttpServletRequest的getLocalPort方法
     Integer serverSocketPort = getter.getServerSocketPort(request, response);
-    if (serverSocketPort != null
-        && serverSocketPort > 0
-        && !serverSocketPort.equals(serverAddressAndPort.port)) {
+    if (serverSocketPort != null && serverSocketPort > 0 && !serverSocketPort.equals(serverAddressAndPort.port)) {
+      // emitStableUrlAttributes默认为false, emitOldHttpAttributes默认为true
       if (emitStableUrlAttributes && captureServerSocketAttributes) {
         internalSet(attributes, SemanticAttributes.SERVER_SOCKET_PORT, (long) serverSocketPort);
       }
+      // emitOldHttpAttributes默认为true
       if (emitOldHttpAttributes) {
+        // 这里的oldSemconvMode默认为Mode.HOST或Mode.PEER，socketPort为net.sock.host.port或net.sock.peer.port
         internalSet(attributes, oldSemconvMode.socketPort, (long) serverSocketPort);
       }
     }
 
     String serverSocketDomain = getter.getServerSocketDomain(request, response);
     if (serverSocketDomain != null && !serverSocketDomain.equals(serverAddressAndPort.address)) {
+      // emitStableUrlAttributes默认为false, emitOldHttpAttributes默认为true
       if (emitStableUrlAttributes && captureServerSocketAttributes) {
         internalSet(attributes, SemanticAttributes.SERVER_SOCKET_DOMAIN, serverSocketDomain);
       }
+      // emitOldHttpAttributes默认为true，如果Mode.HOST则socketDomain为空
       if (emitOldHttpAttributes && oldSemconvMode.socketDomain != null) {
         internalSet(attributes, oldSemconvMode.socketDomain, serverSocketDomain);
       }
@@ -105,9 +123,13 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
 
   private AddressAndPort extractServerAddressAndPort(REQUEST request) {
     AddressAndPort addressAndPort = new AddressAndPort();
+    // 调用ServletHttpAttributesGetter的getServerAddress，最终调用HttpServletRequest.getServerName
+    // 客户端请求时所使用的服务器域名或IP地址
     addressAndPort.address = getter.getServerAddress(request);
+    // 最终调用HttpServletRequest.getServerPort
     addressAndPort.port = getter.getServerPort(request);
     if (addressAndPort.address == null && addressAndPort.port == null) {
+      // 调用HttpAddressPortExtractor的extract方法，从Header中获取host
       fallbackAddressPortExtractor.extract(addressAndPort, request);
     }
     return addressAndPort;

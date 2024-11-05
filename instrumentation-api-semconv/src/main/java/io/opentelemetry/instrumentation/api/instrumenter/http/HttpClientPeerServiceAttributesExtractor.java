@@ -26,8 +26,7 @@ public final class HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE>
   private final PeerServiceResolver peerServiceResolver;
 
   // visible for tests
-  HttpClientPeerServiceAttributesExtractor(
-      HttpClientAttributesGetter<REQUEST, RESPONSE> attributesGetter,
+  HttpClientPeerServiceAttributesExtractor(HttpClientAttributesGetter<REQUEST, RESPONSE> attributesGetter,
       PeerServiceResolver peerServiceResolver) {
     this.attributesGetter = attributesGetter;
     this.peerServiceResolver = peerServiceResolver;
@@ -37,8 +36,7 @@ public final class HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE>
    * Returns a new {@link HttpClientPeerServiceAttributesExtractor} that will use the passed {@code
    * attributesGetter} instance to determine the value of the {@code peer.service} attribute.
    */
-  public static <REQUEST, RESPONSE>
-      HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE> create(
+  public static <REQUEST, RESPONSE> HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE> create(
           HttpClientAttributesGetter<REQUEST, RESPONSE> attributesGetter,
           PeerServiceResolver peerServiceResolver) {
     return new HttpClientPeerServiceAttributesExtractor<>(attributesGetter, peerServiceResolver);
@@ -48,12 +46,7 @@ public final class HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE>
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {}
 
   @Override
-  public void onEnd(
-      AttributesBuilder attributes,
-      Context context,
-      REQUEST request,
-      @Nullable RESPONSE response,
-      @Nullable Throwable error) {
+  public void onEnd(AttributesBuilder attributes, Context context, REQUEST request, @Nullable RESPONSE response, @Nullable Throwable error) {
 
     if (peerServiceResolver.isEmpty()) {
       // optimization for common case
@@ -75,8 +68,7 @@ public final class HttpClientPeerServiceAttributesExtractor<REQUEST, RESPONSE>
   }
 
   @Nullable
-  private String mapToPeerService(
-      @Nullable String host, @Nullable Integer port, @Nullable Supplier<String> pathSupplier) {
+  private String mapToPeerService(@Nullable String host, @Nullable Integer port, @Nullable Supplier<String> pathSupplier) {
     if (host == null) {
       return null;
     }

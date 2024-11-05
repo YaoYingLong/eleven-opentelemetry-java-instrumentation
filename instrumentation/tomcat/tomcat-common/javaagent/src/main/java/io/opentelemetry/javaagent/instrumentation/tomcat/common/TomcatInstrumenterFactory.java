@@ -30,26 +30,22 @@ public final class TomcatInstrumenterFactory {
     TomcatHttpAttributesGetter httpAttributesGetter = new TomcatHttpAttributesGetter();
 
     InstrumenterBuilder<Request, Response> builder =
-        Instrumenter.<Request, Response>builder(
-                GlobalOpenTelemetry.get(),
+        Instrumenter.<Request, Response>builder(GlobalOpenTelemetry.get(),
                 instrumentationName,
                 HttpSpanNameExtractor.builder(httpAttributesGetter)
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
             .setErrorCauseExtractor(new ServletErrorCauseExtractor<>(accessor))
-            .addAttributesExtractor(
-                HttpServerAttributesExtractor.builder(httpAttributesGetter)
+            .addAttributesExtractor(HttpServerAttributesExtractor.builder(httpAttributesGetter)
                     .setCapturedRequestHeaders(CommonConfig.get().getServerRequestHeaders())
                     .setCapturedResponseHeaders(CommonConfig.get().getServerResponseHeaders())
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
-            .addContextCustomizer(
-                HttpServerRoute.builder(httpAttributesGetter)
+            .addContextCustomizer(HttpServerRoute.builder(httpAttributesGetter)
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
-            .addContextCustomizer(
-                (context, request, attributes) ->
+            .addContextCustomizer((context, request, attributes) ->
                     new AppServerBridge.Builder()
                         .captureServletAttributes()
                         .recordException()

@@ -47,12 +47,10 @@ public final class ServerAttributesExtractor<REQUEST, RESPONSE>
 
   private final InternalServerAttributesExtractor<REQUEST, RESPONSE> internalExtractor;
 
-  ServerAttributesExtractor(
-      ServerAttributesGetter<REQUEST, RESPONSE> getter,
-      InternalServerAttributesExtractor.Mode mode) {
+  ServerAttributesExtractor(ServerAttributesGetter<REQUEST, RESPONSE> getter, InternalServerAttributesExtractor.Mode mode) {
     // the ServerAttributesExtractor will always emit new semconv
-    internalExtractor =
-        new InternalServerAttributesExtractor<>(
+    // 若是lettuce过来的，则mode为InternalServerAttributesExtractor.Mode.PEER
+    internalExtractor = new InternalServerAttributesExtractor<>(
             getter,
             (port, request) -> true,
             FallbackAddressPortExtractor.noop(),

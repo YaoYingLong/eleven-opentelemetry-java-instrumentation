@@ -40,12 +40,13 @@ public final class InternalUrlAttributesExtractor<REQUEST> {
     String urlScheme = getUrlScheme(request);
     String urlPath = getter.getUrlPath(request);
     String urlQuery = getter.getUrlQuery(request);
-
+    // emitStableUrlAttributes默认为false
     if (emitStableUrlAttributes) {
       internalSet(attributes, SemanticAttributes.URL_SCHEME, urlScheme);
       internalSet(attributes, SemanticAttributes.URL_PATH, urlPath);
       internalSet(attributes, SemanticAttributes.URL_QUERY, urlQuery);
     }
+    // emitOldHttpAttributes默认为true
     if (emitOldHttpAttributes) {
       internalSet(attributes, SemanticAttributes.HTTP_SCHEME, urlScheme);
       internalSet(attributes, SemanticAttributes.HTTP_TARGET, getTarget(urlPath, urlQuery));

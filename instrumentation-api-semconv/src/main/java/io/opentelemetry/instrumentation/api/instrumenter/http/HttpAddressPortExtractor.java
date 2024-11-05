@@ -23,6 +23,7 @@ final class HttpAddressPortExtractor<REQUEST> implements FallbackAddressPortExtr
 
   @Override
   public void extract(AddressPortSink sink, REQUEST request) {
+    // 从HttpServletRequest的Header中获取名称为host的列表
     String host = firstHeaderValue(getter.getHttpRequestHeader(request, "host"));
     if (host == null) {
       return;

@@ -19,8 +19,7 @@ public class TomcatHelper<REQUEST, RESPONSE> {
   protected final TomcatServletEntityProvider<REQUEST, RESPONSE> servletEntityProvider;
   private final ServletHelper<REQUEST, RESPONSE> servletHelper;
 
-  public TomcatHelper(
-      Instrumenter<Request, Response> instrumenter,
+  public TomcatHelper(Instrumenter<Request, Response> instrumenter,
       TomcatServletEntityProvider<REQUEST, RESPONSE> servletEntityProvider,
       ServletHelper<REQUEST, RESPONSE> servletHelper) {
     this.instrumenter = instrumenter;
@@ -38,8 +37,7 @@ public class TomcatHelper<REQUEST, RESPONSE> {
     return context;
   }
 
-  public void end(
-      Request request, Response response, Throwable throwable, Context context, Scope scope) {
+  public void end(Request request, Response response, Throwable throwable, Context context, Scope scope) {
     if (scope == null) {
       return;
     }

@@ -25,10 +25,8 @@ public final class Servlet5Singletons {
 
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.servlet-5.0";
 
-  private static final Instrumenter<
-          ServletRequestContext<HttpServletRequest>, ServletResponseContext<HttpServletResponse>>
-      INSTRUMENTER =
-          ServletInstrumenterBuilder.<HttpServletRequest, HttpServletResponse>create()
+  private static final Instrumenter<ServletRequestContext<HttpServletRequest>, ServletResponseContext<HttpServletResponse>>
+      INSTRUMENTER = ServletInstrumenterBuilder.<HttpServletRequest, HttpServletResponse>create()
               .build(INSTRUMENTATION_NAME, Servlet5Accessor.INSTANCE);
 
   private static final ServletHelper<HttpServletRequest, HttpServletResponse> HELPER =

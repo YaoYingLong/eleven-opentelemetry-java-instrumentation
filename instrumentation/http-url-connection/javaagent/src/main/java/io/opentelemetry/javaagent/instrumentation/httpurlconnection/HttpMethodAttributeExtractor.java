@@ -28,23 +28,16 @@ public class HttpMethodAttributeExtractor<
     this.knownMethods = knownMethods;
   }
 
-  public static AttributesExtractor<? super HttpURLConnection, ? super Integer> create(
-      Set<String> knownMethods) {
+  public static AttributesExtractor<? super HttpURLConnection, ? super Integer> create(Set<String> knownMethods) {
     return new HttpMethodAttributeExtractor<>(knownMethods);
   }
 
   @Override
-  public void onStart(
-      AttributesBuilder attributes, Context parentContext, HttpURLConnection connection) {}
+  public void onStart(AttributesBuilder attributes, Context parentContext, HttpURLConnection connection) {}
 
   @Override
   @SuppressWarnings("deprecation") // until old http semconv are dropped in 2.0
-  public void onEnd(
-      AttributesBuilder attributes,
-      Context context,
-      HttpURLConnection connection,
-      @Nullable Integer responseCode,
-      @Nullable Throwable error) {
+  public void onEnd(AttributesBuilder attributes, Context context, HttpURLConnection connection, @Nullable Integer responseCode, @Nullable Throwable error) {
 
     GetOutputStreamContext getOutputStreamContext = GetOutputStreamContext.get(context);
 

@@ -34,14 +34,18 @@ public final class InternalNetClientAttributesExtractor<REQUEST, RESPONSE> {
   }
 
   public void onEnd(AttributesBuilder attributes, REQUEST request, @Nullable RESPONSE response) {
+    // emitOldHttpAttributes默认为true
     if (emitOldHttpAttributes) {
+      // 将net.transport设置到attributes中
       internalSet(attributes, SemanticAttributes.NET_TRANSPORT, getter.getTransport(request, response));
 
       String peerName = extractPeerName(request);
       String sockPeerAddr = getter.getServerSocketAddress(request, response);
       if (sockPeerAddr != null && !sockPeerAddr.equals(peerName)) {
         String sockFamily = getter.getSockFamily(request, response);
+        // sockFamily不为空且不等于inet
         if (sockFamily != null && !SemanticAttributes.NetSockFamilyValues.INET.equals(sockFamily)) {
+          // 将net.sock.family设置到attributes中
           internalSet(attributes, SemanticAttributes.NET_SOCK_FAMILY, sockFamily);
         }
       }

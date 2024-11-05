@@ -12,21 +12,17 @@ enum HttpNetworkTransportFilter implements NetworkTransportFilter {
   INSTANCE;
 
   @Override
-  public boolean shouldAddNetworkTransport(
-      @Nullable String protocolName,
+  public boolean shouldAddNetworkTransport(@Nullable String protocolName,
       @Nullable String protocolVersion,
       @Nullable String proposedTransport) {
     // tcp is the default transport for http/1* and http/2*, we're skipping it
-    if ("http".equals(protocolName)
-        && protocolVersion != null
+    if ("http".equals(protocolName) && protocolVersion != null
         && (protocolVersion.startsWith("1") || protocolVersion.startsWith("2"))
         && "tcp".equals(proposedTransport)) {
       return false;
     }
     // udp is the default transport for http/3*, we're skipping it
-    if ("http".equals(protocolName)
-        && protocolVersion != null
-        && protocolVersion.startsWith("3")
+    if ("http".equals(protocolName) && protocolVersion != null && protocolVersion.startsWith("3")
         && "udp".equals(proposedTransport)) {
       return false;
     }

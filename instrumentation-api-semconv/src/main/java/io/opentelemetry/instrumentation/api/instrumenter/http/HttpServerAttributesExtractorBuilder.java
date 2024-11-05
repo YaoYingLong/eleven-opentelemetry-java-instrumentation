@@ -39,12 +39,12 @@ public final class HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> {
   Set<String> knownMethods = HttpConstants.KNOWN_METHODS;
   Function<Context, String> httpRouteGetter = HttpServerRoute::get;
 
-  HttpServerAttributesExtractorBuilder(
-      HttpServerAttributesGetter<REQUEST, RESPONSE> httpAttributesGetter,
+  /**
+   * 这里的httpAttributesGetter和netAttributesGetter其实是同一个
+   */
+  HttpServerAttributesExtractorBuilder(HttpServerAttributesGetter<REQUEST, RESPONSE> httpAttributesGetter,
       @SuppressWarnings("deprecation") // using the net extractor for the old->stable semconv story
-          io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesGetter<
-                  REQUEST, RESPONSE>
-              netAttributesGetter) {
+          io.opentelemetry.instrumentation.api.instrumenter.net.NetServerAttributesGetter<REQUEST, RESPONSE> netAttributesGetter) {
     this.httpAttributesGetter = httpAttributesGetter;
     this.netAttributesGetter = netAttributesGetter;
     addressPortExtractor = new HttpAddressPortExtractor<>(httpAttributesGetter);
@@ -126,16 +126,19 @@ public final class HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> {
   }
 
   InternalUrlAttributesExtractor<REQUEST> buildUrlExtractor() {
-    return new InternalUrlAttributesExtractor<>(
-        httpAttributesGetter,
+    // httpAttributesGetter即ServletHttpAttributesGetter实例
+    return new InternalUrlAttributesExtractor<>(httpAttributesGetter,
         new AlternateUrlSchemeProvider<>(httpAttributesGetter),
+        // 默认为false
         SemconvStability.emitStableHttpSemconv(),
+        // 默认为true
         SemconvStability.emitOldHttpSemconv());
   }
 
   InternalNetServerAttributesExtractor<REQUEST, RESPONSE> buildNetExtractor() {
-    return new InternalNetServerAttributesExtractor<>(
-        netAttributesGetter, addressPortExtractor, SemconvStability.emitOldHttpSemconv());
+    // netAttributesGetter其实是ServletHttpAttributesGetter实例
+    return new InternalNetServerAttributesExtractor<>(netAttributesGetter,
+        addressPortExtractor, SemconvStability.emitOldHttpSemconv());
   }
 
   InternalNetworkAttributesExtractor<REQUEST, RESPONSE> buildNetworkExtractor() {
@@ -158,8 +161,7 @@ public final class HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> {
   }
 
   InternalClientAttributesExtractor<REQUEST, RESPONSE> buildClientExtractor() {
-    return new InternalClientAttributesExtractor<>(
-        netAttributesGetter,
+    return new InternalClientAttributesExtractor<>(netAttributesGetter,
         new ClientAddressAndPortExtractor<>(httpAttributesGetter),
         SemconvStability.emitStableHttpSemconv(),
         SemconvStability.emitOldHttpSemconv());

@@ -10,12 +10,15 @@ import java.util.Locale;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 
+/**
+ * 一般用在构造InternalUrlAttributesExtractor时
+ */
 final class AlternateUrlSchemeProvider<REQUEST> implements Function<REQUEST, String> {
 
   // if set to true, the instrumentation will prefer the scheme from Forwarded/X-Forwarded-Proto
   // headers over the one extracted from the URL
-  private static final boolean PREFER_FORWARDED_URL_SCHEME =
-      ConfigPropertiesUtil.getBoolean(
+  // PREFER_FORWARDED_URL_SCHEME默认为false，若设置为true，将优先从请求头的Forwarded/X-Forwarded-Proto中获取scheme
+  private static final boolean PREFER_FORWARDED_URL_SCHEME = ConfigPropertiesUtil.getBoolean(
           "otel.instrumentation.http.prefer-forwarded-url-scheme", false);
 
   private final HttpServerAttributesGetter<REQUEST, ?> getter;
@@ -31,7 +34,7 @@ final class AlternateUrlSchemeProvider<REQUEST> implements Function<REQUEST, Str
       return null;
     }
 
-    // try Forwarded
+    // try Forwarded，从请求头中获取forwarded，并必去proto=对应的value
     for (String forwarded : getter.getHttpRequestHeader(request, "forwarded")) {
       String proto = extractProtoFromForwardedHeader(forwarded);
       if (proto != null) {

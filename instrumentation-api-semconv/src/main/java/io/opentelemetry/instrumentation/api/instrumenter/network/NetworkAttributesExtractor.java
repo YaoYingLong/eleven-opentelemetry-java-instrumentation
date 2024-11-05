@@ -33,8 +33,7 @@ public final class NetworkAttributesExtractor<REQUEST, RESPONSE>
   private final InternalNetworkAttributesExtractor<REQUEST, RESPONSE> internalExtractor;
 
   NetworkAttributesExtractor(NetworkAttributesGetter<REQUEST, RESPONSE> getter) {
-    internalExtractor =
-        new InternalNetworkAttributesExtractor<>(
+    internalExtractor = new InternalNetworkAttributesExtractor<>(
             getter,
             NetworkTransportFilter.alwaysTrue(),
             SemconvStability.emitStableHttpSemconv(),

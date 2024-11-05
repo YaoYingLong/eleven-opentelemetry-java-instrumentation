@@ -88,14 +88,21 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   private final ToIntFunction<Context> resendCountIncrementer;
 
   HttpClientAttributesExtractor(HttpClientAttributesExtractorBuilder<REQUEST, RESPONSE> builder) {
-    super(
-        builder.httpAttributesGetter,
+    /**
+     * 注意：这里的super是HttpCommonAttributesExtractor
+     *  - 在其onStart中添加http.method、user_agent.original等属性
+     *  - 在其onEnd中添加http.request_content_length、http.status_code、http.response_content_length等属性
+     */
+    super(builder.httpAttributesGetter,
         HttpStatusCodeConverter.CLIENT,
         builder.capturedRequestHeaders,
         builder.capturedResponseHeaders,
         builder.knownMethods);
+    // 提取net.transport、net.sock.family属性
     internalNetExtractor = builder.buildNetExtractor();
+    // 提取net.protocol.name、net.protocol.version属性
     internalNetworkExtractor = builder.buildNetworkExtractor();
+    // 提取InternalServerAttributesExtractor.Mode.PEER属性
     internalServerExtractor = builder.buildServerExtractor();
     resendCountIncrementer = builder.resendCountIncrementer;
   }
@@ -103,14 +110,17 @@ public final class HttpClientAttributesExtractor<REQUEST, RESPONSE>
   @Override
   @SuppressWarnings("deprecation") // until old http semconv are dropped in 2.0
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
+    // 调用超类HttpCommonAttributesExtractor的onStart，添加http.method、user_agent.original属性
     super.onStart(attributes, parentContext, request);
 
     internalServerExtractor.onStart(attributes, request);
 
     String fullUrl = stripSensitiveData(getter.getUrlFull(request));
+    // 默认为false
     if (SemconvStability.emitStableHttpSemconv()) {
       internalSet(attributes, SemanticAttributes.URL_FULL, fullUrl);
     }
+    // 默认为true
     if (SemconvStability.emitOldHttpSemconv()) {
       internalSet(attributes, SemanticAttributes.HTTP_URL, fullUrl);
     }

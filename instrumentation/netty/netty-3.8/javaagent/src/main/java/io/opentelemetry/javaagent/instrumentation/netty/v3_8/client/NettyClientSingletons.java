@@ -39,14 +39,12 @@ public final class NettyClientSingletons {
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
-            .addAttributesExtractor(
-                HttpClientAttributesExtractor.builder(httpAttributesGetter)
+            .addAttributesExtractor(HttpClientAttributesExtractor.builder(httpAttributesGetter)
                     .setCapturedRequestHeaders(CommonConfig.get().getClientRequestHeaders())
                     .setCapturedResponseHeaders(CommonConfig.get().getClientResponseHeaders())
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
-            .addAttributesExtractor(
-                HttpClientPeerServiceAttributesExtractor.create(
+            .addAttributesExtractor(HttpClientPeerServiceAttributesExtractor.create(
                     httpAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
             .addOperationMetrics(HttpClientMetrics.get())
             .addContextCustomizer((context, requestAndChannel, startAttributes) -> NettyErrorHolder.init(context));

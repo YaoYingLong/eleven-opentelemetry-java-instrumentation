@@ -33,8 +33,7 @@ public final class ClientAttributesExtractor<REQUEST, RESPONSE>
   private final InternalClientAttributesExtractor<REQUEST, RESPONSE> internalExtractor;
 
   ClientAttributesExtractor(ClientAttributesGetter<REQUEST, RESPONSE> getter) {
-    internalExtractor =
-        new InternalClientAttributesExtractor<>(
+    internalExtractor = new InternalClientAttributesExtractor<>(
             getter,
             FallbackAddressPortExtractor.noop(),
             SemconvStability.emitStableHttpSemconv(),

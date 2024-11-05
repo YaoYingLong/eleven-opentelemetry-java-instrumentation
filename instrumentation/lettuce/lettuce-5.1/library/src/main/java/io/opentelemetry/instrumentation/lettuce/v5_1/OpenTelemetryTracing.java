@@ -38,6 +38,7 @@ import javax.annotation.Nullable;
 
 final class OpenTelemetryTracing implements Tracing {
 
+  // ServerAttributesExtractor比较重要
   private static final AttributesExtractor<OpenTelemetryEndpoint, Void> serverAttributesExtractor =
       ServerAttributesExtractor.create(new LettuceNetworkAttributesGetter());
   private final TracerProvider tracerProvider;
@@ -80,8 +81,7 @@ final class OpenTelemetryTracing implements Tracing {
 
     private final Tracer openTelemetryTracer;
 
-    OpenTelemetryTracerProvider(
-        io.opentelemetry.api.trace.Tracer tracer, RedisCommandSanitizer sanitizer) {
+    OpenTelemetryTracerProvider(io.opentelemetry.api.trace.Tracer tracer, RedisCommandSanitizer sanitizer) {
       openTelemetryTracer = new OpenTelemetryTracer(tracer, sanitizer);
     }
 
@@ -195,6 +195,7 @@ final class OpenTelemetryTracing implements Tracing {
     @Override
     @CanIgnoreReturnValue
     public synchronized Tracer.Span remoteEndpoint(Endpoint endpoint) {
+      // 这里的Endpoint是要请求的Redis或Redis集群中某台机器的IP&端口相关的信息
       if (endpoint instanceof OpenTelemetryEndpoint) {
         fillEndpoint((OpenTelemetryEndpoint) endpoint);
       }

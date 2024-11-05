@@ -10,8 +10,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 public class ServletHttpAttributesGetter<REQUEST, RESPONSE>
-    implements HttpServerAttributesGetter<
-        ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> {
+    implements HttpServerAttributesGetter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> {
 
   protected final ServletAccessor<REQUEST, RESPONSE> accessor;
 
@@ -44,8 +43,7 @@ public class ServletHttpAttributesGetter<REQUEST, RESPONSE>
   }
 
   @Override
-  public List<String> getHttpRequestHeader(
-      ServletRequestContext<REQUEST> requestContext, String name) {
+  public List<String> getHttpRequestHeader(ServletRequestContext<REQUEST> requestContext, String name) {
     return accessor.getRequestHeaderValues(requestContext.request(), name);
   }
 
@@ -120,8 +118,7 @@ public class ServletHttpAttributesGetter<REQUEST, RESPONSE>
 
   @Override
   @Nullable
-  public String getClientSocketAddress(
-      ServletRequestContext<REQUEST> requestContext,
+  public String getClientSocketAddress(ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> response) {
     return accessor.getRequestRemoteAddr(requestContext.request());
   }
@@ -136,16 +133,14 @@ public class ServletHttpAttributesGetter<REQUEST, RESPONSE>
 
   @Nullable
   @Override
-  public String getServerSocketAddress(
-      ServletRequestContext<REQUEST> requestContext,
+  public String getServerSocketAddress(ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> response) {
     return accessor.getRequestLocalAddr(requestContext.request());
   }
 
   @Nullable
   @Override
-  public Integer getServerSocketPort(
-      ServletRequestContext<REQUEST> requestContext,
+  public Integer getServerSocketPort(ServletRequestContext<REQUEST> requestContext,
       @Nullable ServletResponseContext<RESPONSE> response) {
     return accessor.getRequestLocalPort(requestContext.request());
   }

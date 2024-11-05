@@ -91,17 +91,24 @@ public final class HttpServerAttributesExtractor<REQUEST, RESPONSE>
   private final Function<Context, String> httpRouteGetter;
 
   HttpServerAttributesExtractor(HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> builder) {
-    super(
-        builder.httpAttributesGetter,
-        HttpStatusCodeConverter.SERVER,
-        builder.capturedRequestHeaders,
-        builder.capturedResponseHeaders,
-        builder.knownMethods);
+    /**
+     * 注意：这里的super是HttpCommonAttributesExtractor
+     *  - 在其onStart中添加http.method、user_agent.original等属性
+     *  - 在其onEnd中添加http.request_content_length、http.status_code、http.response_content_length等属性
+     */
+    super(builder.httpAttributesGetter, HttpStatusCodeConverter.SERVER,
+        builder.capturedRequestHeaders, builder.capturedResponseHeaders, builder.knownMethods);
+    // 提取http.scheme和http.target属性
     internalUrlExtractor = builder.buildUrlExtractor();
+    // 提取net.transport和net.sock.family属性
     internalNetExtractor = builder.buildNetExtractor();
+    // 提取net.protocol.name和net.protocol.version属性
     internalNetworkExtractor = builder.buildNetworkExtractor();
+    // 提取InternalServerAttributesExtractor.Mode.HOST属性
     internalServerExtractor = builder.buildServerExtractor();
+    // http.client_ip和InternalServerAttributesExtractor.Mode.PEER属性
     internalClientExtractor = builder.buildClientExtractor();
+    // 默认就是HttpServerRoute，从Context中获取opentelemetry-http-server-route-key
     httpRouteGetter = builder.httpRouteGetter;
   }
 
@@ -131,6 +138,7 @@ public final class HttpServerAttributesExtractor<REQUEST, RESPONSE>
     internalServerExtractor.onEnd(attributes, request, response);
     internalClientExtractor.onEnd(attributes, request, response);
 
+    // 这里是从
     internalSet(attributes, SemanticAttributes.HTTP_ROUTE, httpRouteGetter.apply(context));
   }
 

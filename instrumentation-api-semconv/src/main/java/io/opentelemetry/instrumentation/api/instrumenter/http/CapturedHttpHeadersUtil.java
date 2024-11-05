@@ -19,14 +19,11 @@ final class CapturedHttpHeadersUtil {
   // these are naturally bounded because they only store keys listed in
   // otel.instrumentation.http.capture-headers.server.request and
   // otel.instrumentation.http.capture-headers.server.response
-  private static final ConcurrentMap<String, AttributeKey<List<String>>> requestKeysCache =
-      new ConcurrentHashMap<>();
-  private static final ConcurrentMap<String, AttributeKey<List<String>>> responseKeysCache =
-      new ConcurrentHashMap<>();
+  private static final ConcurrentMap<String, AttributeKey<List<String>>> requestKeysCache = new ConcurrentHashMap<>();
+  private static final ConcurrentMap<String, AttributeKey<List<String>>> responseKeysCache = new ConcurrentHashMap<>();
 
   static List<String> lowercase(List<String> names) {
-    return unmodifiableList(
-        names.stream().map(s -> s.toLowerCase(Locale.ROOT)).collect(Collectors.toList()));
+    return unmodifiableList(names.stream().map(s -> s.toLowerCase(Locale.ROOT)).collect(Collectors.toList()));
   }
 
   static AttributeKey<List<String>> requestAttributeKey(String headerName) {

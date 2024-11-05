@@ -13,8 +13,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 /** A helper that keeps track of the count of the HTTP request resend attempts. */
 public final class HttpClientResendCount {
 
-  private static final ContextKey<HttpClientResendCount> KEY =
-      ContextKey.named("opentelemetry-http-client-resend-key");
+  private static final ContextKey<HttpClientResendCount> KEY = ContextKey.named("opentelemetry-http-client-resend-key");
   private static final AtomicIntegerFieldUpdater<HttpClientResendCount> resendsUpdater =
       AtomicIntegerFieldUpdater.newUpdater(HttpClientResendCount.class, "resends");
 

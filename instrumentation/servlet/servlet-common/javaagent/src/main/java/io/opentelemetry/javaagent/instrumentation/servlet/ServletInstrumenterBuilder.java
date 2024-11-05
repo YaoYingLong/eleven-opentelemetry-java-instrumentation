@@ -41,21 +41,28 @@ public final class ServletInstrumenterBuilder<REQUEST, RESPONSE> {
     return this;
   }
 
+  /**
+   *
+   * @param instrumentationName
+   * @param accessor              - Servlet5Accessor或Servlet3Accessor
+   * @param spanNameExtractor     - HttpSpanNameExtractor
+   * @param httpAttributesGetter  - ServletHttpAttributesGetter
+   * @return
+   */
   public Instrumenter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> build(
       String instrumentationName,
       ServletAccessor<REQUEST, RESPONSE> accessor,
       SpanNameExtractor<ServletRequestContext<REQUEST>> spanNameExtractor,
-      HttpServerAttributesGetter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>>
-          httpAttributesGetter) {
-
-    ServletErrorCauseExtractor<REQUEST, RESPONSE> errorCauseExtractor =
-        new ServletErrorCauseExtractor<>(accessor);
+      HttpServerAttributesGetter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> httpAttributesGetter) {
+    // 用于发生异常是提取异常原因Throwable::getCause
+    ServletErrorCauseExtractor<REQUEST, RESPONSE> errorCauseExtractor = new ServletErrorCauseExtractor<>(accessor);
+    // 作用是在onEnd中获取HttpServletRequest上的Principal信息或若出现超时，将Principal中获取的用户名称和超时信息添加到AttributesBuilder中
     AttributesExtractor<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>>
         additionalAttributesExtractor = new ServletAdditionalAttributesExtractor<>(accessor);
 
     InstrumenterBuilder<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> builder =
-        Instrumenter.<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>>builder(
-                GlobalOpenTelemetry.get(), instrumentationName, spanNameExtractor)
+        Instrumenter.<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>>builder(GlobalOpenTelemetry.get(), instrumentationName, spanNameExtractor)
+            // 或HTTP状态，其实最终就是调用HttpServletResponse的getStatus方法
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
             .setErrorCauseExtractor(errorCauseExtractor)
             .addAttributesExtractor(
@@ -85,10 +92,17 @@ public final class ServletInstrumenterBuilder<REQUEST, RESPONSE> {
     return builder.buildServerInstrumenter(new ServletRequestGetter<>(accessor));
   }
 
+  /**
+   * @param instrumentationName
+   * @param accessor：Servlet5Accessor或Servlet3Accessor
+   * @return
+   */
   public Instrumenter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> build(
       String instrumentationName, ServletAccessor<REQUEST, RESPONSE> accessor) {
+    // 这里其实就是将ServletAccessor再次封装一次，目的是调用ServletAccessor的方法获取HttpServletRequest和HttpServletResponse中的属性
     HttpServerAttributesGetter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>>
         httpAttributesGetter = new ServletHttpAttributesGetter<>(accessor);
+    // 构建SpanName，这里默认是以HttpServletRequest的Method作为SpanName
     SpanNameExtractor<ServletRequestContext<REQUEST>> spanNameExtractor =
         HttpSpanNameExtractor.builder(httpAttributesGetter)
             .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())

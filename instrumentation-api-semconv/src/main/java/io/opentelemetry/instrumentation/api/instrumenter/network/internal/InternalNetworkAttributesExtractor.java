@@ -24,8 +24,7 @@ public final class InternalNetworkAttributesExtractor<REQUEST, RESPONSE> {
   private final boolean emitStableUrlAttributes;
   private final boolean emitOldHttpAttributes;
 
-  public InternalNetworkAttributesExtractor(
-      NetworkAttributesGetter<REQUEST, RESPONSE> getter,
+  public InternalNetworkAttributesExtractor(NetworkAttributesGetter<REQUEST, RESPONSE> getter,
       NetworkTransportFilter networkTransportFilter,
       boolean emitStableUrlAttributes,
       boolean emitOldHttpAttributes) {
@@ -40,6 +39,7 @@ public final class InternalNetworkAttributesExtractor<REQUEST, RESPONSE> {
     String protocolName = lowercase(getter.getNetworkProtocolName(request, response));
     String protocolVersion = lowercase(getter.getNetworkProtocolVersion(request, response));
 
+    // emitStableUrlAttributes默认为false，可通过otel.semconv-stability.opt-in配置
     if (emitStableUrlAttributes) {
       String transport = lowercase(getter.getNetworkTransport(request, response));
       if (networkTransportFilter.shouldAddNetworkTransport(protocolName, protocolVersion, transport)) {
@@ -49,6 +49,8 @@ public final class InternalNetworkAttributesExtractor<REQUEST, RESPONSE> {
       internalSet(attributes, SemanticAttributes.NETWORK_PROTOCOL_NAME, protocolName);
       internalSet(attributes, SemanticAttributes.NETWORK_PROTOCOL_VERSION, protocolVersion);
     }
+
+    // emitOldHttpAttributes默认为true，可通过otel.semconv-stability.opt-in配置
     if (emitOldHttpAttributes) {
       // net.transport and net.sock.family are not 1:1 convertible with network.transport and
       // network.type; they must be handled separately in the old net.* extractors

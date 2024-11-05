@@ -59,11 +59,8 @@ public final class HttpRouteState implements ImplicitContextKeyed {
     return route;
   }
 
-  public void update(
-      @SuppressWarnings("unused")
-          Context context, // context is used by the javaagent bridge instrumentation
-      int updatedBySourceOrder,
-      String route) {
+  public void update(@SuppressWarnings("unused") Context context, // context is used by the javaagent bridge instrumentation
+      int updatedBySourceOrder, String route) {
     this.updatedBySourceOrder = updatedBySourceOrder;
     this.route = route;
   }
