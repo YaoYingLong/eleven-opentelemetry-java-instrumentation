@@ -32,12 +32,7 @@ final class GrpcAttributesExtractor implements AttributesExtractor<GrpcRequest, 
   }
 
   @Override
-  public void onEnd(
-      AttributesBuilder attributes,
-      Context context,
-      GrpcRequest request,
-      @Nullable Status status,
-      @Nullable Throwable error) {
+  public void onEnd(AttributesBuilder attributes, Context context, GrpcRequest request, @Nullable Status status, @Nullable Throwable error) {
     if (status != null) {
       attributes.put(SemanticAttributes.RPC_GRPC_STATUS_CODE, status.getCode().value());
     }

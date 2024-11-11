@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 
 final class OpenTelemetryTracing implements Tracing {
 
-  // ServerAttributesExtractor比较重要
+  // ServerAttributesExtractor比较重要，用于提取net.peer.name、net.peer.port、net.sock.*相关的属性
   private static final AttributesExtractor<OpenTelemetryEndpoint, Void> serverAttributesExtractor =
       ServerAttributesExtractor.create(new LettuceNetworkAttributesGetter());
   private final TracerProvider tracerProvider;

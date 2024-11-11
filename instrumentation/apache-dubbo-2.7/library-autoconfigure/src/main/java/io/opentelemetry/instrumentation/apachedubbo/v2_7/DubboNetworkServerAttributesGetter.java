@@ -11,8 +11,7 @@ import java.net.InetSocketAddress;
 import javax.annotation.Nullable;
 import org.apache.dubbo.rpc.Result;
 
-final class DubboNetworkServerAttributesGetter
-    implements ServerAttributesGetter<DubboRequest, Result>,
+final class DubboNetworkServerAttributesGetter implements ServerAttributesGetter<DubboRequest, Result>,
         ClientAttributesGetter<DubboRequest, Result> {
 
   @Nullable
@@ -29,15 +28,13 @@ final class DubboNetworkServerAttributesGetter
 
   @Nullable
   @Override
-  public InetSocketAddress getServerInetSocketAddress(
-      DubboRequest request, @Nullable Result result) {
+  public InetSocketAddress getServerInetSocketAddress(DubboRequest request, @Nullable Result result) {
     return request.localAddress();
   }
 
   @Override
   @Nullable
-  public InetSocketAddress getClientInetSocketAddress(
-      DubboRequest request, @Nullable Result result) {
+  public InetSocketAddress getClientInetSocketAddress(DubboRequest request, @Nullable Result result) {
     return request.remoteAddress();
   }
 }

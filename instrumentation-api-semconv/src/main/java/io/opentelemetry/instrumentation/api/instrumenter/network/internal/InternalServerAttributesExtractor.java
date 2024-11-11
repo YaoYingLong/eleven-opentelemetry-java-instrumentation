@@ -33,7 +33,7 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
       FallbackAddressPortExtractor<REQUEST> fallbackAddressPortExtractor,
       boolean emitStableUrlAttributes,
       boolean emitOldHttpAttributes,
-      // 若是lettuce过来的，则mode为InternalServerAttributesExtractor.Mode.PEER
+      // 若是lettuce、jedis过来的，则mode为InternalServerAttributesExtractor.Mode.PEER
       Mode oldSemconvMode,
       boolean captureServerSocketAttributes) {
     this.getter = getter;
@@ -50,6 +50,11 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
     this.captureServerSocketAttributes = captureServerSocketAttributes;
   }
 
+  /**
+   * 提取net.peer.name和net.peer.port属性：
+   * 如果对应组件的具体的ServerAttributesGetter中未实现getServerAddress方法且fallbackAddressPortExtractor
+   * 为FallbackAddressPortExtractor.noop()则最终不会提取出net.peer.name和net.peer.port属性
+   */
   public void onStart(AttributesBuilder attributes, REQUEST request) {
     AddressAndPort serverAddressAndPort = extractServerAddressAndPort(request);
 
@@ -77,9 +82,13 @@ public final class InternalServerAttributesExtractor<REQUEST, RESPONSE> {
     }
   }
 
+  /**
+   * 提取net.sock.peer.name、net.sock.peer.addr.sock.peer.port属性
+   * 若对应组件的ServerAttributesGetter实现了getServerSocketAddress
+   */
   public void onEnd(AttributesBuilder attributes, REQUEST request, @Nullable RESPONSE response) {
     AddressAndPort serverAddressAndPort = extractServerAddressAndPort(request);
-    // 调用HttpServletRequest的getLocalAddr方法，获取当前处理请求的服务器接口绑定的IP地址
+    // 这里区分不同的组件，若调用HttpServletRequest的getLocalAddr方法，获取当前处理请求的服务器接口绑定的IP地址
     String serverSocketAddress = getter.getServerSocketAddress(request, response);
     // 如果getLocalAddr获取到的地址不为空，且与getServerAddress获取到的地址不相等
     if (serverSocketAddress != null && !serverSocketAddress.equals(serverAddressAndPort.address)) {

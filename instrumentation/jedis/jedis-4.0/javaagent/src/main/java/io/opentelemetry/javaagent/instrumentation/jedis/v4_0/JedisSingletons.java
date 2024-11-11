@@ -23,17 +23,15 @@ public final class JedisSingletons {
     JedisDbAttributesGetter dbAttributesGetter = new JedisDbAttributesGetter();
     JedisNetworkAttributesGetter netAttributesGetter = new JedisNetworkAttributesGetter();
 
-    INSTRUMENTER =
-        Instrumenter.<JedisRequest, Void>builder(
-                GlobalOpenTelemetry.get(),
+    INSTRUMENTER = Instrumenter.<JedisRequest, Void>builder(GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
                 DbClientSpanNameExtractor.create(dbAttributesGetter))
-            // 构建DbClientAttributesExtractor
+            // 构建DbClientAttributesExtractor，用于提取db.statement和db.operation属性
             .addAttributesExtractor(DbClientAttributesExtractor.create(dbAttributesGetter))
-            // 构建ServerAttributesExtractor
+            // 构建ServerAttributesExtractor，用于提取Mode.PEER相关的属性
             .addAttributesExtractor(ServerAttributesExtractor.create(netAttributesGetter))
-            .addAttributesExtractor(
-                PeerServiceAttributesExtractor.create(
+            // 构建PeerServiceAttributesExtractor，用于提取peer.service属性，大概率是提取不到的
+            .addAttributesExtractor(PeerServiceAttributesExtractor.create(
                     netAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
             .buildInstrumenter(SpanKindExtractor.alwaysClient());
   }

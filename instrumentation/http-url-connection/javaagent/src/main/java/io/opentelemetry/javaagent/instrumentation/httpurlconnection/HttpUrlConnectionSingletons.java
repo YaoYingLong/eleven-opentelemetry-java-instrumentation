@@ -24,29 +24,21 @@ public final class HttpUrlConnectionSingletons {
   static {
     HttpUrlHttpAttributesGetter httpAttributesGetter = new HttpUrlHttpAttributesGetter();
 
-    InstrumenterBuilder<HttpURLConnection, Integer> builder =
-        Instrumenter.<HttpURLConnection, Integer>builder(
+    InstrumenterBuilder<HttpURLConnection, Integer> builder = Instrumenter.<HttpURLConnection, Integer>builder(
                 GlobalOpenTelemetry.get(),
                 "io.opentelemetry.http-url-connection",
                 HttpSpanNameExtractor.builder(httpAttributesGetter)
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
             .setSpanStatusExtractor(HttpSpanStatusExtractor.create(httpAttributesGetter))
-            .addAttributesExtractor(
-                HttpClientAttributesExtractor.builder(httpAttributesGetter)
+            .addAttributesExtractor(HttpClientAttributesExtractor.builder(httpAttributesGetter)
                     .setCapturedRequestHeaders(CommonConfig.get().getClientRequestHeaders())
                     .setCapturedResponseHeaders(CommonConfig.get().getClientResponseHeaders())
                     .setKnownMethods(CommonConfig.get().getKnownHttpRequestMethods())
                     .build())
-            .addAttributesExtractor(
-                HttpClientPeerServiceAttributesExtractor.create(
-                    httpAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
-            .addAttributesExtractor(
-                HttpMethodAttributeExtractor.create(
-                    CommonConfig.get().getKnownHttpRequestMethods()))
-            .addContextCustomizer(
-                (context, httpRequestPacket, startAttributes) ->
-                    GetOutputStreamContext.init(context))
+            .addAttributesExtractor(HttpClientPeerServiceAttributesExtractor.create(httpAttributesGetter, CommonConfig.get().getPeerServiceResolver()))
+            .addAttributesExtractor(HttpMethodAttributeExtractor.create(CommonConfig.get().getKnownHttpRequestMethods()))
+            .addContextCustomizer((context, httpRequestPacket, startAttributes) -> GetOutputStreamContext.init(context))
             .addOperationMetrics(HttpClientMetrics.get());
     if (CommonConfig.get().shouldEmitExperimentalHttpClientMetrics()) {
       builder.addOperationMetrics(HttpClientExperimentalMetrics.get());

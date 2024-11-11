@@ -21,9 +21,7 @@ public final class RediscalaSingletons {
   static {
     RediscalaAttributesGetter dbAttributesGetter = new RediscalaAttributesGetter();
 
-    INSTRUMENTER =
-        Instrumenter.<RedisCommand<?, ?>, Void>builder(
-                GlobalOpenTelemetry.get(),
+    INSTRUMENTER = Instrumenter.<RedisCommand<?, ?>, Void>builder(GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
                 DbClientSpanNameExtractor.create(dbAttributesGetter))
             .addAttributesExtractor(DbClientAttributesExtractor.create(dbAttributesGetter))

@@ -19,9 +19,7 @@ public final class RmiServerSingletons {
   static {
     RmiServerAttributesGetter rpcAttributesGetter = RmiServerAttributesGetter.INSTANCE;
 
-    INSTRUMENTER =
-        Instrumenter.<ClassAndMethod, Void>builder(
-                GlobalOpenTelemetry.get(),
+    INSTRUMENTER = Instrumenter.<ClassAndMethod, Void>builder(GlobalOpenTelemetry.get(),
                 "io.opentelemetry.rmi",
                 RpcSpanNameExtractor.create(rpcAttributesGetter))
             .addAttributesExtractor(RpcServerAttributesExtractor.create(rpcAttributesGetter))

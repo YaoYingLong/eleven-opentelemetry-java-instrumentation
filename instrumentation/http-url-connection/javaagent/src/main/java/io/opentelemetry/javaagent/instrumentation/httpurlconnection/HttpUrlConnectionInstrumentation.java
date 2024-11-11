@@ -56,8 +56,7 @@ public class HttpUrlConnectionInstrumentation implements TypeInstrumentation {
   public static class HttpUrlConnectionAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void methodEnter(
-        @Advice.This HttpURLConnection connection,
+    public static void methodEnter(@Advice.This HttpURLConnection connection,
         @Advice.FieldValue("connected") boolean connected,
         @Advice.Local("otelHttpUrlState") HttpUrlState httpUrlState,
         @Advice.Local("otelScope") Scope scope,

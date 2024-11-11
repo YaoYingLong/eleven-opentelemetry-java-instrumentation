@@ -17,12 +17,9 @@ public final class SpringDataSingletons {
   private static final Instrumenter<ClassAndMethod, Void> INSTRUMENTER;
 
   static {
-    CodeAttributesGetter<ClassAndMethod> codeAttributesGetter =
-        ClassAndMethod.codeAttributesGetter();
+    CodeAttributesGetter<ClassAndMethod> codeAttributesGetter = ClassAndMethod.codeAttributesGetter();
 
-    INSTRUMENTER =
-        Instrumenter.<ClassAndMethod, Void>builder(
-                GlobalOpenTelemetry.get(),
+    INSTRUMENTER = Instrumenter.<ClassAndMethod, Void>builder(GlobalOpenTelemetry.get(),
                 "io.opentelemetry.spring-data-1.8",
                 CodeSpanNameExtractor.create(codeAttributesGetter))
             .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))

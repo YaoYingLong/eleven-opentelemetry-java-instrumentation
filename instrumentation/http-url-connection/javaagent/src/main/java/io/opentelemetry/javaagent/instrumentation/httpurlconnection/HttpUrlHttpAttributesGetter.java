@@ -13,8 +13,7 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import javax.annotation.Nullable;
 
-class HttpUrlHttpAttributesGetter
-    implements HttpClientAttributesGetter<HttpURLConnection, Integer> {
+class HttpUrlHttpAttributesGetter implements HttpClientAttributesGetter<HttpURLConnection, Integer> {
 
   @Override
   public String getHttpRequestMethod(HttpURLConnection connection) {
@@ -33,14 +32,12 @@ class HttpUrlHttpAttributesGetter
   }
 
   @Override
-  public Integer getHttpResponseStatusCode(
-      HttpURLConnection connection, Integer statusCode, @Nullable Throwable error) {
+  public Integer getHttpResponseStatusCode(HttpURLConnection connection, Integer statusCode, @Nullable Throwable error) {
     return statusCode;
   }
 
   @Override
-  public List<String> getHttpResponseHeader(
-      HttpURLConnection connection, Integer statusCode, String name) {
+  public List<String> getHttpResponseHeader(HttpURLConnection connection, Integer statusCode, String name) {
     String value = connection.getHeaderField(name);
     return value == null ? emptyList() : singletonList(value);
   }

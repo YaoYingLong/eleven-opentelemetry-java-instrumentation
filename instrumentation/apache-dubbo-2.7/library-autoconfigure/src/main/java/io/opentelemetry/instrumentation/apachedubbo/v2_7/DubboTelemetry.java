@@ -28,8 +28,7 @@ public final class DubboTelemetry {
   private final Instrumenter<DubboRequest, Result> serverInstrumenter;
   private final Instrumenter<DubboRequest, Result> clientInstrumenter;
 
-  DubboTelemetry(
-      Instrumenter<DubboRequest, Result> serverInstrumenter,
+  DubboTelemetry(Instrumenter<DubboRequest, Result> serverInstrumenter,
       Instrumenter<DubboRequest, Result> clientInstrumenter) {
     this.serverInstrumenter = serverInstrumenter;
     this.clientInstrumenter = clientInstrumenter;

@@ -23,8 +23,7 @@ public class RedisCommandDataInstrumentation implements TypeInstrumentation {
 
   @Override
   public ElementMatcher<TypeDescription> typeMatcher() {
-    return namedOneOf(
-        "org.redisson.client.protocol.CommandData", "org.redisson.client.protocol.CommandsData");
+    return namedOneOf("org.redisson.client.protocol.CommandData", "org.redisson.client.protocol.CommandsData");
   }
 
   @Override

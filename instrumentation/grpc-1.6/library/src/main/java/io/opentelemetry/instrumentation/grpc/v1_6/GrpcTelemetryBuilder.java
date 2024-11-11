@@ -124,24 +124,21 @@ public final class GrpcTelemetryBuilder {
    * this instrumentation to be stable across versions
    */
   @CanIgnoreReturnValue
-  public GrpcTelemetryBuilder setCaptureExperimentalSpanAttributes(
-      boolean captureExperimentalSpanAttributes) {
+  public GrpcTelemetryBuilder setCaptureExperimentalSpanAttributes(boolean captureExperimentalSpanAttributes) {
     this.captureExperimentalSpanAttributes = captureExperimentalSpanAttributes;
     return this;
   }
 
   /** Sets which metadata request values should be captured as span attributes on client spans. */
   @CanIgnoreReturnValue
-  public GrpcTelemetryBuilder setCapturedClientRequestMetadata(
-      List<String> capturedClientRequestMetadata) {
+  public GrpcTelemetryBuilder setCapturedClientRequestMetadata(List<String> capturedClientRequestMetadata) {
     this.capturedClientRequestMetadata = capturedClientRequestMetadata;
     return this;
   }
 
   /** Sets which metadata request values should be captured as span attributes on server spans. */
   @CanIgnoreReturnValue
-  public GrpcTelemetryBuilder setCapturedServerRequestMetadata(
-      List<String> capturedServerRequestMetadata) {
+  public GrpcTelemetryBuilder setCapturedServerRequestMetadata(List<String> capturedServerRequestMetadata) {
     this.capturedServerRequestMetadata = capturedServerRequestMetadata;
     return this;
   }
@@ -166,42 +163,31 @@ public final class GrpcTelemetryBuilder {
     InstrumenterBuilder<GrpcRequest, Status> serverInstrumenterBuilder =
         Instrumenter.builder(openTelemetry, INSTRUMENTATION_NAME, serverSpanNameExtractor);
 
-    GrpcClientNetworkAttributesGetter netClientAttributesGetter =
-        new GrpcClientNetworkAttributesGetter();
-    GrpcNetworkServerAttributesGetter netServerAttributesGetter =
-        new GrpcNetworkServerAttributesGetter();
+    GrpcClientNetworkAttributesGetter netClientAttributesGetter = new GrpcClientNetworkAttributesGetter();
+    GrpcNetworkServerAttributesGetter netServerAttributesGetter = new GrpcNetworkServerAttributesGetter();
     GrpcRpcAttributesGetter rpcAttributesGetter = GrpcRpcAttributesGetter.INSTANCE;
 
-    clientInstrumenterBuilder
-        .setSpanStatusExtractor(GrpcSpanStatusExtractor.CLIENT)
+    clientInstrumenterBuilder.setSpanStatusExtractor(GrpcSpanStatusExtractor.CLIENT)
         .addAttributesExtractors(additionalExtractors)
         .addAttributesExtractor(RpcClientAttributesExtractor.create(rpcAttributesGetter))
         .addAttributesExtractor(ServerAttributesExtractor.create(netClientAttributesGetter))
         .addAttributesExtractors(additionalClientExtractors)
-        .addAttributesExtractor(
-            new GrpcAttributesExtractor(
-                GrpcRpcAttributesGetter.INSTANCE, capturedClientRequestMetadata))
+        .addAttributesExtractor(new GrpcAttributesExtractor(GrpcRpcAttributesGetter.INSTANCE, capturedClientRequestMetadata))
         .addOperationMetrics(RpcClientMetrics.get());
-    serverInstrumenterBuilder
-        .setSpanStatusExtractor(GrpcSpanStatusExtractor.SERVER)
+    serverInstrumenterBuilder.setSpanStatusExtractor(GrpcSpanStatusExtractor.SERVER)
         .addAttributesExtractors(additionalExtractors)
         .addAttributesExtractor(RpcServerAttributesExtractor.create(rpcAttributesGetter))
-        .addAttributesExtractor(
-            ServerAttributesExtractor.createForServerSide(netServerAttributesGetter))
+        .addAttributesExtractor(ServerAttributesExtractor.createForServerSide(netServerAttributesGetter))
         .addAttributesExtractor(ClientAttributesExtractor.create(netServerAttributesGetter))
-        .addAttributesExtractor(
-            new GrpcAttributesExtractor(
-                GrpcRpcAttributesGetter.INSTANCE, capturedServerRequestMetadata))
+        .addAttributesExtractor(new GrpcAttributesExtractor(GrpcRpcAttributesGetter.INSTANCE, capturedServerRequestMetadata))
         .addAttributesExtractors(additionalServerExtractors)
         .addOperationMetrics(RpcServerMetrics.get());
 
     if (peerService != null) {
-      clientInstrumenterBuilder.addAttributesExtractor(
-          AttributesExtractor.constant(SemanticAttributes.PEER_SERVICE, peerService));
+      clientInstrumenterBuilder.addAttributesExtractor(AttributesExtractor.constant(SemanticAttributes.PEER_SERVICE, peerService));
     }
 
-    return new GrpcTelemetry(
-        serverInstrumenterBuilder.buildServerInstrumenter(GrpcRequestGetter.INSTANCE),
+    return new GrpcTelemetry(serverInstrumenterBuilder.buildServerInstrumenter(GrpcRequestGetter.INSTANCE),
         // gRPC client interceptors require two phases, one to set up request and one to execute.
         // So we go ahead and inject manually in this instrumentation.
         clientInstrumenterBuilder.buildInstrumenter(SpanKindExtractor.alwaysClient()),

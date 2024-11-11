@@ -142,16 +142,14 @@ public final class HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> {
   }
 
   InternalNetworkAttributesExtractor<REQUEST, RESPONSE> buildNetworkExtractor() {
-    return new InternalNetworkAttributesExtractor<>(
-        netAttributesGetter,
+    return new InternalNetworkAttributesExtractor<>(netAttributesGetter,
         HttpNetworkTransportFilter.INSTANCE,
         SemconvStability.emitStableHttpSemconv(),
         SemconvStability.emitOldHttpSemconv());
   }
 
   InternalServerAttributesExtractor<REQUEST, RESPONSE> buildServerExtractor() {
-    return new InternalServerAttributesExtractor<>(
-        netAttributesGetter,
+    return new InternalServerAttributesExtractor<>(netAttributesGetter,
         new ServerSideServerPortCondition<>(httpAttributesGetter),
         addressPortExtractor,
         SemconvStability.emitStableHttpSemconv(),

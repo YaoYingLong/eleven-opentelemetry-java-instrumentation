@@ -16,8 +16,7 @@ import javax.annotation.Nullable;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public final class GrpcClientNetworkAttributesGetter
-    implements ServerAttributesGetter<GrpcRequest, Status> {
+public final class GrpcClientNetworkAttributesGetter implements ServerAttributesGetter<GrpcRequest, Status> {
 
   @Nullable
   @Override
@@ -32,8 +31,7 @@ public final class GrpcClientNetworkAttributesGetter
 
   @Override
   @Nullable
-  public InetSocketAddress getServerInetSocketAddress(
-      GrpcRequest request, @Nullable Status response) {
+  public InetSocketAddress getServerInetSocketAddress(GrpcRequest request, @Nullable Status response) {
     SocketAddress address = request.getPeerSocketAddress();
     if (address instanceof InetSocketAddress) {
       return (InetSocketAddress) address;

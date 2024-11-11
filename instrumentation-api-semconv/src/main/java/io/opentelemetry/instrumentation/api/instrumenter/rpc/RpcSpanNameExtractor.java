@@ -14,8 +14,7 @@ public final class RpcSpanNameExtractor<REQUEST> implements SpanNameExtractor<RE
    * Returns a {@link SpanNameExtractor} that constructs the span name according to RPC semantic
    * conventions: {@code <rpc.service>/<rpc.method>}.
    */
-  public static <REQUEST> SpanNameExtractor<REQUEST> create(
-      RpcAttributesGetter<REQUEST> attributesExtractor) {
+  public static <REQUEST> SpanNameExtractor<REQUEST> create(RpcAttributesGetter<REQUEST> attributesExtractor) {
     return new RpcSpanNameExtractor<>(attributesExtractor);
   }
 

@@ -43,8 +43,7 @@ public class SpringDataInstrumentationModule extends InstrumentationModule {
     return singletonList(new RepositoryFactorySupportInstrumentation());
   }
 
-  private static final class RepositoryFactorySupportInstrumentation
-      implements TypeInstrumentation {
+  private static final class RepositoryFactorySupportInstrumentation implements TypeInstrumentation {
     @Override
     public ElementMatcher<TypeDescription> typeMatcher() {
       return named("org.springframework.data.repository.core.support.RepositoryFactorySupport");
@@ -52,8 +51,7 @@ public class SpringDataInstrumentationModule extends InstrumentationModule {
 
     @Override
     public void transform(TypeTransformer transformer) {
-      transformer.applyAdviceToMethod(
-          isConstructor(),
+      transformer.applyAdviceToMethod(isConstructor(),
           SpringDataInstrumentationModule.class.getName() + "$RepositoryFactorySupportAdvice");
     }
   }
@@ -62,17 +60,13 @@ public class SpringDataInstrumentationModule extends InstrumentationModule {
   public static class RepositoryFactorySupportAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void onConstruction(
-        @Advice.This RepositoryFactorySupport repositoryFactorySupport) {
-      repositoryFactorySupport.addRepositoryProxyPostProcessor(
-          InterceptingRepositoryProxyPostProcessor.INSTANCE);
+    public static void onConstruction(@Advice.This RepositoryFactorySupport repositoryFactorySupport) {
+      repositoryFactorySupport.addRepositoryProxyPostProcessor(InterceptingRepositoryProxyPostProcessor.INSTANCE);
     }
   }
 
-  public static final class InterceptingRepositoryProxyPostProcessor
-      implements RepositoryProxyPostProcessor {
-    public static final RepositoryProxyPostProcessor INSTANCE =
-        new InterceptingRepositoryProxyPostProcessor();
+  public static final class InterceptingRepositoryProxyPostProcessor implements RepositoryProxyPostProcessor {
+    public static final RepositoryProxyPostProcessor INSTANCE = new InterceptingRepositoryProxyPostProcessor();
 
     // DQH - TODO: Support older versions?
     // The signature of postProcess changed to add RepositoryInformation in
@@ -83,8 +77,7 @@ public class SpringDataInstrumentationModule extends InstrumentationModule {
 
     @Override
     public void postProcess(ProxyFactory factory, RepositoryInformation repositoryInformation) {
-      factory.addAdvice(
-          0, new RepositoryInterceptor(repositoryInformation.getRepositoryInterface()));
+      factory.addAdvice(0, new RepositoryInterceptor(repositoryInformation.getRepositoryInterface()));
     }
   }
 

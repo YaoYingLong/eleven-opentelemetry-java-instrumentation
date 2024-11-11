@@ -43,6 +43,7 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
 
   protected String computeSpanName(String dbName, String operation, String mainIdentifier) {
     if (operation == null) {
+      // 如果operation和dbName都为空则返回DB Query作为SpanName，若operation为空，dbName不为空则返回dbName作为SpanName
       return dbName == null ? DEFAULT_SPAN_NAME : dbName;
     }
 
@@ -52,6 +53,7 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
     }
     // skip db name if identifier already has a db name prefixed to it
     if (dbName != null && (mainIdentifier == null || mainIdentifier.indexOf('.') == -1)) {
+      // 若operation和dbName都不为空，则SpanName="operation dbName"
       name.append(dbName);
       if (mainIdentifier != null) {
         name.append('.');
@@ -60,11 +62,11 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
     if (mainIdentifier != null) {
       name.append(mainIdentifier);
     }
+    // 若operation不为空，dbName为空，则SpanName为operation
     return name.toString();
   }
 
-  private static final class GenericDbClientSpanNameExtractor<REQUEST>
-      extends DbClientSpanNameExtractor<REQUEST> {
+  private static final class GenericDbClientSpanNameExtractor<REQUEST> extends DbClientSpanNameExtractor<REQUEST> {
 
     private final DbClientAttributesGetter<REQUEST> getter;
 
@@ -96,8 +98,7 @@ public abstract class DbClientSpanNameExtractor<REQUEST> implements SpanNameExtr
     public String extract(REQUEST request) {
       String dbName = getter.getName(request);
       SqlStatementInfo sanitizedStatement = sanitizer.sanitize(getter.getRawStatement(request));
-      return computeSpanName(
-          dbName, sanitizedStatement.getOperation(), sanitizedStatement.getMainIdentifier());
+      return computeSpanName(dbName, sanitizedStatement.getOperation(), sanitizedStatement.getMainIdentifier());
     }
   }
 }
