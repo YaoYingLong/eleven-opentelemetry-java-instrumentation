@@ -42,12 +42,9 @@ public final class ServletInstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   /**
-   *
-   * @param instrumentationName
-   * @param accessor              - Servlet5Accessor或Servlet3Accessor
-   * @param spanNameExtractor     - HttpSpanNameExtractor
-   * @param httpAttributesGetter  - ServletHttpAttributesGetter
-   * @return
+   * accessor              - Servlet5Accessor或Servlet3Accessor
+   * spanNameExtractor     - HttpSpanNameExtractor
+   * httpAttributesGetter  - ServletHttpAttributesGetter
    */
   public Instrumenter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> build(
       String instrumentationName,
@@ -93,9 +90,8 @@ public final class ServletInstrumenterBuilder<REQUEST, RESPONSE> {
   }
 
   /**
-   * @param instrumentationName
-   * @param accessor：Servlet5Accessor或Servlet3Accessor
-   * @return
+   * instrumentationName
+   * accessor：Servlet5Accessor或Servlet3Accessor
    */
   public Instrumenter<ServletRequestContext<REQUEST>, ServletResponseContext<RESPONSE>> build(
       String instrumentationName, ServletAccessor<REQUEST, RESPONSE> accessor) {
