@@ -91,7 +91,7 @@ public final class HttpServerAttributesExtractor<REQUEST, RESPONSE>
   private final Function<Context, String> httpRouteGetter;
 
   HttpServerAttributesExtractor(HttpServerAttributesExtractorBuilder<REQUEST, RESPONSE> builder) {
-    /**
+    /*
      * 注意：这里的super是HttpCommonAttributesExtractor
      *  - 在其onStart中添加http.method、user_agent.original等属性
      *  - 在其onEnd中添加http.request_content_length、http.status_code、http.response_content_length等属性
