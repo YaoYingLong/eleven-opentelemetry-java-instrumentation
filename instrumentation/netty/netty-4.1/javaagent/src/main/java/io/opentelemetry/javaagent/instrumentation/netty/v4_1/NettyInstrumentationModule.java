@@ -40,8 +40,11 @@ public class NettyInstrumentationModule extends InstrumentationModule {
     return asList(
         // BootstrapInstrumentation主要是针对Netty客户端做增强，其中主要是对连接录制导出Span作增强
         new BootstrapInstrumentation(),
+        // 对addListener和removeListener时Context的传递进行增强
         new NettyFutureInstrumentation(),
+        // 对ChannelPipeline的增删改进行增强
         new NettyChannelPipelineInstrumentation(),
+        // 对出现异常的情况的Span导出处理
         new AbstractChannelHandlerContextInstrumentation());
   }
 }

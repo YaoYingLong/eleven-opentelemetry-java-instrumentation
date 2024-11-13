@@ -107,15 +107,14 @@ public final class FutureListenerWrappers {
     private final Context context;
     private final GenericProgressiveFutureListener<ProgressiveFuture<?>> delegate;
 
-    private WrappedProgressiveFutureListener(
-        Context context, GenericProgressiveFutureListener<ProgressiveFuture<?>> delegate) {
+    private WrappedProgressiveFutureListener(Context context,
+        GenericProgressiveFutureListener<ProgressiveFuture<?>> delegate) {
       this.context = context;
       this.delegate = delegate;
     }
 
     @Override
-    public void operationProgressed(ProgressiveFuture<?> progressiveFuture, long l, long l1)
-        throws Exception {
+    public void operationProgressed(ProgressiveFuture<?> progressiveFuture, long l, long l1) throws Exception {
       try (Scope ignored = context.makeCurrent()) {
         delegate.operationProgressed(progressiveFuture, l, l1);
       }

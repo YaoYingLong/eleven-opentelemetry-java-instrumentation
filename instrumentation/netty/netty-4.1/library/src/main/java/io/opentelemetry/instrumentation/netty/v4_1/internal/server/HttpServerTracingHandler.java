@@ -14,15 +14,12 @@ import io.opentelemetry.instrumentation.netty.v4.common.HttpRequestAndChannel;
  * This class is internal and is hence not for public use. Its APIs are unstable and can change at
  * any time.
  */
-public class HttpServerTracingHandler
-    extends CombinedChannelDuplexHandler<
-        HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
+public class HttpServerTracingHandler extends
+    CombinedChannelDuplexHandler<HttpServerRequestTracingHandler, HttpServerResponseTracingHandler> {
 
-  public HttpServerTracingHandler(
-      Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter,
+  public HttpServerTracingHandler(Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter,
       HttpServerResponseBeforeCommitHandler responseBeforeCommitHandler) {
-    super(
-        new HttpServerRequestTracingHandler(instrumenter),
+    super(new HttpServerRequestTracingHandler(instrumenter),
         new HttpServerResponseTracingHandler(instrumenter, responseBeforeCommitHandler));
   }
 }

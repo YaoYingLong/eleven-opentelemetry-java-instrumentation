@@ -45,8 +45,7 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise prm) throws Exception {
-    Attribute<Deque<ServerContext>> serverContextAttr =
-        ctx.channel().attr(AttributeKeys.SERVER_CONTEXT);
+    Attribute<Deque<ServerContext>> serverContextAttr = ctx.channel().attr(AttributeKeys.SERVER_CONTEXT);
 
     Deque<ServerContext> serverContexts = serverContextAttr.get();
     ServerContext serverContext = serverContexts != null ? serverContexts.peekFirst() : null;
@@ -72,22 +71,19 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
         // Headers and body all sent together, we have the response information in the msg.
         beforeCommitHandler.handle(serverContext.context(), (HttpResponse) msg);
         serverContexts.removeFirst();
-        writePromise.addListener(
-            future ->
-                end(
-                    serverContext.context(),
-                    serverContext.request(),
-                    (FullHttpResponse) msg,
-                    writePromise));
+        writePromise.addListener(future -> end(
+            serverContext.context(),
+            serverContext.request(),
+            (FullHttpResponse) msg,
+            writePromise));
       } else {
         // Body sent after headers. We stored the response information in the context when
         // encountering HttpResponse (which was not FullHttpResponse since it's not
         // LastHttpContent).
         serverContexts.removeFirst();
         HttpResponse response = ctx.channel().attr(HTTP_SERVER_RESPONSE).getAndSet(null);
-        writePromise.addListener(
-            future ->
-                end(serverContext.context(), serverContext.request(), response, writePromise));
+        writePromise.addListener(future ->
+            end(serverContext.context(), serverContext.request(), response, writePromise));
       }
     } else {
       writePromise = prm;
@@ -107,17 +103,12 @@ public class HttpServerResponseTracingHandler extends ChannelOutboundHandlerAdap
     }
   }
 
-  private void end(
-      Context context, HttpRequestAndChannel request, HttpResponse response, ChannelFuture future) {
+  private void end(Context context, HttpRequestAndChannel request, HttpResponse response, ChannelFuture future) {
     Throwable error = future.isSuccess() ? null : future.cause();
     end(context, request, response, error);
   }
 
-  private void end(
-      Context context,
-      HttpRequestAndChannel request,
-      @Nullable HttpResponse response,
-      @Nullable Throwable error) {
+  private void end(Context context, HttpRequestAndChannel request, @Nullable HttpResponse response, @Nullable Throwable error) {
     error = NettyErrorHolder.getOrDefault(context, error);
     instrumenter.end(context, request, response, error);
   }

@@ -29,8 +29,7 @@ public class HttpServerRequestTracingHandler extends ChannelInboundHandlerAdapte
 
   private final Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter;
 
-  public HttpServerRequestTracingHandler(
-      Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter) {
+  public HttpServerRequestTracingHandler(Instrumenter<HttpRequestAndChannel, HttpResponse> instrumenter) {
     this.instrumenter = instrumenter;
   }
 

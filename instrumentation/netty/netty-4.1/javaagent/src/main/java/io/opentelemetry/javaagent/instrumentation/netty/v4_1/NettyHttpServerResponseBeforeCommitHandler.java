@@ -10,8 +10,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.netty.v4_1.internal.server.HttpServerResponseBeforeCommitHandler;
 import io.opentelemetry.javaagent.bootstrap.http.HttpServerResponseCustomizerHolder;
 
-public enum NettyHttpServerResponseBeforeCommitHandler
-    implements HttpServerResponseBeforeCommitHandler {
+public enum NettyHttpServerResponseBeforeCommitHandler implements HttpServerResponseBeforeCommitHandler {
   INSTANCE;
 
   @Override

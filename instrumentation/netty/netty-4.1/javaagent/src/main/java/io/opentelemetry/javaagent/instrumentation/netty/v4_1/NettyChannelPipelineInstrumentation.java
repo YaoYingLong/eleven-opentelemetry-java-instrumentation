@@ -37,6 +37,7 @@ public class NettyChannelPipelineInstrumentation extends AbstractNettyChannelPip
 
   @Override
   public void transform(TypeTransformer transformer) {
+    // 还有很多逻辑才超类AbstractNettyChannelPipelineInstrumentation中实现
     super.transform(transformer);
 
     transformer.applyAdviceToMethod(
@@ -85,6 +86,7 @@ public class NettyChannelPipelineInstrumentation extends AbstractNettyChannelPip
           VirtualField.find(ChannelHandler.class, ChannelHandler.class);
 
       // don't add another instrumentation handler if there already is one attached
+      // 如果已经存在了一个埋点增强了，则直接退出了，不需要重复埋点
       if (instrumentationHandlerField.get(handler) != null) {
         return;
       }
@@ -103,16 +105,12 @@ public class NettyChannelPipelineInstrumentation extends AbstractNettyChannelPip
       ChannelHandler ourHandler = null;
       // Server pipeline handlers
       if (handler instanceof HttpServerCodec) {
-        ourHandler =
-            new HttpServerTracingHandler(
-                NettyServerSingletons.instrumenter(),
+        ourHandler = new HttpServerTracingHandler(NettyServerSingletons.instrumenter(),
                 NettyHttpServerResponseBeforeCommitHandler.INSTANCE);
       } else if (handler instanceof HttpRequestDecoder) {
         ourHandler = new HttpServerRequestTracingHandler(NettyServerSingletons.instrumenter());
       } else if (handler instanceof HttpResponseEncoder) {
-        ourHandler =
-            new HttpServerResponseTracingHandler(
-                NettyServerSingletons.instrumenter(),
+        ourHandler = new HttpServerResponseTracingHandler(NettyServerSingletons.instrumenter(),
                 NettyHttpServerResponseBeforeCommitHandler.INSTANCE);
         // Client pipeline handlers
       } else if (handler instanceof HttpClientCodec) {
