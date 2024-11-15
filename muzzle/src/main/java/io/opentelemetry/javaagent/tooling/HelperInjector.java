@@ -41,23 +41,27 @@ import net.bytebuddy.utility.JavaModule;
 
 /**
  * Injects instrumentation helper classes into the user's class loader.
+ * <p>
+ * 使用此类时必须小心。它既由javaagent在运行时使用，也由gradle muzzle验证插件在构建时使用。此类中的某些代码路径需要使用Instrumentation
+ * 前者可用，但后者不可用。不幸的是，这两种 “操作模式” 并不容易通过阅读源代码来辨别。小心。
  *
  * <p>Care must be taken when using this class. It is used both by the javaagent during its runtime
  * and by gradle muzzle verification plugin during build time. And some code paths in this class
  * require the usage of {@link Instrumentation}, which is available for the former, but not for the
  * latter. Unfortunately, these two "modes of operations" and not easily discernible just by reading
  * source code. Be careful.
+ * <p>
+ * 在运行是需要将Instrumentation注入到Bootstrap ClassLoader，但是在构建阶段muzzle验证不应用发生
  *
  * <p>In a nutshell, an instance of {@link Instrumentation} is needed for class injection into the
  * bootstrap class loader. This should NOT happen during build-time muzzle verification phase.
  */
 public class HelperInjector implements Transformer {
 
-  private static final TransformSafeLogger logger =
-      TransformSafeLogger.getLogger(HelperInjector.class);
+  private static final TransformSafeLogger logger = TransformSafeLogger.getLogger(
+      HelperInjector.class);
 
-  private static final ProtectionDomain PROTECTION_DOMAIN =
-      HelperInjector.class.getProtectionDomain();
+  private static final ProtectionDomain PROTECTION_DOMAIN = HelperInjector.class.getProtectionDomain();
 
   // a hook for static instrumentation used to save additional classes created by the agent
   // see https://github.com/open-telemetry/opentelemetry-java-contrib/tree/main/static-instrumenter
@@ -69,21 +73,20 @@ public class HelperInjector implements Transformer {
   }
 
   // Need this because we can't put null into the injectedClassLoaders map.
-  private static final ClassLoader BOOTSTRAP_CLASSLOADER_PLACEHOLDER =
-      new SecureClassLoader(null) {
-        @Override
-        public String toString() {
-          return "<bootstrap>";
-        }
-      };
+  // 如果Bootstrap ClassLoader，则为空，因为不能直接将null放入map中，所以这里做类一个转换
+  private static final ClassLoader BOOTSTRAP_CLASSLOADER_PLACEHOLDER = new SecureClassLoader(null) {
+    @Override
+    public String toString() {
+      return "<bootstrap>";
+    }
+  };
 
-  private static final HelperClassInjector BOOT_CLASS_INJECTOR =
-      new HelperClassInjector(null) {
-        @Override
-        Class<?> inject(ClassLoader classLoader, String className) {
-          throw new UnsupportedOperationException("should not be called");
-        }
-      };
+  private static final HelperClassInjector BOOT_CLASS_INJECTOR = new HelperClassInjector(null) {
+    @Override
+    Class<?> inject(ClassLoader classLoader, String className) {
+      throw new UnsupportedOperationException("should not be called");
+    }
+  };
 
   private static final Cache<ClassLoader, Map<String, HelperClassInjector>> helperInjectors =
       Cache.weak();
@@ -110,8 +113,7 @@ public class HelperInjector implements Transformer {
    *     library will be renamed like 'io.opentelemetry.instrumentation' to
    *     'io.opentelemetry.javaagent.shaded.instrumentation'
    */
-  public HelperInjector(
-      String requestingName,
+  public HelperInjector(String requestingName,
       List<String> helperClassNames,
       List<HelperResource> helperResources,
       ClassLoader helpersSource,
@@ -347,6 +349,9 @@ public class HelperInjector implements Transformer {
     }
   }
 
+  /**
+   * 判断是不是引导类加载器即Bootstrap ClassLoader，若是的化则classLoader则为null，为了防止空Key，做了以下转换
+   */
   private static ClassLoader maskNullClassLoader(ClassLoader classLoader) {
     return classLoader != null ? classLoader : BOOTSTRAP_CLASSLOADER_PLACEHOLDER;
   }
@@ -360,11 +365,13 @@ public class HelperInjector implements Transformer {
   }
 
   public static boolean isInjectedClass(ClassLoader classLoader, String className) {
-    Map<String, HelperClassInjector> injectorMap =
-        helperInjectors.get(maskNullClassLoader(classLoader));
+    // helperInjectors可以理解为一个双重HashMap，第一层KEY为ClassLoader
+    Map<String, HelperClassInjector> injectorMap = helperInjectors.get(
+        maskNullClassLoader(classLoader));
     if (injectorMap == null) {
       return false;
     }
+    // 如果对应的ClassLoader的injectorMap中已经包含了该类则返回true
     return injectorMap.containsKey(className);
   }
 
@@ -394,11 +401,11 @@ public class HelperInjector implements Transformer {
       // if security manager is present byte buddy calls
       // checkPermission(new ReflectPermission("suppressAccessChecks")) so we must call class
       // injection with AccessController.doPrivileged when security manager is enabled
-      Map<String, Class<?>> result =
-          execute(
-              () ->
-                  new ClassInjector.UsingReflection(classLoader, PROTECTION_DOMAIN)
-                      .injectRaw(Collections.singletonMap(className, bytes.get())));
+      // 如果存在安全管理器，bytebuddy会调用checkPermission(new ReflectPermission("suppressAccessChecks"))
+      // 因此我们必须在启用安全管理器时使用AccessController.doPrivileged调用类注入
+      Map<String, Class<?>> result = execute(() ->
+          new ClassInjector.UsingReflection(classLoader, PROTECTION_DOMAIN)
+              .injectRaw(Collections.singletonMap(className, bytes.get())));
       return result.get(className);
     }
   }

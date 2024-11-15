@@ -17,8 +17,7 @@ class AgentLocationStrategyTest {
 
   private static final AtomicReference<String> lastLookup = new AtomicReference<>();
 
-  private static final ClassLoader childLoader =
-      new ClassLoader(AgentLocationStrategyTest.class.getClassLoader()) {
+  private static final ClassLoader childLoader = new ClassLoader(AgentLocationStrategyTest.class.getClassLoader()) {
         @Override
         public URL getResource(String name) {
           lastLookup.set(name);
@@ -34,8 +33,7 @@ class AgentLocationStrategyTest {
 
   @Test
   void findsResourcesFromParentClassloader() throws Exception {
-    ClassFileLocator locator =
-        new AgentLocationStrategy(ClassLoader.getSystemClassLoader())
+    ClassFileLocator locator = new AgentLocationStrategy(ClassLoader.getSystemClassLoader())
             .classFileLocator(childLoader, null);
     assertThat(locator.locate("java/lang/Object").isResolved()).isTrue();
     assertThat(lastLookup).hasValue("java/lang/Object.class");

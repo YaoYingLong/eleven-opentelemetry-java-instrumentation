@@ -48,9 +48,9 @@ public final class MuzzleCodeGenerationPlugin implements Plugin {
     return isInstrumentationModule;
   }
 
+  // 最终会在gradle build时被调用
   @Override
-  public DynamicType.Builder<?> apply(
-      DynamicType.Builder<?> builder,
+  public DynamicType.Builder<?> apply(DynamicType.Builder<?> builder,
       TypeDescription typeDescription,
       ClassFileLocator classFileLocator) {
     return builder.visit(new MuzzleCodeGenerator(classLoader));

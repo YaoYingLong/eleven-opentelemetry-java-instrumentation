@@ -14,16 +14,19 @@ description = "OpenTelemetry Javaagent"
 group = "io.opentelemetry.javaagent"
 
 // this configuration collects libs that will be placed in the bootstrap classloader
+// 此配置收集将放置在Bootstrap类加载器中的libs
 val bootstrapLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
 }
 // this configuration collects only required instrumentations and agent machinery
+// 此配置仅收集所需的插桩和代理机制
 val baseJavaagentLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
 }
 // this configuration collects libs that will be placed in the agent classloader, isolated from the instrumented application code
+// 此配置收集将放置在AgentClassloader中的库，这些库与插桩的应用程序代码隔离
 val javaagentLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
@@ -31,6 +34,7 @@ val javaagentLibs by configurations.creating {
 }
 
 // exclude dependencies that are to be placed in bootstrap from agent libs - they won't be added to inst/
+// 从代理库中排除要放置在引导程序中的依赖项 - 它们不会添加到/inst
 listOf(baseJavaagentLibs, javaagentLibs).forEach {
   it.run {
     exclude("io.opentelemetry", "opentelemetry-api")

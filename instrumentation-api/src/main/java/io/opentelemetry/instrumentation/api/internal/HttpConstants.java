@@ -17,7 +17,8 @@ import java.util.Set;
  */
 public final class HttpConstants {
 
-  public static final Set<String> KNOWN_METHODS = unmodifiableSet(new HashSet<>(asList("CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE")));
+  public static final Set<String> KNOWN_METHODS =
+      unmodifiableSet(new HashSet<>(asList("CONNECT", "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "TRACE")));
 
   public static final String _OTHER = "_OTHER";
 

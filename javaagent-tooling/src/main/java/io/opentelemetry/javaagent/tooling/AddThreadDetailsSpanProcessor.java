@@ -17,7 +17,9 @@ public class AddThreadDetailsSpanProcessor implements SpanProcessor {
   @Override
   public void onStart(Context context, ReadWriteSpan span) {
     Thread currentThread = Thread.currentThread();
+    // 获取当前线程的id设置到Span的Attribute中，key为thread.id
     span.setAttribute(SemanticAttributes.THREAD_ID, currentThread.getId());
+    // 获取当前线程的名称设置到Span的Attribute中，key为thread.name
     span.setAttribute(SemanticAttributes.THREAD_NAME, currentThread.getName());
   }
 

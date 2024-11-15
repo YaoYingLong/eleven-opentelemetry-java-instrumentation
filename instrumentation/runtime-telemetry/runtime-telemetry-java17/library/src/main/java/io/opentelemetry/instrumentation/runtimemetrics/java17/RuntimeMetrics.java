@@ -30,10 +30,7 @@ public final class RuntimeMetrics implements Closeable {
 
   @Nullable private final JfrRuntimeMetrics jfrRuntimeMetrics;
 
-  RuntimeMetrics(
-      OpenTelemetry openTelemetry,
-      List<AutoCloseable> observables,
-      @Nullable JfrRuntimeMetrics jfrRuntimeMetrics) {
+  RuntimeMetrics(OpenTelemetry openTelemetry, List<AutoCloseable> observables, @Nullable JfrRuntimeMetrics jfrRuntimeMetrics) {
     this.openTelemetry = openTelemetry;
     this.observables = List.copyOf(observables);
     this.jfrRuntimeMetrics = jfrRuntimeMetrics;

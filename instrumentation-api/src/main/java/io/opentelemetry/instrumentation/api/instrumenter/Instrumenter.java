@@ -52,7 +52,7 @@ import javax.annotation.Nullable;
  *
  * 详情参照：docs/contributing/using-instrumenter-api.md
  *
- * Instrumenter可以配置各种提取器，以增强或修改遥测数据，
+ * Instrumenter可以配置各种提取器，以增强或修改遥测数据
  */
 public class Instrumenter<REQUEST, RESPONSE> {
 
@@ -161,8 +161,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
   }
 
   /** Internal method for creating spans with given start/end timestamps. */
-  Context startAndEnd(
-      Context parentContext,
+  Context startAndEnd(Context parentContext,
       REQUEST request,
       @Nullable RESPONSE response,
       @Nullable Throwable error,
@@ -302,8 +301,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
   }
 
   static {
-    InstrumenterUtil.setInstrumenterAccess(
-        new InstrumenterAccess() {
+    InstrumenterUtil.setInstrumenterAccess(new InstrumenterAccess() {
           @Override
           public <RQ, RS> Context startAndEnd(
               Instrumenter<RQ, RS> instrumenter,

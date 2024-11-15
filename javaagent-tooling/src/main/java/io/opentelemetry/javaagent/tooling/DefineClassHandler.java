@@ -20,13 +20,9 @@ public class DefineClassHandler implements Handler {
   private DefineClassHandler() {}
 
   @Override
-  public DefineClassContext beforeDefineClass(
-      ClassLoader classLoader, String className, byte[] classBytes, int offset, int length) {
+  public DefineClassContext beforeDefineClass(ClassLoader classLoader, String className, byte[] classBytes, int offset, int length) {
     // with OpenJ9 class data sharing we don't get real class bytes
-    if (classBytes == null
-        || (classBytes.length == 40
-            && new String(classBytes, StandardCharsets.ISO_8859_1)
-                .startsWith("J9ROMCLASSCOOKIE"))) {
+    if (classBytes == null || (classBytes.length == 40 && new String(classBytes, StandardCharsets.ISO_8859_1).startsWith("J9ROMCLASSCOOKIE"))) {
       return null;
     }
 

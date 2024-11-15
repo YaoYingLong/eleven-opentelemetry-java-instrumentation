@@ -27,13 +27,11 @@ public final class InstrumenterUtil {
     InstrumenterUtil.instrumenterAccess = instrumenterAccess;
   }
 
-  public static void setInstrumenterBuilderAccess(
-      InstrumenterBuilderAccess instrumenterBuilderAccess) {
+  public static void setInstrumenterBuilderAccess(InstrumenterBuilderAccess instrumenterBuilderAccess) {
     InstrumenterUtil.instrumenterBuilderAccess = instrumenterBuilderAccess;
   }
 
-  public static <REQUEST, RESPONSE> Context startAndEnd(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
+  public static <REQUEST, RESPONSE> Context startAndEnd(Instrumenter<REQUEST, RESPONSE> instrumenter,
       Context parentContext,
       REQUEST request,
       @Nullable RESPONSE response,
@@ -57,8 +55,7 @@ public final class InstrumenterUtil {
       TextMapSetter<REQUEST> setter,
       SpanKindExtractor<REQUEST> spanKindExtractor) {
     // instrumenterBuilderAccess is guaranteed to be non-null here
-    return instrumenterBuilderAccess.buildDownstreamInstrumenter(
-        builder, setter, spanKindExtractor);
+    return instrumenterBuilderAccess.buildDownstreamInstrumenter(builder, setter, spanKindExtractor);
   }
 
   private InstrumenterUtil() {}

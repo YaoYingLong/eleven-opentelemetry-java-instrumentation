@@ -63,9 +63,8 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
   private static final TransformSafeLogger logger =
       TransformSafeLogger.getLogger(FieldBackedImplementationInstaller.class);
 
-  private static final boolean FIELD_INJECTION_ENABLED =
-      InstrumentationConfig.get()
-          .getBoolean("otel.javaagent.experimental.field-injection.enabled", true);
+  private static final boolean FIELD_INJECTION_ENABLED = InstrumentationConfig.get()
+      .getBoolean("otel.javaagent.experimental.field-injection.enabled", true);
 
   private final Class<?> instrumenterClass;
   private final VirtualFieldMappings virtualFieldMappings;
@@ -86,16 +85,14 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
     this.instrumentation = InstrumentationHolder.getInstrumentation();
 
     ByteBuddy byteBuddy = new ByteBuddy();
-    fieldAccessorInterfaces =
-        new FieldAccessorInterfacesGenerator(byteBuddy)
-            .generateFieldAccessorInterfaces(virtualFieldMappings);
-    fieldAccessorInterfacesInjector =
-        bootstrapHelperInjector(fieldAccessorInterfaces.getAllInterfaces());
-    virtualFieldImplementations =
-        new VirtualFieldImplementationsGenerator(byteBuddy)
-            .generateClasses(virtualFieldMappings, fieldAccessorInterfaces);
-    virtualFieldImplementationsInjector =
-        bootstrapHelperInjector(virtualFieldImplementations.getAllClasses());
+    fieldAccessorInterfaces = new FieldAccessorInterfacesGenerator(byteBuddy)
+        .generateFieldAccessorInterfaces(virtualFieldMappings);
+    fieldAccessorInterfacesInjector = bootstrapHelperInjector(
+        fieldAccessorInterfaces.getAllInterfaces());
+    virtualFieldImplementations = new VirtualFieldImplementationsGenerator(byteBuddy)
+        .generateClasses(virtualFieldMappings, fieldAccessorInterfaces);
+    virtualFieldImplementationsInjector = bootstrapHelperInjector(
+        virtualFieldImplementations.getAllClasses());
   }
 
   @Override
@@ -106,17 +103,16 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
        * Install transformer that rewrites accesses to context store with specialized bytecode that
        * invokes appropriate storage implementation.
        */
-      builder =
-          builder.transform(
-              getTransformerForAsmVisitor(
-                  new VirtualFieldFindRewriter(
-                      instrumenterClass, virtualFieldMappings, virtualFieldImplementations)));
+      builder = builder.transform(getTransformerForAsmVisitor(
+          new VirtualFieldFindRewriter(
+              instrumenterClass, virtualFieldMappings, virtualFieldImplementations)));
     }
     return builder;
   }
 
   @Override
-  public AgentBuilder.Identified.Extendable injectHelperClasses(AgentBuilder.Identified.Extendable builder) {
+  public AgentBuilder.Identified.Extendable injectHelperClasses(
+      AgentBuilder.Identified.Extendable builder) {
     if (!virtualFieldMappings.isEmpty()) {
       builder = injectHelpersIntoBootstrapClassloader(builder);
     }
@@ -176,7 +172,8 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
       new HashSet<>();
 
   @Override
-  public AgentBuilder.Identified.Extendable injectFields(AgentBuilder.Identified.Extendable builder) {
+  public AgentBuilder.Identified.Extendable injectFields(
+      AgentBuilder.Identified.Extendable builder) {
 
     if (FIELD_INJECTION_ENABLED) {
       for (Map.Entry<String, String> entry : virtualFieldMappings.entrySet()) {
@@ -190,18 +187,14 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
         synchronized (INSTALLED_VIRTUAL_FIELD_MATCHERS) {
           if (INSTALLED_VIRTUAL_FIELD_MATCHERS.contains(entry)) {
             if (logger.isLoggable(FINEST)) {
-              logger.log(
-                  FINEST,
-                  "Skipping builder for {0} {1}",
+              logger.log(FINEST, "Skipping builder for {0} {1}",
                   new Object[] {instrumenterClass.getName(), entry});
             }
             continue;
           }
 
           if (logger.isLoggable(FINEST)) {
-            logger.log(
-                FINEST,
-                "Making builder for {0} {1}",
+            logger.log(FINEST, "Making builder for {0} {1}",
                 new Object[] {instrumenterClass.getName(), entry});
           }
           INSTALLED_VIRTUAL_FIELD_MATCHERS.add(entry);
@@ -211,17 +204,13 @@ final class FieldBackedImplementationInstaller implements VirtualFieldImplementa
            * that injects necessary fields.
            */
           ElementMatcher<TypeDescription> typeMatcher =
-              new NamedMatcher<>(
-                  "VirtualField",
-                  new IgnoreFailedTypeMatcher(
-                      not(isAbstract()).and(hasSuperType(named(entry.getKey())))));
+              new NamedMatcher<>("VirtualField", new IgnoreFailedTypeMatcher(
+                  not(isAbstract()).and(hasSuperType(named(entry.getKey())))));
 
-          builder =
-              builder
-                  .type(typeMatcher)
-                  .and(safeToInjectFieldsMatcher())
-                  .and(InstrumentationModuleInstaller.NOT_DECORATOR_MATCHER)
-                  .transform(NoOpTransformer.INSTANCE);
+          builder = builder.type(typeMatcher)
+              .and(safeToInjectFieldsMatcher())
+              .and(InstrumentationModuleInstaller.NOT_DECORATOR_MATCHER)
+              .transform(NoOpTransformer.INSTANCE);
 
           /*
            * We inject helpers here as well as when instrumentation is applied to ensure that

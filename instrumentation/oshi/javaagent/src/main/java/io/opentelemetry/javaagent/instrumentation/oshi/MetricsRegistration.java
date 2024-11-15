@@ -20,8 +20,7 @@ public final class MetricsRegistration {
       SystemMetrics.registerObservers(GlobalOpenTelemetry.get());
 
       // ProcessMetrics don't follow the spec
-      if (InstrumentationConfig.get()
-          .getBoolean("otel.instrumentation.oshi.experimental-metrics.enabled", false)) {
+      if (InstrumentationConfig.get().getBoolean("otel.instrumentation.oshi.experimental-metrics.enabled", false)) {
         ProcessMetrics.registerObservers(GlobalOpenTelemetry.get());
       }
     }

@@ -36,6 +36,7 @@ public abstract class InstrumentationModule implements Ordered {
   private static final boolean indyEnabled;
 
   static {
+    // 是否使用Java的动态语言支持特性，默认为false
     indyEnabled = ExperimentalConfig.get().indyEnabled();
     if (indyEnabled) {
       logger.info("Enabled indy for instrumentation modules");
@@ -64,11 +65,12 @@ public abstract class InstrumentationModule implements Ordered {
    *       name containing the version should be passed, e.g. {@code instrumented-library-1.0}.
    * </ul>
    */
-  protected InstrumentationModule(
-      String mainInstrumentationName, String... additionalInstrumentationNames) {
+  protected InstrumentationModule(String mainInstrumentationName, String... additionalInstrumentationNames) {
+    // 在每个实现类中都调用super的该访法，用于定义mainInstrumentationName和additionalInstrumentationNames
     LinkedHashSet<String> names = new LinkedHashSet<>(additionalInstrumentationNames.length + 1);
     names.add(mainInstrumentationName);
     names.addAll(asList(additionalInstrumentationNames));
+    // 将mainInstrumentationName和additionalInstrumentationNames列表设置到instrumentationNames
     this.instrumentationNames = unmodifiableSet(names);
   }
 
@@ -77,6 +79,7 @@ public abstract class InstrumentationModule implements Ordered {
    * #InstrumentationModule(String, String...)} for more details about instrumentation names.
    */
   public final Set<String> instrumentationNames() {
+    // 每个InstrumentationModule实现类中都调用super的该访法，用于定义mainInstrumentationName和additionalInstrumentationNames
     return instrumentationNames;
   }
 

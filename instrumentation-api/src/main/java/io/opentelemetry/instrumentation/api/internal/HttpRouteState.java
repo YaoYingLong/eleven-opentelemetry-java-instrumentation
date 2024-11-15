@@ -24,8 +24,7 @@ public final class HttpRouteState implements ImplicitContextKeyed {
     return context.get(KEY);
   }
 
-  public static HttpRouteState create(
-      @Nullable String method, @Nullable String route, int updatedBySourceOrder) {
+  public static HttpRouteState create(@Nullable String method, @Nullable String route, int updatedBySourceOrder) {
     return new HttpRouteState(method, route, updatedBySourceOrder);
   }
 
@@ -33,8 +32,7 @@ public final class HttpRouteState implements ImplicitContextKeyed {
   @Nullable private volatile String route;
   private volatile int updatedBySourceOrder;
 
-  private HttpRouteState(
-      @Nullable String method, @Nullable String route, int updatedBySourceOrder) {
+  private HttpRouteState(@Nullable String method, @Nullable String route, int updatedBySourceOrder) {
     this.method = method;
     this.updatedBySourceOrder = updatedBySourceOrder;
     this.route = route;

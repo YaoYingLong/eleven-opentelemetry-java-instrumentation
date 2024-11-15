@@ -28,26 +28,23 @@ public final class ExperimentalConfig {
 
   public ExperimentalConfig(InstrumentationConfig config) {
     this.config = config;
-    messagingHeaders =
-        config.getList("otel.instrumentation.messaging.experimental.capture-headers", emptyList());
+    messagingHeaders = config.getList("otel.instrumentation.messaging.experimental.capture-headers", emptyList());
   }
 
   public boolean controllerTelemetryEnabled() {
-    return config.getBoolean(
-        "otel.instrumentation.common.experimental.controller-telemetry.enabled", true);
+    return config.getBoolean("otel.instrumentation.common.experimental.controller-telemetry.enabled", true);
   }
 
   public boolean viewTelemetryEnabled() {
-    return config.getBoolean(
-        "otel.instrumentation.common.experimental.view-telemetry.enabled", true);
+    return config.getBoolean("otel.instrumentation.common.experimental.view-telemetry.enabled", true);
   }
 
   public boolean messagingReceiveInstrumentationEnabled() {
-    return config.getBoolean(
-        "otel.instrumentation.messaging.experimental.receive-telemetry.enabled", false);
+    return config.getBoolean("otel.instrumentation.messaging.experimental.receive-telemetry.enabled", false);
   }
 
   public boolean indyEnabled() {
+    // 是否使用Java的动态语言支持特性，默认为false
     return config.getBoolean("otel.javaagent.experimental.indy", false);
   }
 

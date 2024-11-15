@@ -30,9 +30,11 @@ public class Java8RuntimeMetricsInstaller implements AgentListener {
   public void afterAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
     ConfigProperties config = AutoConfigureUtil.getConfig(autoConfiguredSdk);
 
+    // defaultEnabled默认是true
     boolean defaultEnabled = config.getBoolean("otel.instrumentation.common.default-enabled", true);
     if (!config.getBoolean("otel.instrumentation.runtime-telemetry.enabled", defaultEnabled)
         || Double.parseDouble(System.getProperty("java.specification.version")) >= 17) {
+      // 若jdk版本大于等于17直接return
       return;
     }
     OpenTelemetry openTelemetry = GlobalOpenTelemetry.get();

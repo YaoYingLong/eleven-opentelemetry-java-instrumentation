@@ -22,12 +22,14 @@ import net.bytebuddy.agent.builder.AgentBuilder;
 public class InstrumentationLoader implements AgentExtension {
   private static final Logger logger = Logger.getLogger(InstrumentationLoader.class.getName());
 
+  // 通过InstrumentationHolder.getInstrumentation()获取在OpenTelemetryAgent设置的Instrumentation
   private final InstrumentationModuleInstaller instrumentationModuleInstaller = new InstrumentationModuleInstaller(InstrumentationHolder.getInstrumentation());
 
   @Override
   public AgentBuilder extend(AgentBuilder agentBuilder, ConfigProperties config) {
     int numberOfLoadedModules = 0;
     // 这里Utils.getExtensionsClassLoader()其实就是获取的前面的extensionClassLoader
+    // 通过SPI机制加载instrumentation目录下所有的实现了InstrumentationModule接口的类
     for (InstrumentationModule instrumentationModule : loadOrdered(InstrumentationModule.class, Utils.getExtensionsClassLoader())) {
       if (logger.isLoggable(FINE)) {
         logger.log(FINE, "Loading instrumentation {0} [class {1}]", new Object[] {
@@ -36,6 +38,7 @@ public class InstrumentationLoader implements AgentExtension {
             });
       }
       try {
+        //
         agentBuilder = instrumentationModuleInstaller.install(instrumentationModule, agentBuilder, config);
         numberOfLoadedModules++;
       } catch (Exception | LinkageError e) {

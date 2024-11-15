@@ -94,8 +94,7 @@ public class InnerClassLambdaMetafactoryInstrumentation implements TypeInstrumen
     }
 
     @Override
-    public MethodVisitor visitMethod(
-        int access, String name, String descriptor, String signature, String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
       MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
       // The version of InnerClassLambdaMetafactory used in first version of jdk8 can be seen at
       // https://hg.openjdk.java.net/jdk8/jdk8/jdk/file/687fd7c7986d/src/share/classes/java/lang/invoke/InnerClassLambdaMetafactory.java
@@ -105,32 +104,22 @@ public class InnerClassLambdaMetafactoryInstrumentation implements TypeInstrumen
       // This transformation uses ASM instead of Byte-Buddy advice because advice allows adding
       // code to the start and end of the method, but here we are modifying a call in the middle of
       // the method.
-      if (("spinInnerClass".equals(name) || "generateInnerClass".equals(name))
-          && "()Ljava/lang/Class;".equals(descriptor)) {
-        mv =
-            new MethodVisitor(api, mv) {
+      if (("spinInnerClass".equals(name) || "generateInnerClass".equals(name)) && "()Ljava/lang/Class;".equals(descriptor)) {
+        mv = new MethodVisitor(api, mv) {
               @Override
               public void visitMethodInsn(
                   int opcode, String owner, String name, String descriptor, boolean isInterface) {
                 super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
                 // if current instruction is a call to ASM ClassWriter.toByteArray() insert call to
                 // our lambda transformer
-                if (opcode == Opcodes.INVOKEVIRTUAL
-                    && "toByteArray".equals(name)
-                    && "()[B".equals(descriptor)) {
+                if (opcode == Opcodes.INVOKEVIRTUAL && "toByteArray".equals(name) && "()[B".equals(descriptor)) {
                   mv.visitVarInsn(Opcodes.ALOAD, 0);
-                  mv.visitFieldInsn(
-                      Opcodes.GETFIELD, slashClassName, "lambdaClassName", "Ljava/lang/String;");
+                  mv.visitFieldInsn(Opcodes.GETFIELD, slashClassName, "lambdaClassName", "Ljava/lang/String;");
                   mv.visitVarInsn(Opcodes.ALOAD, 0);
                   // targetClass is used to get the ClassLoader where lambda class will be defined
-                  mv.visitFieldInsn(
-                      Opcodes.GETFIELD, slashClassName, "targetClass", "Ljava/lang/Class;");
-                  mv.visitMethodInsn(
-                      Opcodes.INVOKESTATIC,
-                      Type.getInternalName(LambdaTransformer.class),
-                      "transform",
-                      "([BLjava/lang/String;Ljava/lang/Class;)[B",
-                      false);
+                  mv.visitFieldInsn(Opcodes.GETFIELD, slashClassName, "targetClass", "Ljava/lang/Class;");
+                  mv.visitMethodInsn(Opcodes.INVOKESTATIC, Type.getInternalName(LambdaTransformer.class),
+                      "transform", "([BLjava/lang/String;Ljava/lang/Class;)[B", false);
                 }
               }
             };
@@ -143,8 +132,7 @@ public class InnerClassLambdaMetafactoryInstrumentation implements TypeInstrumen
   public static class LambdaAdvice {
 
     @Advice.OnMethodEnter
-    public static DefineClassContext onEnter(
-        @Advice.FieldValue("samBase") Class<?> lambdaInterface) {
+    public static DefineClassContext onEnter(@Advice.FieldValue("samBase") Class<?> lambdaInterface) {
       return DefineClassHelper.beforeDefineLambdaClass(lambdaInterface);
     }
 
@@ -158,8 +146,7 @@ public class InnerClassLambdaMetafactoryInstrumentation implements TypeInstrumen
   public static class LambdaJdk17Advice {
 
     @Advice.OnMethodEnter
-    public static DefineClassContext onEnter(
-        @Advice.FieldValue("interfaceClass") Class<?> lambdaInterface) {
+    public static DefineClassContext onEnter(@Advice.FieldValue("interfaceClass") Class<?> lambdaInterface) {
       return DefineClassHelper.beforeDefineLambdaClass(lambdaInterface);
     }
 

@@ -47,11 +47,9 @@ final class JarAnalyzer implements ClassFileTransformer {
   static final AttributeKey<String> PACKAGE_NAME = AttributeKey.stringKey("package.name");
   static final AttributeKey<String> PACKAGE_VERSION = AttributeKey.stringKey("package.version");
   static final AttributeKey<String> PACKAGE_TYPE = AttributeKey.stringKey("package.type");
-  static final AttributeKey<String> PACKAGE_DESCRIPTION =
-      AttributeKey.stringKey("package.description");
+  static final AttributeKey<String> PACKAGE_DESCRIPTION = AttributeKey.stringKey("package.description");
   static final AttributeKey<String> PACKAGE_CHECKSUM = AttributeKey.stringKey("package.checksum");
-  static final AttributeKey<String> PACKAGE_CHECKSUM_ALGORITHM =
-      AttributeKey.stringKey("package.checksum_algorithm");
+  static final AttributeKey<String> PACKAGE_CHECKSUM_ALGORITHM = AttributeKey.stringKey("package.checksum_algorithm");
   static final AttributeKey<String> PACKAGE_PATH = AttributeKey.stringKey("package.path");
 
   private final Set<URI> seenUris = new HashSet<>();
@@ -59,15 +57,13 @@ final class JarAnalyzer implements ClassFileTransformer {
 
   private JarAnalyzer(OpenTelemetry unused, int jarsPerSecond) {
     // TODO(jack-berg): Use OpenTelemetry to obtain EventEmitter when event API is stable
-    EventEmitter eventEmitter =
-        GlobalEventEmitterProvider.get()
+    EventEmitter eventEmitter = GlobalEventEmitterProvider.get()
             .eventEmitterBuilder(JmxRuntimeMetricsUtil.getInstrumentationName())
             .setInstrumentationVersion(JmxRuntimeMetricsUtil.getInstrumentationVersion())
             .setEventDomain(EVENT_DOMAIN_PACKAGE)
             .build();
     Worker worker = new Worker(eventEmitter, toProcess, jarsPerSecond);
-    Thread workerThread =
-        new DaemonThreadFactory(JarAnalyzer.class.getSimpleName() + "_WorkerThread")
+    Thread workerThread = new DaemonThreadFactory(JarAnalyzer.class.getSimpleName() + "_WorkerThread")
             .newThread(worker);
     workerThread.start();
   }

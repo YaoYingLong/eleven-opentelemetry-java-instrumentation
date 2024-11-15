@@ -134,8 +134,7 @@ public class AgentBuilderUtil {
         return inspect(matchers.get(0));
       }
     } else if (matcher instanceof AgentBuilder.RawMatcher.ForElementMatchers) {
-      ElementMatcher<?> elementMatcher =
-          getDelegateMatcher((AgentBuilder.RawMatcher.ForElementMatchers) matcher);
+      ElementMatcher<?> elementMatcher = getDelegateMatcher((AgentBuilder.RawMatcher.ForElementMatchers) matcher);
       Result result = inspect(elementMatcher);
       if (result == null && logger.isLoggable(FINE)) {
         logger.log(Level.FINE, "Could not decompose matcher {0}", elementMatcher);

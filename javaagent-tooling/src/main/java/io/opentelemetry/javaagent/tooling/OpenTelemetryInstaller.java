@@ -26,21 +26,22 @@ public final class OpenTelemetryInstaller {
     // 首先通过builder方法实例化AutoConfiguredOpenTelemetrySdkBuilder，然后设置ServiceClassLoader等属性
     // 最终调用AutoConfiguredOpenTelemetrySdkBuilder的build
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = AutoConfiguredOpenTelemetrySdk.builder()
-            .setResultAsGlobal()
-            .setServiceClassLoader(extensionClassLoader)
-            // disable the logs exporter by default for the time being
-            // FIXME remove this in the 2.x branch
-            .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
-            .build();
+        // 将生成的
+        .setResultAsGlobal()
+        .setServiceClassLoader(extensionClassLoader)
+        // disable the logs exporter by default for the time being
+        // FIXME remove this in the 2.x branch
+        // 默认禁用logs exporter
+        .addPropertiesSupplier(() -> singletonMap("otel.logs.exporter", "none"))
+        .build();
     OpenTelemetrySdk sdk = autoConfiguredSdk.getOpenTelemetrySdk();
 
-    OpenTelemetrySdkAccess.internalSetForceFlush(
-        (timeout, unit) -> {
-          CompletableResultCode traceResult = sdk.getSdkTracerProvider().forceFlush();
-          CompletableResultCode metricsResult = sdk.getSdkMeterProvider().forceFlush();
-          CompletableResultCode logsResult = sdk.getSdkLoggerProvider().forceFlush();
-          CompletableResultCode.ofAll(Arrays.asList(traceResult, metricsResult, logsResult)).join(timeout, unit);
-        });
+    OpenTelemetrySdkAccess.internalSetForceFlush((timeout, unit) -> {
+      CompletableResultCode traceResult = sdk.getSdkTracerProvider().forceFlush();
+      CompletableResultCode metricsResult = sdk.getSdkMeterProvider().forceFlush();
+      CompletableResultCode logsResult = sdk.getSdkLoggerProvider().forceFlush();
+      CompletableResultCode.ofAll(Arrays.asList(traceResult, metricsResult, logsResult)).join(timeout, unit);
+    });
     return autoConfiguredSdk;
   }
 

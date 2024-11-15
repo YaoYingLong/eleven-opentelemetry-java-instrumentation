@@ -41,6 +41,7 @@ public final class AgentInitializer {
 
     // this call deliberately uses anonymous class instead of lambda because using lambdas too
     // early on early jdk8 (see isEarlyOracle18 method) causes jvm to crash. See CrashEarlyJdk8Test.
+    // 此调用故意使用匿名类而不是lambda，因为在早期JDK8中过早使用lambda（请参阅 isEarlyOracle18 方法）会导致JVM崩溃。参见CrashEarlyJdk8Test。
     execute(
         new PrivilegedExceptionAction<Void>() {
           @Override
@@ -168,6 +169,7 @@ public final class AgentInitializer {
    * @return Agent Classloader
    */
   private static ClassLoader createAgentClassLoader(String innerJarFilename, File javaagentFile) {
+    // isSecurityManagerSupportEnabled默认为false，innerJarFilename值为inst
     return new AgentClassLoader(javaagentFile, innerJarFilename, isSecurityManagerSupportEnabled);
   }
 

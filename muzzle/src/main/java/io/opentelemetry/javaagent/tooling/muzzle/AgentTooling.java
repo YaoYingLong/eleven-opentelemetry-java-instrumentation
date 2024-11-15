@@ -60,14 +60,12 @@ public final class AgentTooling {
 
   private static class ClassTransformListener extends AgentBuilder.Listener.Adapter {
     @Override
-    public void onDiscovery(
-        String typeName, ClassLoader classLoader, JavaModule module, boolean loaded) {
+    public void onDiscovery(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded) {
       CURRENT_TRANSFORM.set(new CurrentTransform(classLoader, typeName));
     }
 
     @Override
-    public void onComplete(
-        String typeName, ClassLoader classLoader, JavaModule module, boolean loaded) {
+    public void onComplete(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded) {
       CURRENT_TRANSFORM.remove();
     }
   }

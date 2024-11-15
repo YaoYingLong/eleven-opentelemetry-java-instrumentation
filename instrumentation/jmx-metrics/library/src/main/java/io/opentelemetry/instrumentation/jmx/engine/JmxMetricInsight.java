@@ -21,6 +21,7 @@ public class JmxMetricInsight {
   private final long discoveryDelay;
 
   public static JmxMetricInsight createService(OpenTelemetry ot, long discoveryDelay) {
+    // discoveryDelay默认为60000，即60秒
     return new JmxMetricInsight(ot, discoveryDelay);
   }
 

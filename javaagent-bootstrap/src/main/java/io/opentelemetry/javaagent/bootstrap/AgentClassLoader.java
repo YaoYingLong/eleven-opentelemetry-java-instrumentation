@@ -43,6 +43,7 @@ public class AgentClassLoader extends URLClassLoader {
     ClassLoader.registerAsParallelCapable();
   }
 
+  // 默认是空，可以通过JVM参数设置
   private static final String AGENT_INITIALIZER_JAR = System.getProperty("otel.javaagent.experimental.initializer.jar", "");
 
   private static final String META_INF = "META-INF/";
@@ -50,16 +51,20 @@ public class AgentClassLoader extends URLClassLoader {
 
   // multi release jars were added in java 9
   private static final int MIN_MULTI_RELEASE_JAR_JAVA_VERSION = 9;
-  // current java version
+  // current java version  当前JDK版本
   private static final int JAVA_VERSION = getJavaVersion();
+  // 当前JDK版本大于等于9
   private static final boolean MULTI_RELEASE_JAR_ENABLE = JAVA_VERSION >= MIN_MULTI_RELEASE_JAR_JAVA_VERSION;
 
   // Calling java.lang.instrument.Instrumentation#appendToBootstrapClassLoaderSearch
   // adds a jar to the bootstrap class lookup, but not to the resource lookup.
   // As a workaround, we keep a reference to the bootstrap jar
   // to use only for resource lookups.
+  // 调用java.lang.instrument.InstrumentationappendToBootstrapClassLoaderSearch会将jar添加到引导程序类查找中
+  // 但不会将jar添加到资源查找中。作为解决方法，我们保留对引导jar的引用，仅用于资源查找
   private final BootstrapClassLoaderProxy bootstrapProxy;
 
+  // 就是**/opentelemetry-javaagent-1.31.0.jar
   private final JarFile jarFile;
   private final URL jarBase;
   private final String jarEntryPrefix;
@@ -94,15 +99,17 @@ public class AgentClassLoader extends URLClassLoader {
     // 默认为false
     this.isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled;
     bootstrapProxy = new BootstrapClassLoaderProxy(this);
-    // jarEntryPrefix默认为inst，其实就是加载inst目录下的类
+    // jarEntryPrefix默认为“inst/”，其实就是加载inst目录下的类
     jarEntryPrefix = internalJarFileName + (internalJarFileName.isEmpty() || internalJarFileName.endsWith("/") ? "" : "/");
     try {
       jarFile = new JarFile(javaagentFile, false);
       // base url for constructing jar entry urls
       // we use a custom protocol instead of typical jar:file: because we don't want to be affected
       // by user code disabling URLConnection caching for jar protocol e.g. tomcat does this
+
       // 这里自定义了一个URL的protocol为x-internal-jar，目的是防止用户代码的干扰，目的是做jar包隔离
       jarBase = new URL("x-internal-jar", null, 0, "/", new AgentClassLoaderUrlStreamHandler(jarFile));
+      // 用于表示代码来源，可以关联安全信息
       codeSource = new CodeSource(javaagentFile.toURI().toURL(), (Certificate[]) null);
       manifest = jarFile.getManifest();
     } catch (IOException e) {
@@ -142,14 +149,13 @@ public class AgentClassLoader extends URLClassLoader {
 
   @Override
   public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-    // ContextStorageOverride is meant for library instrumentation we don't want it to apply to our
-    // bundled grpc
+    // ContextStorageOverride is meant for library instrumentation we don't want it to apply to our bundled grpc
     if ("io.grpc.override.ContextStorageOverride".equals(name)) {
       throw new ClassNotFoundException(name);
     }
 
     synchronized (getClassLoadingLock(name)) {
-      // 还是先从父类加载器中去寻找
+      // 还是先从父类加载器中去寻找，但是由于inst目录中的类名字都是以classdata结尾所以其实是找不到的
       Class<?> clazz = findLoadedClass(name);
       // first search agent classes
       // 如果没有找到再从inst目录中查找
@@ -169,7 +175,7 @@ public class AgentClassLoader extends URLClassLoader {
   }
 
   private Class<?> findAgentClass(String name) throws ClassNotFoundException {
-    // 这里是加载inst目录下的类
+    // 这里是加载inst/目录下的类
     JarEntry jarEntry = findJarEntry(name.replace('.', '/') + ".class");
     if (jarEntry != null) {
       byte[] bytes;
@@ -387,6 +393,9 @@ public class AgentClassLoader extends URLClassLoader {
     }
   }
 
+  /**
+   * 用于打开到指定协议的连接
+   */
   private static class AgentClassLoaderUrlStreamHandler extends URLStreamHandler {
     private final JarFile jarFile;
 
@@ -466,14 +475,14 @@ public class AgentClassLoader extends URLClassLoader {
   }
 
   // We don't always delegate to platform loader because platform class loader also contains user
-  // classes when running a modular application. We don't want these classes interfering with the
-  // agent.
+  // classes when running a modular application. We don't want these classes interfering with the agent.
+  // 我们并不总是委托给平台loader，因为在运行模块化应用程序时，platform class loader也包含用户类。我们不希望这些类干扰agent。
   private static class PlatformDelegatingClassLoader extends ClassLoader {
 
     static {
       // this class loader doesn't load any classes, so this is technically unnecessary,
-      // but included for safety, just in case we every change Class.forName() below back to
-      // super.loadClass()
+      // but included for safety, just in case we every change Class.forName() below back to super.loadClass()
+      // 这个class loader不会加载任何class，所以这在技术上是不必要的，但为了安全起见，以防万一我们每次将下面的Class.forName()都改回super.loadClass()
       registerAsParallelCapable();
     }
 

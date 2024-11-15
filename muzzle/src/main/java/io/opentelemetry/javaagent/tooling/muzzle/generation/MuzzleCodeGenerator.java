@@ -42,6 +42,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 /**
+ * 来完整构造了InstrumentationModuleMuzzle的实现方法，且是在编译时通过MuzzleCodeGenerationPlugin调用本质是ByteBuddy plugin
+ * <p>
  * This class generates the actual implementation of the {@code
  * InstrumentationModule#getMuzzleReferences()} method. It collects references from all advice
  * classes defined in an instrumentation and writes them as Java bytecode in the generated {@code
@@ -86,8 +88,8 @@ final class MuzzleCodeGenerator implements AsmVisitorWrapper {
   }
 
   private static class GenerateMuzzleMethodsAndFields extends ClassVisitor {
-    private final String[] defaultInterfaces =
-        new String[] {Utils.getInternalName(InstrumentationModuleMuzzle.class)};
+    private final String[] defaultInterfaces = new String[] {
+        Utils.getInternalName(InstrumentationModuleMuzzle.class)};
 
     private final URLClassLoader classLoader;
     private String instrumentationClassName;
@@ -103,21 +105,14 @@ final class MuzzleCodeGenerator implements AsmVisitorWrapper {
     }
 
     @Override
-    public void visit(
-        int version,
-        int access,
-        String name,
-        String signature,
-        String superName,
+    public void visit(int version, int access, String name, String signature, String superName,
         String[] interfaces) {
       this.instrumentationClassName = name;
       try {
-        instrumentationModule =
-            (InstrumentationModule)
-                classLoader
-                    .loadClass(Utils.getClassName(instrumentationClassName))
-                    .getDeclaredConstructor()
-                    .newInstance();
+        instrumentationModule = (InstrumentationModule) classLoader
+            .loadClass(Utils.getClassName(instrumentationClassName))
+            .getDeclaredConstructor()
+            .newInstance();
       } catch (Exception e) {
         throw new IllegalStateException(e);
       }
@@ -137,8 +132,7 @@ final class MuzzleCodeGenerator implements AsmVisitorWrapper {
     }
 
     @Override
-    public MethodVisitor visitMethod(
-        int access, String name, String descriptor, String signature, String[] exceptions) {
+    public MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
       if (MUZZLE_REFERENCES_METHOD_NAME.equals(name)) {
         generateReferencesMethod = false;
         logMethodAlreadyExistsMessage(MUZZLE_REFERENCES_METHOD_NAME);
@@ -156,8 +150,7 @@ final class MuzzleCodeGenerator implements AsmVisitorWrapper {
 
     private void logMethodAlreadyExistsMessage(String muzzleVirtualFieldsMethodName) {
       if (logger.isLoggable(INFO)) {
-        logger.log(
-            INFO,
+        logger.log(INFO,
             "The \"{0}\" method was already found in class \"{1}\". Muzzle will not generate it again",
             new Object[] {muzzleVirtualFieldsMethodName, instrumentationClassName});
       }
@@ -223,9 +216,8 @@ final class MuzzleCodeGenerator implements AsmVisitorWrapper {
        *   return references;
        * }
        */
-      MethodVisitor mv =
-          super.visitMethod(
-              Opcodes.ACC_PUBLIC, MUZZLE_REFERENCES_METHOD_NAME, "()Ljava/util/Map;", null, null);
+      MethodVisitor mv = super.visitMethod(Opcodes.ACC_PUBLIC, MUZZLE_REFERENCES_METHOD_NAME,
+          "()Ljava/util/Map;", null, null);
       mv.visitCode();
 
       Collection<ClassRef> references = collector.getReferences().values();

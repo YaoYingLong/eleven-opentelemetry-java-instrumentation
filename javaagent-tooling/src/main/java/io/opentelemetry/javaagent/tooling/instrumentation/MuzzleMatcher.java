@@ -42,8 +42,7 @@ class MuzzleMatcher implements AgentBuilder.RawMatcher {
   private final Cache<ClassLoader, Boolean> matchCache = Cache.weak();
   private volatile ReferenceMatcher referenceMatcher;
 
-  MuzzleMatcher(
-      TransformSafeLogger instrumentationLogger,
+  MuzzleMatcher(TransformSafeLogger instrumentationLogger,
       InstrumentationModule instrumentationModule,
       ConfigProperties config) {
     this.instrumentationLogger = instrumentationLogger;
@@ -52,8 +51,7 @@ class MuzzleMatcher implements AgentBuilder.RawMatcher {
   }
 
   @Override
-  public boolean matches(
-      TypeDescription typeDescription,
+  public boolean matches(TypeDescription typeDescription,
       ClassLoader classLoader,
       JavaModule module,
       Class<?> classBeingRedefined,
@@ -61,6 +59,7 @@ class MuzzleMatcher implements AgentBuilder.RawMatcher {
     if (classLoader == BOOTSTRAP_LOADER) {
       classLoader = Utils.getBootstrapProxy();
     }
+    // 会将匹配的结果换成下来
     return matchCache.computeIfAbsent(classLoader, this::doesMatch);
   }
 
@@ -71,9 +70,7 @@ class MuzzleMatcher implements AgentBuilder.RawMatcher {
     if (!isMatch) {
       MuzzleFailureCounter.inc();
       if (muzzleLogger.isLoggable(muzzleLogLevel)) {
-        muzzleLogger.log(
-            muzzleLogLevel,
-            "Instrumentation skipped, mismatched references were found: {0} [class {1}] on {2}",
+        muzzleLogger.log(muzzleLogLevel, "Instrumentation skipped, mismatched references were found: {0} [class {1}] on {2}",
             new Object[] {
               instrumentationModule.instrumentationName(),
               instrumentationModule.getClass().getName(),
@@ -86,9 +83,7 @@ class MuzzleMatcher implements AgentBuilder.RawMatcher {
       }
     } else {
       if (instrumentationLogger.isLoggable(FINE)) {
-        instrumentationLogger.log(
-            FINE,
-            "Applying instrumentation: {0} [class {1}] on {2}",
+        instrumentationLogger.log(FINE, "Applying instrumentation: {0} [class {1}] on {2}",
             new Object[] {
               instrumentationModule.instrumentationName(),
               instrumentationModule.getClass().getName(),

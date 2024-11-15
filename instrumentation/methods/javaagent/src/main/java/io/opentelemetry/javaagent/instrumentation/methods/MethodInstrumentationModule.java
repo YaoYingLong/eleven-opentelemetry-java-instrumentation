@@ -41,6 +41,7 @@ public class MethodInstrumentationModule extends InstrumentationModule {
 
   // the default configuration has empty "otel.instrumentation.methods.include", and so doesn't
   // generate any TypeInstrumentation for muzzle to analyze
+  // 默认配置为空“otel.instrumentation.methods.include”，因此不会生成任何TypeInstrumentation供muzzle分析
   @Override
   public List<String> getAdditionalHelperClassNames() {
     return typeInstrumentations.isEmpty()

@@ -54,8 +54,10 @@ public class ExtensionClassLoader extends URLClassLoader {
   public static ClassLoader getInstance(ClassLoader parent, File javaagentFile, boolean isSecurityManagerSupportEnabled, EarlyInitAgentConfig earlyConfig) {
     List<URL> extensions = new ArrayList<>();
 
+    // 加载extensions/目录下的jar
     includeEmbeddedExtensionsIfFound(extensions, javaagentFile);
 
+    // 加载自定义扩展，通过otel.javaagent.extensions配置jar表列表，若有多个用逗号隔开
     extensions.addAll(parseLocation(earlyConfig.getString(EXTENSIONS_CONFIG), javaagentFile));
 
     // TODO when logging is configured add warning about deprecated property

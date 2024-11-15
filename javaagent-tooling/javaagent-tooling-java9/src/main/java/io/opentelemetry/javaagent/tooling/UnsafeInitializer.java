@@ -15,6 +15,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+/**
+ * 提供一种机制来初始化某些需要使用 sun.misc.Unsafe类的功能
+ */
 public class UnsafeInitializer {
   private static final Logger logger = Logger.getLogger(UnsafeInitializer.class.getName());
 
@@ -34,8 +37,7 @@ public class UnsafeInitializer {
     // expose jdk.internal.misc.Unsafe to our agent
     // this is used to generate our replacement sun.misc.Unsafe and also by grpc/netty to call
     // jdk.internal.misc.Unsafe.allocateUninitializedArray
-    exports.put(unsafeClass.getPackage().getName(),
-        Collections.singleton(UnsafeInitializer.class.getModule()));
+    exports.put(unsafeClass.getPackage().getName(), Collections.singleton(UnsafeInitializer.class.getModule()));
     instrumentation.redefineModule(
         unsafeClass.getModule(),
         Collections.emptySet(),

@@ -9,14 +9,16 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapSetter;
 
+/**
+ * 用于需要跨进程传递执行上下文参数的，且向下传递参数，如HTTP Client
+ */
 final class PropagatingToDownstreamInstrumenter<REQUEST, RESPONSE>
     extends Instrumenter<REQUEST, RESPONSE> {
 
   private final ContextPropagators propagators;
   private final TextMapSetter<REQUEST> setter;
 
-  PropagatingToDownstreamInstrumenter(
-      InstrumenterBuilder<REQUEST, RESPONSE> builder, TextMapSetter<REQUEST> setter) {
+  PropagatingToDownstreamInstrumenter(InstrumenterBuilder<REQUEST, RESPONSE> builder, TextMapSetter<REQUEST> setter) {
     super(builder);
     this.propagators = builder.openTelemetry.getPropagators();
     this.setter = setter;

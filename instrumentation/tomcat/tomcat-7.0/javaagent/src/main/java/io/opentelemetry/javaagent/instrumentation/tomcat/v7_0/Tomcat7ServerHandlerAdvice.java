@@ -33,7 +33,8 @@ public class Tomcat7ServerHandlerAdvice {
     context = helper().start(parentContext, request);
 
     scope = context.makeCurrent();
-
+    // HttpServerResponseCustomizerHolder中获取的HttpServerResponseCustomizer是在启动时，通过SPI机制加载的所有的实现类HttpServerResponseCustomizer接口的
+    // 并将这些实现类列表，封装到了一个新的HttpServerResponseCustomizer，且其customize就是遍历执行所有实现类的customize访法
     HttpServerResponseCustomizerHolder.getCustomizer().customize(context, response, Tomcat7ResponseMutator.INSTANCE);
   }
 

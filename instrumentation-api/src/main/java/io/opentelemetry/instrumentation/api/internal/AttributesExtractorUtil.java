@@ -19,12 +19,14 @@ public final class AttributesExtractorUtil {
    * Sets the {@code value} with the given {@code key} to the {@link AttributesBuilder} if {@code
    * value} is not {@code null}.
    */
-  public static <T> void internalSet(
-      AttributesBuilder attributes, AttributeKey<T> key, @Nullable T value) {
+  public static <T> void internalSet(AttributesBuilder attributes, AttributeKey<T> key, @Nullable T value) {
     if (value != null) {
       attributes.put(key, value);
     }
   }
 
+  /**
+   * 在非常多的Extractor中被使用
+   */
   private AttributesExtractorUtil() {}
 }

@@ -19,14 +19,13 @@ public class SpringWsSingletons {
   static {
     SpringWsCodeAttributesGetter codeAttributesGetter = new SpringWsCodeAttributesGetter();
 
-    INSTRUMENTER =
-        Instrumenter.<SpringWsRequest, Void>builder(
-                GlobalOpenTelemetry.get(),
-                INSTRUMENTATION_NAME,
-                CodeSpanNameExtractor.create(codeAttributesGetter))
-            .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
-            .setEnabled(ExperimentalConfig.get().controllerTelemetryEnabled())
-            .buildInstrumenter();
+    INSTRUMENTER = Instrumenter.<SpringWsRequest, Void>builder(GlobalOpenTelemetry.get(),
+            INSTRUMENTATION_NAME,
+            CodeSpanNameExtractor.create(codeAttributesGetter))
+        .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
+        // 可以通过配置类控制是否生效
+        .setEnabled(ExperimentalConfig.get().controllerTelemetryEnabled())
+        .buildInstrumenter();
   }
 
   public static Instrumenter<SpringWsRequest, Void> instrumenter() {

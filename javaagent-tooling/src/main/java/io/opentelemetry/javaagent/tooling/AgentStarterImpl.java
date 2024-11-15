@@ -33,10 +33,7 @@ public class AgentStarterImpl implements AgentStarter {
   private final boolean isSecurityManagerSupportEnabled;
   private ClassLoader extensionClassLoader;
 
-  public AgentStarterImpl(
-      Instrumentation instrumentation,
-      File javaagentFile,
-      boolean isSecurityManagerSupportEnabled) {
+  public AgentStarterImpl(Instrumentation instrumentation, File javaagentFile, boolean isSecurityManagerSupportEnabled) {
     this.instrumentation = instrumentation;
     this.javaagentFile = javaagentFile;
     this.isSecurityManagerSupportEnabled = isSecurityManagerSupportEnabled;
@@ -75,6 +72,8 @@ public class AgentStarterImpl implements AgentStarter {
     // 这里的getClass().getClassLoader()获取到的是AgentClassLoader
     // 将AgentClassLoader作为ExtensionClassLoader的父类加载器，并创建ExtensionClassLoader类加载器
     // 因为使用的是双亲委派模型，所有后面使用的都是extensionClassLoader
+    // 所以extensions/目录下的jar会通过ExtensionClassLoader类加载器加载
+    // inst/目录下的类会被AgentClassLoader类加载器加载，其他的会被BootstrapClassLoader类加载器加载
     extensionClassLoader = createExtensionClassLoader(getClass().getClassLoader(), earlyConfig);
 
     String loggerImplementationName = earlyConfig.getString("otel.javaagent.logging");
@@ -109,6 +108,7 @@ public class AgentStarterImpl implements AgentStarter {
 
       // LazyStorage reads system properties. Initialize it here where we have permissions to avoid
       // failing permission checks when it is initialized from user code.
+      // LazyStorage读取系统属性。在我们有权限的地方初始化它，以避免在从用户代码初始化时权限检查失败
       if (System.getSecurityManager() != null) {
         Context.current();
       }
@@ -125,8 +125,7 @@ public class AgentStarterImpl implements AgentStarter {
 
   @SuppressWarnings("SystemOut")
   private static void logUnrecognizedLoggerImplWarning(String loggerImplementationName) {
-    System.err.println(
-        "Unrecognized value of 'otel.javaagent.logging': '" + loggerImplementationName
+    System.err.println("Unrecognized value of 'otel.javaagent.logging': '" + loggerImplementationName
             + "'. The agent will use the no-op implementation.");
   }
 

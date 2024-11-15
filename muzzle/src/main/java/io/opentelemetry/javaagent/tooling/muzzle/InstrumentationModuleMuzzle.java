@@ -13,6 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 此接口包含muzzle自动添加到InstrumentationModule的方法。它们不应该被最终用户使用，而应该被我们自己的内部代码使用
+ *
+ * InstrumentationModuleMuzzle没有在代码中直接实现这个接口，而是通过ByteBuddy来构造了一个实现
+ * Agent通过构建MuzzleCodeGenerator实现了AsmVisitorWrapper来完整构造了InstrumentationModuleMuzzle的实现方法
+ *
  * This interface contains methods that muzzle automatically adds to the {@link
  * InstrumentationModule}. They are not supposed to be used by end-users, only by our own internal
  * code.
@@ -52,8 +57,7 @@ public interface InstrumentationModuleMuzzle {
    * InstrumentationModule#getAdditionalHelperClassNames()}.
    */
   static List<String> getHelperClassNames(InstrumentationModule module) {
-    List<String> muzzleHelperClassNames =
-        module instanceof InstrumentationModuleMuzzle
+    List<String> muzzleHelperClassNames = module instanceof InstrumentationModuleMuzzle
             ? ((InstrumentationModuleMuzzle) module).getMuzzleHelperClassNames()
             : Collections.emptyList();
 

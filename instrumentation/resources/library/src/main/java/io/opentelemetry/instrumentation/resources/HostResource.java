@@ -26,6 +26,7 @@ public final class HostResource {
   static Resource buildResource() {
     AttributesBuilder attributes = Attributes.builder();
     try {
+      // 设置host.name属性
       attributes.put(ResourceAttributes.HOST_NAME, InetAddress.getLocalHost().getHostName());
     } catch (UnknownHostException e) {
       // Ignore
@@ -37,6 +38,7 @@ public final class HostResource {
       // Ignore
     }
     if (hostArch != null) {
+      // 设置host.arch属性
       attributes.put(ResourceAttributes.HOST_ARCH, hostArch);
     }
 

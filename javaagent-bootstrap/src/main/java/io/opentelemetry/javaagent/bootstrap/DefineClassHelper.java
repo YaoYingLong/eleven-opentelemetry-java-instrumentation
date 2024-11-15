@@ -11,8 +11,7 @@ public class DefineClassHelper {
 
   /** Helper class for {@code ClassLoader.defineClass} callbacks. */
   public interface Handler {
-    DefineClassContext beforeDefineClass(
-        ClassLoader classLoader, String className, byte[] classBytes, int offset, int length);
+    DefineClassContext beforeDefineClass(ClassLoader classLoader, String className, byte[] classBytes, int offset, int length);
 
     DefineClassContext beforeDefineLambdaClass(Class<?> lambdaInterface);
 
@@ -37,12 +36,7 @@ public class DefineClassHelper {
     // https://github.com/openjdk/jdk11u/blob/487c3344fee3502b4843e7e11acceb77ad16100c/src/java.base/share/classes/java/lang/ClassLoader.java#L1095
     int length = byteBuffer.remaining();
     if (byteBuffer.hasArray()) {
-      return beforeDefineClass(
-          classLoader,
-          className,
-          byteBuffer.array(),
-          byteBuffer.position() + byteBuffer.arrayOffset(),
-          length);
+      return beforeDefineClass(classLoader, className, byteBuffer.array(), byteBuffer.position() + byteBuffer.arrayOffset(), length);
     } else {
       byte[] classBytes = new byte[length];
       byteBuffer.duplicate().get(classBytes);

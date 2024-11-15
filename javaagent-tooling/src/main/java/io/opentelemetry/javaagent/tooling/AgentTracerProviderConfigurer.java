@@ -28,33 +28,37 @@ public class AgentTracerProviderConfigurer implements AutoConfigurationCustomize
   }
 
   @CanIgnoreReturnValue
-  private static SdkTracerProviderBuilder configure(
-      SdkTracerProviderBuilder sdkTracerProviderBuilder, ConfigProperties config) {
+  private static SdkTracerProviderBuilder configure(SdkTracerProviderBuilder sdkTracerProviderBuilder, ConfigProperties config) {
+    // 获取otel.javaagent.enabled配置，默认为ture
     if (!config.getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
+      // 默认不会走该分支
       return sdkTracerProviderBuilder;
     }
-
     // Register additional thread details logging span processor
+    // 注册用于获取线程详细信息的SpanProcessor，即AddThreadDetailsSpanProcessor，为每个Span中添加线程名称和线程id属性
     if (config.getBoolean(ADD_THREAD_DETAILS, true)) {
       sdkTracerProviderBuilder.addSpanProcessor(new AddThreadDetailsSpanProcessor());
     }
-
+    // 如果时debug模式，即otel.javaagent.debug配置为true，则默认添加通过logging的方式导出traces的SpanProcessor
     maybeEnableLoggingExporter(sdkTracerProviderBuilder, config);
 
     return sdkTracerProviderBuilder;
   }
 
-  private static void maybeEnableLoggingExporter(
-      SdkTracerProviderBuilder builder, ConfigProperties config) {
+  private static void maybeEnableLoggingExporter(SdkTracerProviderBuilder builder, ConfigProperties config) {
+    // 获取otel.javaagent.debug配置，默认为false
     if (AgentConfig.isDebugModeEnabled(config)) {
       // don't install another instance if the user has already explicitly requested it.
+      // 获取otel.traces.exporter配置，若该配置不包含logging则返回ture
       if (loggingExporterIsNotAlreadyConfigured(config)) {
+        // 添加通过logging的方式导出traces的SpanProcessor
         builder.addSpanProcessor(SimpleSpanProcessor.create(LoggingSpanExporter.create()));
       }
     }
   }
 
   private static boolean loggingExporterIsNotAlreadyConfigured(ConfigProperties config) {
+    // 获取otel.traces.exporter配置，若该配置不包含logging则返回ture
     return !config.getList("otel.traces.exporter", emptyList()).contains("logging");
   }
 }

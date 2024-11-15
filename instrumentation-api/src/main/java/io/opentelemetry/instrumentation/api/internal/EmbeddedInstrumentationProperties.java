@@ -21,14 +21,14 @@ import javax.annotation.Nullable;
  */
 public final class EmbeddedInstrumentationProperties {
 
-  private static final Logger logger =
-      Logger.getLogger(EmbeddedInstrumentationProperties.class.getName());
+  private static final Logger logger = Logger.getLogger(EmbeddedInstrumentationProperties.class.getName());
 
   private static final ClassLoader DEFAULT_LOADER;
 
   static {
     ClassLoader defaultLoader = EmbeddedInstrumentationProperties.class.getClassLoader();
     if (defaultLoader == null) {
+      // Bootstrap类加载器
       defaultLoader = new BootstrapProxy();
     }
     DEFAULT_LOADER = defaultLoader;
@@ -37,6 +37,9 @@ public final class EmbeddedInstrumentationProperties {
   private static volatile ClassLoader loader = DEFAULT_LOADER;
   private static final Map<String, String> versions = new ConcurrentHashMap<>();
 
+  /**
+   * 在installBytebuddyAgent中被调用，设置为extensionClassLoader
+   */
   public static void setPropertiesLoader(ClassLoader propertiesLoader) {
     if (loader != DEFAULT_LOADER) {
       logger.warning("Embedded properties loader has already been set up, further setPropertiesLoader() calls are ignored");
@@ -48,14 +51,13 @@ public final class EmbeddedInstrumentationProperties {
 
   @Nullable
   public static String findVersion(String instrumentationName) {
-    return versions.computeIfAbsent(
-        instrumentationName, EmbeddedInstrumentationProperties::loadVersion);
+    return versions.computeIfAbsent(instrumentationName, EmbeddedInstrumentationProperties::loadVersion);
   }
 
   @Nullable
   private static String loadVersion(String instrumentationName) {
-    String path =
-        "META-INF/io/opentelemetry/instrumentation/" + instrumentationName + ".properties";
+    // 读取配置文件中的版本号，如果没有读取到，则返回null
+    String path = "META-INF/io/opentelemetry/instrumentation/" + instrumentationName + ".properties";
     try (InputStream in = loader.getResourceAsStream(path)) {
       if (in == null) {
         logger.log(FINE, "Did not find embedded instrumentation properties file {0}", path);

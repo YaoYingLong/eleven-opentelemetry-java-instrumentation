@@ -76,35 +76,38 @@ public class AgentInstaller {
   // condition for delaying the AgentListener initialization is pretty broad and in case it covers
   // too much javaagent users can file a bug, force sync execution by setting this property to true
   // and continue using the javaagent
-  private static final String FORCE_SYNCHRONOUS_AGENT_LISTENERS_CONFIG =
-      "otel.javaagent.experimental.force-synchronous-agent-listeners";
+  private static final String FORCE_SYNCHRONOUS_AGENT_LISTENERS_CONFIG = "otel.javaagent.experimental.force-synchronous-agent-listeners";
 
-  private static final String STRICT_CONTEXT_STRESSOR_MILLIS =
-      "otel.javaagent.testing.strict-context-stressor-millis";
+  private static final String STRICT_CONTEXT_STRESSOR_MILLIS = "otel.javaagent.testing.strict-context-stressor-millis";
 
   private static final Map<String, List<Runnable>> CLASS_LOAD_CALLBACKS = new HashMap<>();
 
-  public static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader, EarlyInitAgentConfig earlyConfig) {
+  public static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
+      EarlyInitAgentConfig earlyConfig) {
     addByteBuddyRawSetting();
 
     Integer strictContextStressorMillis = Integer.getInteger(STRICT_CONTEXT_STRESSOR_MILLIS);
     if (strictContextStressorMillis != null) {
-      io.opentelemetry.context.ContextStorage.addWrapper(storage -> new StrictContextStressor(storage, strictContextStressorMillis));
+      io.opentelemetry.context.ContextStorage.addWrapper(
+          storage -> new StrictContextStressor(storage, strictContextStressorMillis));
     }
     // 打印版本相关的日志
     logVersionInfo();
     // 可以通过otel.javaagent.enabled配置不使用OTel
     if (earlyConfig.getBoolean(JAVAAGENT_ENABLED_CONFIG, true)) {
+      // 提供一种机制来初始化某些需要使用sun.misc.Unsafe类的功能
       setupUnsafe(inst);
-      // 通过SPI机制加载实现了AgentListener接口的类
+      // 通过SPI机制加载实现了AgentListener接口的类，且这些类是通过AgentClassLoader来加载，这里仅加载不执行
       List<AgentListener> agentListeners = loadOrdered(AgentListener.class, extensionClassLoader);
+      // 构建全局的OpenTelemetry对象，执行InstrumentationLoader的extend方法，通过SPI机制加载所有的InstrumentationModule
       installBytebuddyAgent(inst, extensionClassLoader, agentListeners);
     } else {
       logger.fine("Tracing is disabled, not installing instrumentations.");
     }
   }
 
-  private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader, Iterable<AgentListener> agentListeners) {
+  private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
+      Iterable<AgentListener> agentListeners) {
 
     WeakRefAsyncOperationEndStrategies.initialize();
 
@@ -122,8 +125,10 @@ public class AgentInstaller {
     ConfigProperties sdkConfig = AutoConfigureUtil.getConfig(autoConfiguredSdk);
     // 这个地方仅仅就是将sdkConfig包装了一下到InstrumentationConfig
     InstrumentationConfig.internalInitializeConfig(new ConfigPropertiesBridge(sdkConfig));
-    // 从sdkConfig中将otel.instrumentation.experimental.span-suppression-strategy、otel.instrumentation.http.prefer-forwarded-url-scheme
-    // 以及otel.semconv-stability.opt-in三个配置设置到环境变量中
+    // 从sdkConfig中将以下三个配置设置到环境变量中
+    // - otel.instrumentation.experimental.span-suppression-strategy、
+    // - otel.instrumentation.http.prefer-forwarded-url-scheme
+    // - otel.semconv-stability.opt-in
     copyNecessaryConfigToSystemProperties(sdkConfig);
 
     setBootstrapPackages(sdkConfig, extensionClassLoader);
@@ -132,30 +137,38 @@ public class AgentInstaller {
       agentListener.beforeAgent(autoConfiguredSdk);
     }
 
-    AgentBuilder agentBuilder =
-        new AgentBuilder.Default(
-                // default method graph compiler inspects the class hierarchy, we don't need it, so
-                // we use a simpler and faster strategy instead
-                new ByteBuddy()
-                    // MethodGraph 是一个表示方法调用的图结构，它可以帮助开发者更好地理解和分析类的结构
-                    // Compiler 部分则负责将这个图编译成实际的字节码，使得开发者可以动态地修改和增强Java程序的行为‌
-                    // 用于处理类的直接方法，不包括继承的方法
-                    .with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE)  // bytebuddy的默认编译器
-                    // 作用是阻止构造函数调用父类的构造函数
-                    .with(VisibilityBridgeStrategy.Default.NEVER)
-                    // 作用‌是用于创建一个不可变的类定义
-                    .with(InstrumentedType.Factory.Default.FROZEN))
-            // 在类加载时，当ByteBuddy检测到一个类需要被增强时，它会使用这个类来代理原始类，从而在不修改原始代码的情况下增加新的行为
-            .with(AgentBuilder.TypeStrategy.Default.DECORATE)
-            .disableClassFormatChanges()
-            .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-            .with(new RedefinitionDiscoveryStrategy())
-            .with(AgentBuilder.DescriptionStrategy.Default.POOL_ONLY)
-            .with(AgentTooling.poolStrategy())
-            .with(new ClassLoadListener())
-            .with(AgentTooling.transformListener())
-            .with(AgentTooling.locationStrategy());
-    // 如果JDK版小于等于9
+    AgentBuilder agentBuilder = new AgentBuilder.Default(
+        // default method graph compiler inspects the class hierarchy, we don't need it, so
+        // we use a simpler and faster strategy instead
+        // 默认方法Graph编译器检查类层次结构，我们不需要它因此我们使用更简单、更快速的策略
+        new ByteBuddy()
+            // MethodGraph是一个表示方法调用的图结构，它可以帮助开发者更好地理解和分析类的结构
+            // Compiler部分则负责将这个图编译成实际的字节码，使得开发者可以动态地修改和增强Java程序的行为‌
+            // 用于处理类的直接方法，不包括继承的方法
+            .with(MethodGraph.Compiler.ForDeclaredMethods.INSTANCE)  // bytebuddy的默认编译器
+            // 作用是阻止构造函数调用父类的构造函数
+            .with(VisibilityBridgeStrategy.Default.NEVER)
+            // 作用‌是用于创建一个不可变的类定义
+            .with(InstrumentedType.Factory.Default.FROZEN))
+        // 在类加载时，当ByteBuddy检测到一个类需要被增强时，它会使用这个类来代理原始类，从而在不修改原始代码的情况下增加新的行为
+        .with(AgentBuilder.TypeStrategy.Default.DECORATE)
+        // 禁止在字节码转换过程中对类的结构进行某些更改，保持类结构的稳定
+        .disableClassFormatChanges()
+        // 允许在运行时重新转换已经加载的类。这意味着即使类已经被加载到JVM中，代理仍然可以修改这些类的字节码，而不需要卸载和重新加载类
+        .with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
+        // 为类的重新定义或重新转换过程提供一种机制，以便在运行时动态发现和选择需要处理的类。
+        // 通过自定义类发现策略，可以更精确地控制哪些类应该被代理，从而优化性能和资源使用。
+        // 如果类加载器是AgentClassLoader或ExtensionClassLoader时被过滤掉
+        .with(new RedefinitionDiscoveryStrategy())
+        // 主要是指在描述类时，仅使用类文件池（Class File Pool）来获取类的元数据，而不是通过反射或其他方式
+        .with(AgentBuilder.DescriptionStrategy.Default.POOL_ONLY)
+        // 用于定义类文件池（Class File Pool）的策略
+        .with(AgentTooling.poolStrategy())
+        // 监听器，用于类加载完成后执行
+        .with(new ClassLoadListener())
+        .with(AgentTooling.transformListener())
+        .with(AgentTooling.locationStrategy());
+    // 如果JDK版大于5小于等于9
     if (JavaModule.isSupported()) {
       agentBuilder = agentBuilder.with(new ExposeAgentBootstrapListener(inst));
     }
@@ -163,33 +176,40 @@ public class AgentInstaller {
     // 这里配置一些忽略的类或者类加载器的前缀
     agentBuilder = configureIgnoredTypes(sdkConfig, extensionClassLoader, agentBuilder);
 
-    // 判断otel.javaagent.debug配置是否为true
+    // 判断otel.javaagent.debug配置是否为true，默认是false
     if (AgentConfig.isDebugModeEnabled(sdkConfig)) {
       agentBuilder = agentBuilder.with(AgentBuilder.RedefinitionStrategy.RETRANSFORMATION)
-              .with(new RedefinitionDiscoveryStrategy())
-              .with(new RedefinitionLoggingListener())
-              .with(new TransformLoggingListener());
+          .with(new RedefinitionDiscoveryStrategy())
+          .with(new RedefinitionLoggingListener())
+          .with(new TransformLoggingListener());
     }
 
     int numberOfLoadedExtensions = 0;
     // 这里加载了InstrumentationLoader
     for (AgentExtension agentExtension : loadOrdered(AgentExtension.class, extensionClassLoader)) {
       if (logger.isLoggable(FINE)) {
-        logger.log(FINE, "Loading extension {0} [class {1}]", new Object[] {agentExtension.extensionName(), agentExtension.getClass().getName()});
+        logger.log(FINE, "Loading extension {0} [class {1}]",
+            new Object[] {agentExtension.extensionName(), agentExtension.getClass().getName()});
       }
-      try { // 执行InstrumentationLoader的extend方法，通过SPI机制加载所有的InstrumentationModule
+      try {
+        // 执行InstrumentationLoader的extend方法，通过SPI机制加载所有的InstrumentationModule
         agentBuilder = agentExtension.extend(agentBuilder, sdkConfig);
         numberOfLoadedExtensions++;
       } catch (Exception | LinkageError e) {
-        logger.log(SEVERE, "Unable to load extension " + agentExtension.extensionName() + " [class " + agentExtension.getClass().getName() + "]", e);
+        logger.log(SEVERE, "Unable to load extension " + agentExtension.extensionName() + " [class "
+            + agentExtension.getClass().getName() + "]", e);
       }
     }
     logger.log(FINE, "Installed {0} extension(s)", numberOfLoadedExtensions);
 
     agentBuilder = AgentBuilderUtil.optimize(agentBuilder);
+    // 这里将真正将构建的代理配置应用到目标JVM中，使其能够对类进行拦截、修改或增强
     ResettableClassFileTransformer resettableClassFileTransformer = agentBuilder.installOn(inst);
+    // 这里resettableClassFileTransformer设置到一个全局的Holder，方便在其他地方可以获取使用
     ClassFileTransformerHolder.setClassFileTransformer(resettableClassFileTransformer);
 
+    // 通过SPI机制加载所有的实现了HttpServerResponseCustomizer接口的类，并将这些实现类列表封装到了一个新的HttpServerResponseCustomizer
+    // 且其customize就是遍历执行所有实现类的customize访法，并设置到HttpServerResponseCustomizerHolder中，在具体的HTTP的组件中获取并执行
     addHttpServerResponseCustomizers(extensionClassLoader);
     // 最后才真正执行通过SPI加载的AgentListener实现类，作用大多是用来创建Meter来获取指标
     runAfterAgentListeners(agentListeners, autoConfiguredSdk);
@@ -197,8 +217,8 @@ public class AgentInstaller {
 
   private static void copyNecessaryConfigToSystemProperties(ConfigProperties config) {
     for (String property : asList("otel.instrumentation.experimental.span-suppression-strategy",
-            "otel.instrumentation.http.prefer-forwarded-url-scheme",
-            "otel.semconv-stability.opt-in")) {
+        "otel.instrumentation.http.prefer-forwarded-url-scheme",
+        "otel.semconv-stability.opt-in")) {
       String value = config.getString(property);
       if (value != null) {
         System.setProperty(property, value);
@@ -214,9 +234,11 @@ public class AgentInstaller {
     }
   }
 
-  private static void setBootstrapPackages(ConfigProperties config, ClassLoader extensionClassLoader) {
+  private static void setBootstrapPackages(ConfigProperties config,
+      ClassLoader extensionClassLoader) {
     BootstrapPackagesBuilderImpl builder = new BootstrapPackagesBuilderImpl();
-    for (BootstrapPackagesConfigurer configurer : load(BootstrapPackagesConfigurer.class, extensionClassLoader)) {
+    for (BootstrapPackagesConfigurer configurer : load(BootstrapPackagesConfigurer.class,
+        extensionClassLoader)) {
       configurer.configure(builder, config);
     }
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(builder.build());
@@ -226,9 +248,11 @@ public class AgentInstaller {
     DefineClassHelper.internalSetHandler(DefineClassHandler.INSTANCE);
   }
 
-  private static AgentBuilder configureIgnoredTypes(ConfigProperties config, ClassLoader extensionClassLoader, AgentBuilder agentBuilder) {
+  private static AgentBuilder configureIgnoredTypes(ConfigProperties config,
+      ClassLoader extensionClassLoader, AgentBuilder agentBuilder) {
     IgnoredTypesBuilderImpl builder = new IgnoredTypesBuilderImpl();
-    for (IgnoredTypesConfigurer configurer : loadOrdered(IgnoredTypesConfigurer.class, extensionClassLoader)) {
+    for (IgnoredTypesConfigurer configurer : loadOrdered(IgnoredTypesConfigurer.class,
+        extensionClassLoader)) {
       configurer.configure(builder, config);
     }
 
@@ -239,18 +263,19 @@ public class AgentInstaller {
         .ignore(any(), new IgnoredClassLoadersMatcher(builder.buildIgnoredClassLoadersTrie()))
         .or(new IgnoredTypesMatcher(builder.buildIgnoredTypesTrie()))
         .or((typeDescription, classLoader, module, classBeingRedefined, protectionDomain) -> {
-              return HelperInjector.isInjectedClass(classLoader, typeDescription.getName());
-            });
+          return HelperInjector.isInjectedClass(classLoader, typeDescription.getName());
+        });
   }
 
   private static void addHttpServerResponseCustomizers(ClassLoader extensionClassLoader) {
+    // 通过SPI机制加载所有的实现了HttpServerResponseCustomizer接口的类
     List<HttpServerResponseCustomizer> customizers = load(HttpServerResponseCustomizer.class, extensionClassLoader);
 
-    HttpServerResponseCustomizerHolder.setCustomizer(
-        new HttpServerResponseCustomizer() {
+    // 将通过SPI机制获取到的HttpServerResponseCustomizer接口实现类列表再次封装成一个统一的HttpServerResponseCustomizer
+    HttpServerResponseCustomizerHolder.setCustomizer(new HttpServerResponseCustomizer() {
           @Override
           public <T> void customize(Context serverContext, T response, HttpServerResponseMutator<T> responseMutator) {
-
+            // 遍历执行具体的HttpServerResponseCustomizer的customize访法
             for (HttpServerResponseCustomizer modifier : customizers) {
               modifier.customize(serverContext, response, responseMutator);
             }
@@ -258,8 +283,7 @@ public class AgentInstaller {
         });
   }
 
-  private static void runAfterAgentListeners(
-      Iterable<AgentListener> agentListeners, AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
+  private static void runAfterAgentListeners(Iterable<AgentListener> agentListeners, AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
     // java.util.logging.LogManager maintains a final static LogManager, which is created during
     // class initialization. Some AgentListener implementations may use JRE bootstrap classes
     // which touch this class (e.g. JFR classes or some MBeans).
@@ -277,7 +301,7 @@ public class AgentInstaller {
     // the application is already setting the global LogManager and AgentListener won't be able
     // to touch it due to class loader locking.
     boolean shouldForceSynchronousAgentListenersCalls = AutoConfigureUtil.getConfig(autoConfiguredSdk)
-            .getBoolean(FORCE_SYNCHRONOUS_AGENT_LISTENERS_CONFIG, false);
+        .getBoolean(FORCE_SYNCHRONOUS_AGENT_LISTENERS_CONFIG, false);
     boolean javaBefore9 = isJavaBefore9();
     if (!shouldForceSynchronousAgentListenersCalls && javaBefore9 && isAppUsingCustomLogManager()) {
       logger.fine("Custom JUL LogManager detected: delaying AgentListener#afterAgent() calls");
@@ -321,7 +345,8 @@ public class AgentInstaller {
 
   static class RedefinitionLoggingListener implements AgentBuilder.RedefinitionStrategy.Listener {
 
-    private static final Logger logger = Logger.getLogger(RedefinitionLoggingListener.class.getName());
+    private static final Logger logger = Logger.getLogger(
+        RedefinitionLoggingListener.class.getName());
 
     @Override
     public void onBatch(int index, List<Class<?>> batch, List<Class<?>> types) {}
@@ -345,19 +370,24 @@ public class AgentInstaller {
 
   static class TransformLoggingListener extends AgentBuilder.Listener.Adapter {
 
-    private static final TransformSafeLogger logger = TransformSafeLogger.getLogger(TransformLoggingListener.class);
+    private static final TransformSafeLogger logger = TransformSafeLogger.getLogger(
+        TransformLoggingListener.class);
 
     @Override
-    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
+    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded,
+        Throwable throwable) {
       if (logger.isLoggable(FINE)) {
-        logger.log(FINE, "Failed to handle {0} for transformation on class loader {1}", new Object[] {typeName, classLoader}, throwable);
+        logger.log(FINE, "Failed to handle {0} for transformation on class loader {1}",
+            new Object[] {typeName, classLoader}, throwable);
       }
     }
 
     @Override
-    public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader, JavaModule module, boolean loaded, DynamicType dynamicType) {
+    public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader,
+        JavaModule module, boolean loaded, DynamicType dynamicType) {
       if (logger.isLoggable(FINE)) {
-        logger.log(FINE, "Transformed {0} -- {1}", new Object[] {typeDescription.getName(), classLoader});
+        logger.log(FINE, "Transformed {0} -- {1}",
+            new Object[] {typeDescription.getName(), classLoader});
       }
     }
   }
@@ -377,8 +407,7 @@ public class AgentInstaller {
    */
   public static void registerClassLoadCallback(String className, Runnable callback) {
     synchronized (CLASS_LOAD_CALLBACKS) {
-      List<Runnable> callbacks =
-          CLASS_LOAD_CALLBACKS.computeIfAbsent(className, k -> new ArrayList<>());
+      List<Runnable> callbacks = CLASS_LOAD_CALLBACKS.computeIfAbsent(className, k -> new ArrayList<>());
       callbacks.add(callback);
     }
   }
@@ -388,8 +417,7 @@ public class AgentInstaller {
     private final Iterable<AgentListener> agentListeners;
     private final AutoConfiguredOpenTelemetrySdk autoConfiguredSdk;
 
-    private DelayedAfterAgentCallback(
-        Iterable<AgentListener> agentListeners, AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
+    private DelayedAfterAgentCallback(Iterable<AgentListener> agentListeners, AutoConfiguredOpenTelemetrySdk autoConfiguredSdk) {
       this.agentListeners = agentListeners;
       this.autoConfiguredSdk = autoConfiguredSdk;
     }
@@ -420,8 +448,7 @@ public class AgentInstaller {
 
   private static class ClassLoadListener extends AgentBuilder.Listener.Adapter {
     @Override
-    public void onComplete(
-        String typeName, ClassLoader classLoader, JavaModule javaModule, boolean b) {
+    public void onComplete(String typeName, ClassLoader classLoader, JavaModule javaModule, boolean b) {
       synchronized (CLASS_LOAD_CALLBACKS) {
         List<Runnable> callbacks = CLASS_LOAD_CALLBACKS.get(typeName);
         if (callbacks != null) {
@@ -441,11 +468,12 @@ public class AgentInstaller {
     public Iterable<Iterable<Class<?>>> resolve(Instrumentation instrumentation) {
       // filter out our agent classes and injected helper classes
       return () -> streamOf(delegate.resolve(instrumentation))
-              .map(RedefinitionDiscoveryStrategy::filterClasses)
-              .iterator();
+          .map(RedefinitionDiscoveryStrategy::filterClasses)
+          .iterator();
     }
 
     private static Iterable<Class<?>> filterClasses(Iterable<Class<?>> classes) {
+      // 过滤掉类加载器AgentClassLoader或ExtensionClassLoader的类，以及生成的ByteBuddy帮助程序类
       return () -> streamOf(classes).filter(c -> !isIgnored(c)).iterator();
     }
 
@@ -455,10 +483,11 @@ public class AgentInstaller {
 
     private static boolean isIgnored(Class<?> c) {
       ClassLoader cl = c.getClassLoader();
+      // 如果类加载器是AgentClassLoader或ExtensionClassLoader时返回ture，即被过滤掉
       if (cl instanceof AgentClassLoader || cl instanceof ExtensionClassLoader) {
         return true;
       }
-      // ignore generate byte buddy helper class
+      // ignore generate byte buddy helper class  若是生成的ByteBuddy帮助程序类返回ture，即被过滤掉
       if (c.getName().startsWith("java.lang.ClassLoader$ByteBuddyAccessor$")) {
         return true;
       }
@@ -517,6 +546,9 @@ public class AgentInstaller {
 
   private AgentInstaller() {}
 
+  /**
+   * 主要作用是确保上下文在多线程环境中正确传播和管理。它通过模拟并发环境中的上下文使用场景来测试上下文管理器的健壮性和一致性
+   */
   private static class StrictContextStressor implements ContextStorage, AutoCloseable {
 
     private final ContextStorage contextStorage;

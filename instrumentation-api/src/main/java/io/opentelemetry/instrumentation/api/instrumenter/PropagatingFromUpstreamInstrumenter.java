@@ -10,14 +10,16 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.instrumentation.api.internal.ContextPropagationDebug;
 
+/**
+ * 用于需要跨进程传递执行上下文参数的，且获取参数，如HTTP Server
+ */
 final class PropagatingFromUpstreamInstrumenter<REQUEST, RESPONSE>
     extends Instrumenter<REQUEST, RESPONSE> {
 
   private final ContextPropagators propagators;
   private final TextMapGetter<REQUEST> getter;
 
-  PropagatingFromUpstreamInstrumenter(
-      InstrumenterBuilder<REQUEST, RESPONSE> builder, TextMapGetter<REQUEST> getter) {
+  PropagatingFromUpstreamInstrumenter(InstrumenterBuilder<REQUEST, RESPONSE> builder, TextMapGetter<REQUEST> getter) {
     super(builder);
     this.propagators = builder.openTelemetry.getPropagators();
     this.getter = getter;

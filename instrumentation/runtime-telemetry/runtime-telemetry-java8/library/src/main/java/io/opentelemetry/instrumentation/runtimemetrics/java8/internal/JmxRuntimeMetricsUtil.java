@@ -21,8 +21,7 @@ public class JmxRuntimeMetricsUtil {
   private static final String INSTRUMENTATION_NAME = "io.opentelemetry.runtime-telemetry-java8";
 
   @Nullable
-  private static final String INSTRUMENTATION_VERSION =
-      EmbeddedInstrumentationProperties.findVersion(INSTRUMENTATION_NAME);
+  private static final String INSTRUMENTATION_VERSION = EmbeddedInstrumentationProperties.findVersion(INSTRUMENTATION_NAME);
 
   public static Meter getMeter(OpenTelemetry openTelemetry) {
     MeterBuilder meterBuilder = openTelemetry.meterBuilder(INSTRUMENTATION_NAME);

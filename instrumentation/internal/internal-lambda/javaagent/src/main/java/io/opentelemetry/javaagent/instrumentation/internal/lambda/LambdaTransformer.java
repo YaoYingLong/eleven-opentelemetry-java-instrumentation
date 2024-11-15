@@ -40,13 +40,9 @@ public final class LambdaTransformer {
       try {
         byte[] result;
         if (IS_JAVA_9) {
-          result =
-              Java9LambdaTransformer.transform(
-                  transformer, classBytes, slashClassName, targetClass);
+          result = Java9LambdaTransformer.transform(transformer, classBytes, slashClassName, targetClass);
         } else {
-          result =
-              transformer.transform(
-                  targetClass.getClassLoader(), slashClassName, null, null, classBytes);
+          result = transformer.transform(targetClass.getClassLoader(), slashClassName, null, null, classBytes);
         }
         if (result != null) {
           return result;

@@ -38,8 +38,7 @@ public final class ContainerResource {
   }
 
   // Visible for testing
-  ContainerResource(
-      CgroupV1ContainerIdExtractor v1Extractor, CgroupV2ContainerIdExtractor v2Extractor) {
+  ContainerResource(CgroupV1ContainerIdExtractor v1Extractor, CgroupV2ContainerIdExtractor v2Extractor) {
     this.v1Extractor = v1Extractor;
     this.v2Extractor = v2Extractor;
   }

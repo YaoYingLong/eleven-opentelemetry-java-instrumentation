@@ -10,6 +10,9 @@ import io.opentelemetry.api.common.AttributesBuilder;
 import io.opentelemetry.context.Context;
 import javax.annotation.Nullable;
 
+/**
+ * 用于向Attribute中添加一个固定的键值对
+ */
 final class ConstantAttributesExtractor<REQUEST, RESPONSE, T>
     implements AttributesExtractor<REQUEST, RESPONSE> {
 

@@ -13,6 +13,8 @@ import io.opentelemetry.context.Context;
  * be called during the {@linkplain Instrumenter#start(Context, Object) <code>Instrumenter</code>
  * start}, allowing customization of the {@link Context} just before the {@link Instrumenter}
  * returns it.
+ *
+ * 在span start之前执行，用于自定义Context
  */
 @FunctionalInterface
 public interface ContextCustomizer<REQUEST> {
