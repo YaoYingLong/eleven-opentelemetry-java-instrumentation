@@ -46,8 +46,7 @@ public class MethodInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
-        namedOneOf(methodNames.toArray(new String[0])),
+    transformer.applyAdviceToMethod(namedOneOf(methodNames.toArray(new String[0])),
         MethodInstrumentation.class.getName() + "$MethodAdvice");
   }
 
@@ -55,8 +54,7 @@ public class MethodInstrumentation implements TypeInstrumentation {
   public static class MethodAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void onEnter(
-        @Advice.Origin("#t") Class<?> declaringClass,
+    public static void onEnter(@Advice.Origin("#t") Class<?> declaringClass,
         @Advice.Origin("#m") String methodName,
         @Advice.Local("otelMethod") ClassAndMethod classAndMethod,
         @Advice.Local("otelContext") Context context,
@@ -81,8 +79,8 @@ public class MethodInstrumentation implements TypeInstrumentation {
         @Advice.Thrown Throwable throwable) {
       scope.close();
 
-      returnValue =
-          AsyncOperationEndSupport.create(instrumenter(), Void.class, method.getReturnType())
+      // 通过AsyncOperationEndSupport封装一次，主要是对异步逻辑的封装，如使用CompletableFuture
+      returnValue = AsyncOperationEndSupport.create(instrumenter(), Void.class, method.getReturnType())
               .asyncEnd(context, classAndMethod, returnValue, throwable);
     }
   }

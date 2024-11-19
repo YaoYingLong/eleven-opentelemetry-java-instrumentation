@@ -20,14 +20,17 @@ public class JarAnalyzerInstaller implements BeforeAgentListener {
   @Override
   public void beforeAgent(AutoConfiguredOpenTelemetrySdk autoConfiguredOpenTelemetrySdk) {
     ConfigProperties config = AutoConfigureUtil.getConfig(autoConfiguredOpenTelemetrySdk);
+    // 默认为false，直接返回
     boolean enabled = config.getBoolean("otel.instrumentation.runtime-telemetry.package-emitter.enabled", false);
     if (!enabled) {
       return;
     }
+    // 从全局的InstrumentationHolder中获取Instrumentation
     Instrumentation inst = InstrumentationHolder.getInstrumentation();
     if (inst == null) {
       return;
     }
+    // 默认为10s
     int jarsPerSecond = config.getInt("otel.instrumentation.runtime-telemetry.package-emitter.jars-per-second", 10);
     JarAnalyzer jarAnalyzer = JarAnalyzer.create(autoConfiguredOpenTelemetrySdk.getOpenTelemetrySdk(), jarsPerSecond);
     inst.addTransformer(jarAnalyzer);

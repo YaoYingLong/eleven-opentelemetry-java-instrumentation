@@ -53,6 +53,10 @@ public final class RxJava2AsyncOperationEndStrategy implements AsyncOperationEnd
         || returnType == ParallelFlowable.class;
   }
 
+
+  /**
+   * 调用时机是在AsyncOperationEndSupport中的asyncEnd方法中被调用
+   */
   @Override
   public <REQUEST, RESPONSE> Object end(
       Instrumenter<REQUEST, RESPONSE> instrumenter,

@@ -48,8 +48,7 @@ public class DefineClassInstrumentation implements TypeInstrumentation {
         @Advice.Argument(1) byte[] classBytes,
         @Advice.Argument(2) int offset,
         @Advice.Argument(3) int length) {
-      return DefineClassHelper.beforeDefineClass(
-          classLoader, className, classBytes, offset, length);
+      return DefineClassHelper.beforeDefineClass(classLoader, className, classBytes, offset, length);
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)

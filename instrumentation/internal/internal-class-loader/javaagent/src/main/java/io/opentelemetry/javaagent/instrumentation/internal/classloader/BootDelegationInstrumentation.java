@@ -48,24 +48,21 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
     // just an optimization to exclude common class loaders that are known to delegate to the
     // bootstrap loader (or happen to _be_ the bootstrap loader)
     return not(namedOneOf(
-            "java.lang.ClassLoader",
-            "com.ibm.oti.vm.BootstrapClassLoader",
-            "io.opentelemetry.javaagent.bootstrap.AgentClassLoader"))
+        "java.lang.ClassLoader",
+        "com.ibm.oti.vm.BootstrapClassLoader",
+        "io.opentelemetry.javaagent.bootstrap.AgentClassLoader"))
         .and(extendsClass(named("java.lang.ClassLoader")));
   }
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
-        isMethod()
+    transformer.applyAdviceToMethod(isMethod()
             .and(named("loadClass"))
-            .and(
-                takesArguments(1)
+            .and(takesArguments(1)
+                .and(takesArgument(0, String.class))
+                .or(takesArguments(2)
                     .and(takesArgument(0, String.class))
-                    .or(
-                        takesArguments(2)
-                            .and(takesArgument(0, String.class))
-                            .and(takesArgument(1, boolean.class))))
+                    .and(takesArgument(1, boolean.class))))
             .and(isPublic().or(isProtected()))
             .and(not(isStatic())),
         BootDelegationInstrumentation.class.getName() + "$LoadClassAdvice");
@@ -81,13 +78,10 @@ public class BootDelegationInstrumentation implements TypeInstrumentation {
      */
     private static List<String> findBootstrapPackagePrefixes() {
       try {
-        Class<?> holderClass =
-            Class.forName(
-                "io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder", true, null);
-        MethodHandle methodHandle =
-            MethodHandles.publicLookup()
-                .findStatic(
-                    holderClass, "getBoostrapPackagePrefixes", MethodType.methodType(List.class));
+        Class<?> holderClass = Class.forName(
+            "io.opentelemetry.javaagent.bootstrap.BootstrapPackagePrefixesHolder", true, null);
+        MethodHandle methodHandle = MethodHandles.publicLookup().findStatic(
+            holderClass, "getBoostrapPackagePrefixes", MethodType.methodType(List.class));
         //noinspection unchecked
         return (List<String>) methodHandle.invokeExact();
       } catch (Throwable e) {

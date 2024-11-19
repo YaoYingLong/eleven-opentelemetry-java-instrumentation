@@ -14,12 +14,8 @@ final class InternalLoggerFactoryHolder {
 
   static void initialize(InternalLogger.Factory factory) {
     if (!loggerFactory.compareAndSet(NoopLoggerFactory.INSTANCE, factory)) {
-      factory
-          .create(InternalLogger.class.getName())
-          .log(
-              InternalLogger.Level.WARN,
-              "Developer error: logging system has already been initialized once",
-              null);
+      factory.create(InternalLogger.class.getName()).log(InternalLogger.Level.WARN,
+          "Developer error: logging system has already been initialized once", null);
     }
   }
 

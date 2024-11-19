@@ -19,11 +19,13 @@ public abstract class AsyncOperationEndStrategies {
    * this.</b>
    */
   public static void internalSetStrategiesStorage(AsyncOperationEndStrategies strategies) {
+    // 这里的AsyncOperationEndStrategies默认是时WeakRefAsyncOperationEndStrategies
     instance = strategies;
   }
 
   /** Obtain instance of the async strategy registry. */
   public static AsyncOperationEndStrategies instance() {
+    // 一般情况下instance为WeakRefAsyncOperationEndStrategies，而不会为空
     if (instance == null) {
       instance = new AsyncOperationEndStrategiesImpl();
     }

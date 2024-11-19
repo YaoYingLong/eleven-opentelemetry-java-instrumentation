@@ -14,6 +14,7 @@ import java.util.List;
 public class BootstrapPackagesBuilderImpl implements BootstrapPackagesBuilder {
 
   // TODO: consider using a Trie
+  // 默认是：io.opentelemetry.javaagent.bootstrap，io.opentelemetry.javaagent.shaded
   private final List<String> packages = new ArrayList<>(Constants.BOOTSTRAP_PACKAGE_PREFIXES);
 
   @Override
@@ -31,6 +32,7 @@ public class BootstrapPackagesBuilderImpl implements BootstrapPackagesBuilder {
   }
 
   public List<String> build() {
+    // 默认返回：io.opentelemetry.javaagent.bootstrap，io.opentelemetry.javaagent.shaded
     return packages;
   }
 }

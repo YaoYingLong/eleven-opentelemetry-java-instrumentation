@@ -76,13 +76,22 @@ public class AgentStarterImpl implements AgentStarter {
     // inst/目录下的类会被AgentClassLoader类加载器加载，其他的会被BootstrapClassLoader类加载器加载
     extensionClassLoader = createExtensionClassLoader(getClass().getClassLoader(), earlyConfig);
 
+    // 从earlyConfig中读取配置信息，如果配置了置文件路径，会先从配置文件中读取，如果没有读取到会再读取环境变量和系统变量
     String loggerImplementationName = earlyConfig.getString("otel.javaagent.logging");
     // default to the built-in stderr slf4j-simple logger
     if (loggerImplementationName == null) {
+      // 如果配置文件、环境变量、系统变量中均未读取到otel.javaagent.logging对应的配置，则默认设置未simple
+      // simplem是指代Slf4jSimpleLoggingCustomizer
       loggerImplementationName = "simple";
     }
 
     LoggingCustomizer loggingCustomizer = null;
+    /*
+     *  通过SPI机制加载实现了LoggingCustomizer接口的实现类，这里系统默认有三个实现类
+     *    - application：ApplicationLoggingCustomizer
+     *    - none：NoopLoggingCustomizer，即使调用日志打印的方法也不会打印任何日志
+     *    - simple：Slf4jSimpleLoggingCustomizer（默认情况下是该类）
+     */
     for (LoggingCustomizer customizer : ServiceLoader.load(LoggingCustomizer.class, extensionClassLoader)) {
       if (customizer.name().equalsIgnoreCase(loggerImplementationName)) {
         loggingCustomizer = customizer;
@@ -91,13 +100,15 @@ public class AgentStarterImpl implements AgentStarter {
     }
     // unsupported logger implementation; defaulting to noop
     if (loggingCustomizer == null) {
-      System.out.println("No logging customizer found");
+      // 这里是向控制台输出一个err信息
       logUnrecognizedLoggerImplWarning(loggerImplementationName);
+      // 如果配置的logging名称，系统中未找到，则返回默认的NoopLoggingCustomizer
       loggingCustomizer = new NoopLoggingCustomizer();
     }
 
     Throwable startupError = null;
     try {
+      // 对日志的初始化
       loggingCustomizer.init(earlyConfig);
       // 如果上面EarlyInitAgentConfig.create()加载配置文件有任何错误，都会在这里被通过日志被打印
       // 之所有前面不直接打印，是因为前面日志还没有被初始化
@@ -117,8 +128,10 @@ public class AgentStarterImpl implements AgentStarter {
       startupError = t;
     }
     if (startupError == null) {
+      // 成功是不会输出任何信息的
       loggingCustomizer.onStartupSuccess();
     } else {
+      // 通过System.err.println输出错误信息，表示Agent启动失败
       loggingCustomizer.onStartupFailure(startupError);
     }
   }

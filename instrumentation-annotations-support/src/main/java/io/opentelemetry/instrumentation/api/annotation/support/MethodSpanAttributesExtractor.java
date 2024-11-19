@@ -13,8 +13,8 @@ import java.lang.reflect.Method;
 import javax.annotation.Nullable;
 
 /** Extractor of {@link io.opentelemetry.api.common.Attributes} for a traced method. */
-public final class MethodSpanAttributesExtractor<REQUEST, RESPONSE>
-    implements AttributesExtractor<REQUEST, RESPONSE> {
+public final class MethodSpanAttributesExtractor<REQUEST, RESPONSE> implements
+    AttributesExtractor<REQUEST, RESPONSE> {
 
   private final MethodExtractor<REQUEST> methodExtractor;
   private final MethodArgumentsExtractor<REQUEST> methodArgumentsExtractor;
@@ -33,8 +33,7 @@ public final class MethodSpanAttributesExtractor<REQUEST, RESPONSE>
         new MethodCache<>());
   }
 
-  MethodSpanAttributesExtractor(
-      MethodExtractor<REQUEST> methodExtractor,
+  MethodSpanAttributesExtractor(MethodExtractor<REQUEST> methodExtractor,
       ParameterAttributeNamesExtractor parameterAttributeNamesExtractor,
       MethodArgumentsExtractor<REQUEST> methodArgumentsExtractor,
       Cache<Method, AttributeBindings> cache) {
@@ -47,9 +46,8 @@ public final class MethodSpanAttributesExtractor<REQUEST, RESPONSE>
   @Override
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
     Method method = methodExtractor.extract(request);
-    AttributeBindings bindings =
-        cache.computeIfAbsent(
-            method, (Method m) -> AttributeBindings.bind(m, parameterAttributeNamesExtractor));
+    AttributeBindings bindings = cache.computeIfAbsent(
+        method, (Method m) -> AttributeBindings.bind(m, parameterAttributeNamesExtractor));
     if (!bindings.isEmpty()) {
       Object[] args = methodArgumentsExtractor.extract(request);
       bindings.apply(attributes, args);

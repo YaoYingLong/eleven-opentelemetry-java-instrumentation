@@ -42,13 +42,13 @@ public final class ReactorAsyncOperationEndStrategy implements AsyncOperationEnd
     return returnType == Publisher.class || returnType == Mono.class || returnType == Flux.class;
   }
 
+
+  /**
+   * 调用时机是在AsyncOperationEndSupport中的asyncEnd方法中被调用
+   */
   @Override
-  public <REQUEST, RESPONSE> Object end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
-      Context context,
-      REQUEST request,
-      Object asyncValue,
-      Class<RESPONSE> responseType) {
+  public <REQUEST, RESPONSE> Object end(Instrumenter<REQUEST, RESPONSE> instrumenter,
+      Context context, REQUEST request, Object asyncValue, Class<RESPONSE> responseType) {
 
     EndOnFirstNotificationConsumer notificationConsumer =
         new EndOnFirstNotificationConsumer(context) {

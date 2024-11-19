@@ -29,6 +29,7 @@ public final class BootstrapPackagePrefixesHolder {
       // Only possible by misuse of this API, just ignore.
       return;
     }
+    // prefixes默认为：io.opentelemetry.javaagent.bootstrap，io.opentelemetry.javaagent.shaded
     bootstrapPackagePrefixes = Collections.unmodifiableList(prefixes);
   }
 

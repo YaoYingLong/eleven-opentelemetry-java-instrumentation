@@ -19,16 +19,13 @@ public final class MethodSingletons {
   private static final Instrumenter<ClassAndMethod, Void> INSTRUMENTER;
 
   static {
-    CodeAttributesGetter<ClassAndMethod> codeAttributesGetter =
-        ClassAndMethod.codeAttributesGetter();
+    CodeAttributesGetter<ClassAndMethod> codeAttributesGetter = ClassAndMethod.codeAttributesGetter();
 
-    INSTRUMENTER =
-        Instrumenter.<ClassAndMethod, Void>builder(
-                GlobalOpenTelemetry.get(),
-                INSTRUMENTATION_NAME,
-                CodeSpanNameExtractor.create(codeAttributesGetter))
-            .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
-            .buildInstrumenter(SpanKindExtractor.alwaysInternal());
+    INSTRUMENTER = Instrumenter.<ClassAndMethod, Void>builder(GlobalOpenTelemetry.get(),
+            INSTRUMENTATION_NAME,
+            CodeSpanNameExtractor.create(codeAttributesGetter))
+        .addAttributesExtractor(CodeAttributesExtractor.create(codeAttributesGetter))
+        .buildInstrumenter(SpanKindExtractor.alwaysInternal());
   }
 
   public static Instrumenter<ClassAndMethod, Void> instrumenter() {

@@ -85,9 +85,9 @@ public class Instrumenter<REQUEST, RESPONSE> {
   private final SpanKindExtractor<? super REQUEST> spanKindExtractor;
   private final SpanStatusExtractor<? super REQUEST, ? super RESPONSE> spanStatusExtractor;
   private final List<? extends SpanLinksExtractor<? super REQUEST>> spanLinksExtractors;
-  private final List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>>
-      attributesExtractors;
+  private final List<? extends AttributesExtractor<? super REQUEST, ? super RESPONSE>> attributesExtractors;
   private final List<? extends ContextCustomizer<? super REQUEST>> contextCustomizers;
+  // 处理Metrics的逻辑
   private final List<? extends OperationListener> operationListeners;
   private final ErrorCauseExtractor errorCauseExtractor;
   private final boolean enabled;
@@ -233,6 +233,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     // 这里是创建了一个新的Context并将span设置到Context中，其实这里是将span或更新到context
     context = context.with(span);
 
+    // 处理Metrics逻辑
     if (!operationListeners.isEmpty()) {
       // operation listeners run after span start, so that they have access to the current span
       // for capturing exemplars
@@ -273,6 +274,7 @@ public class Instrumenter<REQUEST, RESPONSE> {
     }
     span.setAllAttributes(attributes);
 
+    // 处理Metrics逻辑
     if (!operationListeners.isEmpty()) {
       long endNanos = getNanos(endTime);
       ListIterator<? extends OperationListener> i = operationListeners.listIterator(operationListeners.size());

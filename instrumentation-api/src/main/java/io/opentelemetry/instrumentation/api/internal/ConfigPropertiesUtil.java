@@ -33,10 +33,12 @@ public final class ConfigPropertiesUtil {
 
   @Nullable
   public static String getString(String propertyName) {
+    // 从java平台生效的属性中读取配置信息
     String value = System.getProperty(propertyName);
     if (value != null) {
       return value;
     }
+    // 从系统环境变量中读取属性名称对应的值
     return System.getenv(toEnvVarName(propertyName));
   }
 

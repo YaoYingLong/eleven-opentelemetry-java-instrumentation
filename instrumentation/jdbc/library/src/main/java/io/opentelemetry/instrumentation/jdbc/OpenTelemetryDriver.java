@@ -77,8 +77,7 @@ public final class OpenTelemetryDriver implements Driver {
    */
   public static void register() throws SQLException {
     if (!REGISTERED.compareAndSet(false, true)) {
-      throw new IllegalStateException(
-          "Driver is already registered. It can only be registered once.");
+      throw new IllegalStateException("Driver is already registered. It can only be registered once.");
     }
     DriverManager.registerDriver(INSTANCE);
   }
@@ -172,6 +171,7 @@ public final class OpenTelemetryDriver implements Driver {
   }
 
   private static int[] parseInstrumentationVersion() {
+    // 读取Agent jar包中META-INF目录下的配置文件中的版本号，如果没有读取到，则返回null
     String version = EmbeddedInstrumentationProperties.findVersion(INSTRUMENTATION_NAME);
     if (version == null) {
       // return 0.0 as a fallback

@@ -82,11 +82,12 @@ public class AgentInstaller {
 
   private static final Map<String, List<Runnable>> CLASS_LOAD_CALLBACKS = new HashMap<>();
 
-  public static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
-      EarlyInitAgentConfig earlyConfig) {
+  public static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader, EarlyInitAgentConfig earlyConfig) {
     addByteBuddyRawSetting();
 
+    // 这里很奇怪，按理说应该是从earlyConfig配置信息中读取STRICT_CONTEXT_STRESSOR_MILLIS对应的key对应的值，而不是直接对字符串进行转换
     Integer strictContextStressorMillis = Integer.getInteger(STRICT_CONTEXT_STRESSOR_MILLIS);
+    // 目前strictContextStressorMillis始终是等于null的
     if (strictContextStressorMillis != null) {
       io.opentelemetry.context.ContextStorage.addWrapper(
           storage -> new StrictContextStressor(storage, strictContextStressorMillis));
@@ -109,10 +110,18 @@ public class AgentInstaller {
   private static void installBytebuddyAgent(Instrumentation inst, ClassLoader extensionClassLoader,
       Iterable<AgentListener> agentListeners) {
 
+    /*
+     * 这里是支持通过otel.instrumentation.methods.include环境变量配置的类，以及通过@WithSpan注解标注的方法执行时导出Span
+     * 由于这些是用户自定义的需要添加Span录制导出的方法，可能存在异步方法，为了兼容异步方法所设计的，比如返回是一个CompletableFuture
+     * 这里首先是将WeakRefAsyncOperationEndStrategies弱引用策略作为默认基础策略，系统还支持强引用基础策略AsyncOperationEndStrategiesImpl
+     * 然后向基础策略中注册了一个Jdk8AsyncOperationEndStrategy策略，用于处理实际的逻辑，还会在instrumentation下适配的一些模块中进行实际注册
+     */
     WeakRefAsyncOperationEndStrategies.initialize();
 
+    // 将extensionClassLoader设置到EmbeddedInstrumentationProperties工具类中
     EmbeddedInstrumentationProperties.setPropertiesLoader(extensionClassLoader);
 
+    // 增强类加载器使用的
     setDefineClassHandler();
 
     // If noop OpenTelemetry is enabled, autoConfiguredSdk will be null and AgentListeners are not called
@@ -132,7 +141,7 @@ public class AgentInstaller {
     copyNecessaryConfigToSystemProperties(sdkConfig);
 
     setBootstrapPackages(sdkConfig, extensionClassLoader);
-    // 这个地方是一个扩展点，
+    // 这个地方是一个扩展点，目前只有一个JarAnalyzerInstaller，但是默认是关闭的
     for (BeforeAgentListener agentListener : loadOrdered(BeforeAgentListener.class, extensionClassLoader)) {
       agentListener.beforeAgent(autoConfiguredSdk);
     }
@@ -216,7 +225,8 @@ public class AgentInstaller {
   }
 
   private static void copyNecessaryConfigToSystemProperties(ConfigProperties config) {
-    for (String property : asList("otel.instrumentation.experimental.span-suppression-strategy",
+    for (String property : asList(
+        "otel.instrumentation.experimental.span-suppression-strategy",
         "otel.instrumentation.http.prefer-forwarded-url-scheme",
         "otel.semconv-stability.opt-in")) {
       String value = config.getString(property);
@@ -234,13 +244,12 @@ public class AgentInstaller {
     }
   }
 
-  private static void setBootstrapPackages(ConfigProperties config,
-      ClassLoader extensionClassLoader) {
+  private static void setBootstrapPackages(ConfigProperties config, ClassLoader extensionClassLoader) {
     BootstrapPackagesBuilderImpl builder = new BootstrapPackagesBuilderImpl();
-    for (BootstrapPackagesConfigurer configurer : load(BootstrapPackagesConfigurer.class,
-        extensionClassLoader)) {
+    for (BootstrapPackagesConfigurer configurer : load(BootstrapPackagesConfigurer.class, extensionClassLoader)) {
       configurer.configure(builder, config);
     }
+    // 默认返回：io.opentelemetry.javaagent.bootstrap，io.opentelemetry.javaagent.shaded
     BootstrapPackagePrefixesHolder.setBoostrapPackagePrefixes(builder.build());
   }
 
@@ -305,8 +314,7 @@ public class AgentInstaller {
     boolean javaBefore9 = isJavaBefore9();
     if (!shouldForceSynchronousAgentListenersCalls && javaBefore9 && isAppUsingCustomLogManager()) {
       logger.fine("Custom JUL LogManager detected: delaying AgentListener#afterAgent() calls");
-      registerClassLoadCallback(
-          "java.util.logging.LogManager",
+      registerClassLoadCallback("java.util.logging.LogManager",
           new DelayedAfterAgentCallback(agentListeners, autoConfiguredSdk));
     } else {
       if (javaBefore9) {
@@ -355,17 +363,13 @@ public class AgentInstaller {
     public Iterable<? extends List<Class<?>>> onError(
         int index, List<Class<?>> batch, Throwable throwable, List<Class<?>> types) {
       if (logger.isLoggable(FINE)) {
-        logger.log(
-            FINE,
-            "Exception while retransforming " + batch.size() + " classes: " + batch,
-            throwable);
+        logger.log(FINE, "Exception while retransforming " + batch.size() + " classes: " + batch, throwable);
       }
       return Collections.emptyList();
     }
 
     @Override
-    public void onComplete(
-        int amount, List<Class<?>> types, Map<List<Class<?>>, Throwable> failures) {}
+    public void onComplete(int amount, List<Class<?>> types, Map<List<Class<?>>, Throwable> failures) {}
   }
 
   static class TransformLoggingListener extends AgentBuilder.Listener.Adapter {
@@ -374,8 +378,7 @@ public class AgentInstaller {
         TransformLoggingListener.class);
 
     @Override
-    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded,
-        Throwable throwable) {
+    public void onError(String typeName, ClassLoader classLoader, JavaModule module, boolean loaded, Throwable throwable) {
       if (logger.isLoggable(FINE)) {
         logger.log(FINE, "Failed to handle {0} for transformation on class loader {1}",
             new Object[] {typeName, classLoader}, throwable);
@@ -386,8 +389,7 @@ public class AgentInstaller {
     public void onTransformation(TypeDescription typeDescription, ClassLoader classLoader,
         JavaModule module, boolean loaded, DynamicType dynamicType) {
       if (logger.isLoggable(FINE)) {
-        logger.log(FINE, "Transformed {0} -- {1}",
-            new Object[] {typeDescription.getName(), classLoader});
+        logger.log(FINE, "Transformed {0} -- {1}", new Object[] {typeDescription.getName(), classLoader});
       }
     }
   }
@@ -537,9 +539,7 @@ public class AgentInstaller {
   private static void logVersionInfo() {
     VersionLogger.logAllVersions();
     if (logger.isLoggable(FINE)) {
-      logger.log(
-          FINE,
-          "{0} loaded on {1}",
+      logger.log(FINE, "{0} loaded on {1}",
           new Object[] {AgentInstaller.class.getName(), AgentInstaller.class.getClassLoader()});
     }
   }

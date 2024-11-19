@@ -12,10 +12,9 @@ import io.opentelemetry.javaagent.bootstrap.internal.InstrumentationConfig;
 public final class InstrumentationHelper {
   static {
     asyncOperationEndStrategy =
-        GuavaAsyncOperationEndStrategy.builder()
-            .setCaptureExperimentalSpanAttributes(
-                InstrumentationConfig.get()
-                    .getBoolean("otel.instrumentation.guava.experimental-span-attributes", false))
+        GuavaAsyncOperationEndStrategy.builder().setCaptureExperimentalSpanAttributes(
+            // 获取otel.instrumentation.guava.experimental-span-attributes配置的值，默认为false
+            InstrumentationConfig.get().getBoolean("otel.instrumentation.guava.experimental-span-attributes", false))
             .build();
 
     registerAsyncSpanEndStrategy();
@@ -24,6 +23,7 @@ public final class InstrumentationHelper {
   private static final GuavaAsyncOperationEndStrategy asyncOperationEndStrategy;
 
   private static void registerAsyncSpanEndStrategy() {
+    // 默认是有Jdk8AsyncOperationEndStrategy策略的，再加上GuavaAsyncOperationEndStrategy
     AsyncOperationEndStrategies.instance().registerStrategy(asyncOperationEndStrategy);
   }
 

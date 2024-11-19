@@ -51,21 +51,21 @@ public final class HttpClientMetrics implements OperationListener {
   @Nullable private final DoubleHistogram oldDuration;
 
   private HttpClientMetrics(Meter meter) {
+    // 默认emitStableHttpSemconv为false
     if (SemconvStability.emitStableHttpSemconv()) {
-      DoubleHistogramBuilder stableDurationBuilder =
-          createStableDurationHistogramBuilder(
-              meter, "http.client.request.duration", "Duration of HTTP client requests.");
+      DoubleHistogramBuilder stableDurationBuilder = createStableDurationHistogramBuilder(
+          meter, "http.client.request.duration", "Duration of HTTP client requests.");
       HttpMetricsAdvice.applyStableClientDurationAdvice(stableDurationBuilder);
       stableDuration = stableDurationBuilder.build();
     } else {
       stableDuration = null;
     }
+    // emitOldHttpSemconv默认为true
     if (SemconvStability.emitOldHttpSemconv()) {
-      DoubleHistogramBuilder oldDurationBuilder =
-          meter
-              .histogramBuilder("http.client.duration")
-              .setUnit("ms")
-              .setDescription("The duration of the outbound HTTP request");
+      DoubleHistogramBuilder oldDurationBuilder = meter
+          .histogramBuilder("http.client.duration")
+          .setUnit("ms")
+          .setDescription("The duration of the outbound HTTP request");
       HttpMetricsAdvice.applyOldClientDurationAdvice(oldDurationBuilder);
       oldDuration = oldDurationBuilder.build();
     } else {
@@ -75,8 +75,7 @@ public final class HttpClientMetrics implements OperationListener {
 
   @Override
   public Context onStart(Context context, Attributes startAttributes, long startNanos) {
-    return context.with(
-        HTTP_CLIENT_REQUEST_METRICS_STATE,
+    return context.with(HTTP_CLIENT_REQUEST_METRICS_STATE,
         new AutoValue_HttpClientMetrics_State(startAttributes, startNanos));
   }
 
@@ -84,19 +83,18 @@ public final class HttpClientMetrics implements OperationListener {
   public void onEnd(Context context, Attributes endAttributes, long endNanos) {
     State state = context.get(HTTP_CLIENT_REQUEST_METRICS_STATE);
     if (state == null) {
-      logger.log(
-          FINE,
-          "No state present when ending context {0}. Cannot record HTTP request metrics.",
-          context);
+      logger.log(FINE, "No state present when ending context {0}. Cannot record HTTP request metrics.", context);
       return;
     }
 
     Attributes attributes = mergeClientAttributes(state.startAttributes(), endAttributes);
 
+    // stableDuration默认为null
     if (stableDuration != null) {
       stableDuration.record((endNanos - state.startTimeNanos()) / NANOS_PER_S, attributes, context);
     }
 
+    // 默认走该分支
     if (oldDuration != null) {
       oldDuration.record((endNanos - state.startTimeNanos()) / NANOS_PER_MS, attributes, context);
     }

@@ -35,16 +35,13 @@ public class LoadInjectedClassInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
-        isMethod()
+    transformer.applyAdviceToMethod(isMethod()
             .and(named("loadClass"))
-            .and(
-                takesArguments(1)
+            .and(takesArguments(1)
+                .and(takesArgument(0, String.class))
+                .or(takesArguments(2)
                     .and(takesArgument(0, String.class))
-                    .or(
-                        takesArguments(2)
-                            .and(takesArgument(0, String.class))
-                            .and(takesArgument(1, boolean.class))))
+                    .and(takesArgument(1, boolean.class))))
             .and(isPublic().or(isProtected()))
             .and(not(isStatic())),
         LoadInjectedClassInstrumentation.class.getName() + "$LoadClassAdvice");
@@ -54,8 +51,8 @@ public class LoadInjectedClassInstrumentation implements TypeInstrumentation {
   public static class LoadClassAdvice {
 
     @Advice.OnMethodEnter(skipOn = Advice.OnNonDefaultValue.class)
-    public static Class<?> onEnter(
-        @Advice.This ClassLoader classLoader, @Advice.Argument(0) String name) {
+    public static Class<?> onEnter(@Advice.This ClassLoader classLoader,
+        @Advice.Argument(0) String name) {
       Class<?> helperClass = InjectedClassHelper.loadHelperClass(classLoader, name);
       if (helperClass != null) {
         return helperClass;

@@ -19,6 +19,7 @@ final class Slf4jSimpleLogger implements InternalLogger {
   private final Logger logger;
 
   Slf4jSimpleLogger(String name) {
+    // 这里就是调用org.slf4j的LoggerFactory.getLogger
     logger = LoggerFactory.getLogger(name);
   }
 

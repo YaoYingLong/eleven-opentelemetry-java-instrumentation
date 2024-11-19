@@ -27,23 +27,29 @@ public final class Slf4jSimpleLoggingCustomizer implements LoggingCustomizer {
 
   @Override
   public String name() {
+    // 该名称用于与otel.javaagent.logging配置的名称匹配
     return "simple";
   }
 
   @Override
   public void init(EarlyInitAgentConfig earlyConfig) {
+    // 将org.slf4j.simpleLogger.showDateTime系统属性设置true
     setSystemPropertyDefault(SIMPLE_LOGGER_SHOW_DATE_TIME_PROPERTY, "true");
-    setSystemPropertyDefault(
-        SIMPLE_LOGGER_DATE_TIME_FORMAT_PROPERTY, SIMPLE_LOGGER_DATE_TIME_FORMAT_DEFAULT);
+    // 将org.slf4j.simpleLogger.dateTimeFormat系统属性设置为'[otel.javaagent 'yyyy-MM-dd HH:mm:ss:SSS Z']'
+    setSystemPropertyDefault(SIMPLE_LOGGER_DATE_TIME_FORMAT_PROPERTY, SIMPLE_LOGGER_DATE_TIME_FORMAT_DEFAULT);
 
+    // 从配置文件、系统属性、环境变量中读取otel.javaagent.debug属性值，默认为false
     if (earlyConfig.getBoolean("otel.javaagent.debug", false)) {
+      // 将org.slf4j.simpleLogger.defaultLogLevel系统属性设置为DEBUG
       setSystemPropertyDefault(SIMPLE_LOGGER_DEFAULT_LOG_LEVEL_PROPERTY, "DEBUG");
+      // 将org.slf4j.simpleLogger.log.okhttp3.internal.http2系统属性设置为INFO
       setSystemPropertyDefault(SIMPLE_LOGGER_PREFIX + "okhttp3.internal.http2", "INFO");
     }
 
     // trigger loading the provider from the agent CL
     LoggerFactory.getILoggerFactory();
 
+    // 其实就是将Slf4jSimpleLogger设置到InternalLoggerFactoryHolder中
     InternalLogger.initialize(Slf4jSimpleLogger::create);
   }
 
@@ -58,6 +64,9 @@ public final class Slf4jSimpleLoggingCustomizer implements LoggingCustomizer {
   @Override
   public void onStartupSuccess() {}
 
+  /**
+   * 向系统属性中设置属性值
+   */
   private static void setSystemPropertyDefault(String property, String value) {
     if (System.getProperty(property) == null) {
       System.setProperty(property, value);

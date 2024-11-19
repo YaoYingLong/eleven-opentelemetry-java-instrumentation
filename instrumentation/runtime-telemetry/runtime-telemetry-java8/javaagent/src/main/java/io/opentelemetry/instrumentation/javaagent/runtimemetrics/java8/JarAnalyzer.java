@@ -57,14 +57,14 @@ final class JarAnalyzer implements ClassFileTransformer {
 
   private JarAnalyzer(OpenTelemetry unused, int jarsPerSecond) {
     // TODO(jack-berg): Use OpenTelemetry to obtain EventEmitter when event API is stable
+    // 默认获取的是DefaultEventEmitterProvider，最终生成的DefaultEventEmitter，系统还支持SdkEventEmitter
     EventEmitter eventEmitter = GlobalEventEmitterProvider.get()
             .eventEmitterBuilder(JmxRuntimeMetricsUtil.getInstrumentationName())
             .setInstrumentationVersion(JmxRuntimeMetricsUtil.getInstrumentationVersion())
             .setEventDomain(EVENT_DOMAIN_PACKAGE)
             .build();
     Worker worker = new Worker(eventEmitter, toProcess, jarsPerSecond);
-    Thread workerThread = new DaemonThreadFactory(JarAnalyzer.class.getSimpleName() + "_WorkerThread")
-            .newThread(worker);
+    Thread workerThread = new DaemonThreadFactory(JarAnalyzer.class.getSimpleName() + "_WorkerThread").newThread(worker);
     workerThread.start();
   }
 
@@ -78,12 +78,7 @@ final class JarAnalyzer implements ClassFileTransformer {
    * be processed if its the first time we've seen it.
    */
   @Override
-  public byte[] transform(
-      ClassLoader loader,
-      String className,
-      Class<?> classBeingRedefined,
-      ProtectionDomain protectionDomain,
-      byte[] classfileBuffer) {
+  public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
     handle(protectionDomain);
     return null;
   }

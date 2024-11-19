@@ -36,24 +36,24 @@ public final class WithSpanSingletons {
   }
 
   private static Instrumenter<Method, Object> createInstrumenter() {
-    return Instrumenter.builder(
-            GlobalOpenTelemetry.get(), INSTRUMENTATION_NAME, WithSpanSingletons::spanNameFromMethod)
+    // 如果通过@WithSpan(value="spanName")指定了就使用，若未指定则通过类名和方法名作为span的名称返回
+    return Instrumenter.builder(GlobalOpenTelemetry.get(), INSTRUMENTATION_NAME,
+            WithSpanSingletons::spanNameFromMethod)
+        // 就是获取类和方法，设置到属性中
         .addAttributesExtractor(CodeAttributesExtractor.create(MethodCodeAttributesGetter.INSTANCE))
+        // @WithSpan注解默认的kind是SpanKind.INTERNAL，也可以通过kind属性修改，如果指定的值不在枚举范围内则还是SpanKind.INTERNAL
         .buildInstrumenter(WithSpanSingletons::spanKindFromMethod);
   }
 
   private static Instrumenter<MethodRequest, Object> createInstrumenterWithAttributes() {
-    return Instrumenter.builder(
-            GlobalOpenTelemetry.get(),
-            INSTRUMENTATION_NAME,
+    return Instrumenter.builder(GlobalOpenTelemetry.get(), INSTRUMENTATION_NAME,
             WithSpanSingletons::spanNameFromMethodRequest)
         .addAttributesExtractor(
             CodeAttributesExtractor.create(MethodRequestCodeAttributesGetter.INSTANCE))
-        .addAttributesExtractor(
-            MethodSpanAttributesExtractor.create(
-                MethodRequest::method,
-                WithSpanParameterAttributeNamesExtractor.INSTANCE,
-                MethodRequest::args))
+        .addAttributesExtractor(MethodSpanAttributesExtractor.create(
+            MethodRequest::method,
+            WithSpanParameterAttributeNamesExtractor.INSTANCE,
+            MethodRequest::args))
         .buildInstrumenter(WithSpanSingletons::spanKindFromMethodRequest);
   }
 
@@ -68,6 +68,7 @@ public final class WithSpanSingletons {
     if (annotation == null) {
       return SpanKind.INTERNAL;
     }
+    // 如果@WithSpan注解默认的kind是SpanKind.INTERNAL，也可以修改
     return toAgentOrNull(annotation.kind());
   }
 
@@ -93,6 +94,7 @@ public final class WithSpanSingletons {
     if (spanName.isEmpty()) {
       spanName = SpanNames.fromMethod(method);
     }
+    // 如果通过@WithSpan(value="spanName")指定了就使用，若未指定则通过类名和方法名作为span的名称返回
     return spanName;
   }
 

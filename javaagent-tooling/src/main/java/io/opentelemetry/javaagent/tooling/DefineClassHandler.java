@@ -31,8 +31,9 @@ public class DefineClassHandler implements Handler {
     // attempt to load super types of currently loaded class
     // for a class to be loaded all of its super types must be loaded, here we just change the order
     // of operations and load super types before transforming the bytes for current class so that
-    // we could use these super types for resolving the advice that needs to be applied to current
-    // class
+    // we could use these super types for resolving the advice that needs to be applied to current class
+    // 尝试加载当前加载的类的超类，对于要加载的类，必须加载其所有超类，这里我们只是在转换当前类的字节之前更改操作顺序并加载超类
+    // 以便我们可以使用这些超类来解决需要应用于当前类的建议
     try {
       ClassReader cr = new ClassReader(classBytes, offset, length);
       String superName = cr.getSuperName();

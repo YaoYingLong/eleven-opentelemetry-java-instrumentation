@@ -29,8 +29,7 @@ public class GuavaListenableFutureInstrumentation implements TypeInstrumentation
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
-        isConstructor(), this.getClass().getName() + "$AbstractFutureAdvice");
+    transformer.applyAdviceToMethod(isConstructor(), this.getClass().getName() + "$AbstractFutureAdvice");
     transformer.applyAdviceToMethod(
         named("addListener").and(ElementMatchers.takesArguments(Runnable.class, Executor.class)),
         this.getClass().getName() + "$AddListenerAdvice");
@@ -41,6 +40,8 @@ public class GuavaListenableFutureInstrumentation implements TypeInstrumentation
 
     @Advice.OnMethodExit(suppress = Throwable.class)
     public static void onConstruction() {
+      // 这里是空执行，看似什么都没有做，但是实例化时执行类static代码快，向WeakRefAsyncOperationEndStrategies中
+      // 注册了GuavaAsyncOperationEndStrategy策略，只会执行一次
       InstrumentationHelper.initialize();
     }
   }
@@ -60,8 +61,7 @@ public class GuavaListenableFutureInstrumentation implements TypeInstrumentation
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void addListenerExit(
-        @Advice.Enter PropagatedContext propagatedContext, @Advice.Thrown Throwable throwable) {
+    public static void addListenerExit(@Advice.Enter PropagatedContext propagatedContext, @Advice.Thrown Throwable throwable) {
       ExecutorAdviceHelper.cleanUpAfterSubmit(propagatedContext, throwable);
     }
   }

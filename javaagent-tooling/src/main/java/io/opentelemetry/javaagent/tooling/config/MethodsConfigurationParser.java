@@ -42,10 +42,7 @@ public final class MethodsConfigurationParser {
     if (configString == null || configString.trim().isEmpty()) {
       return Collections.emptyMap();
     } else if (!validateConfigString(configString)) {
-      logger.log(
-          WARNING,
-          "Invalid trace method config \"{0}\". Must match 'package.Class$Name[method1,method2];*'.",
-          configString);
+      logger.log(WARNING, "Invalid trace method config \"{0}\". Must match 'package.Class$Name[method1,method2];*'.", configString);
       return Collections.emptyMap();
     } else {
       Map<String, Set<String>> toTrace = new HashMap<>();

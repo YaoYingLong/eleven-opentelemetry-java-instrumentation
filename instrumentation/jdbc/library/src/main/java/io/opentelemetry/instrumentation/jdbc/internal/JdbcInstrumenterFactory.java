@@ -30,16 +30,12 @@ public final class JdbcInstrumenterFactory {
 
   public static Instrumenter<DbRequest, Void> createStatementInstrumenter(
       OpenTelemetry openTelemetry) {
-    return Instrumenter.<DbRequest, Void>builder(
-            openTelemetry,
-            INSTRUMENTATION_NAME,
+    return Instrumenter.<DbRequest, Void>builder(openTelemetry, INSTRUMENTATION_NAME,
             DbClientSpanNameExtractor.create(dbAttributesGetter))
-        .addAttributesExtractor(
-            SqlClientAttributesExtractor.builder(dbAttributesGetter)
-                .setStatementSanitizationEnabled(
-                    ConfigPropertiesUtil.getBoolean(
-                        "otel.instrumentation.common.db-statement-sanitizer.enabled", true))
-                .build())
+        .addAttributesExtractor(SqlClientAttributesExtractor.builder(dbAttributesGetter)
+            .setStatementSanitizationEnabled(ConfigPropertiesUtil.getBoolean(
+                "otel.instrumentation.common.db-statement-sanitizer.enabled", true))
+            .build())
         .addAttributesExtractor(ServerAttributesExtractor.create(netAttributesGetter))
         .buildInstrumenter(SpanKindExtractor.alwaysClient());
   }

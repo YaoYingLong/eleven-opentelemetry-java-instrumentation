@@ -37,20 +37,17 @@ public class ResourceInjectionInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    transformer.applyAdviceToMethod(
-        isMethod()
+    transformer.applyAdviceToMethod(isMethod()
             .and(named("getResource"))
             .and(takesArguments(String.class))
             .and(returns(URL.class)),
         ResourceInjectionInstrumentation.class.getName() + "$GetResourceAdvice");
-    transformer.applyAdviceToMethod(
-        isMethod()
+    transformer.applyAdviceToMethod(isMethod()
             .and(named("getResources"))
             .and(takesArguments(String.class))
             .and(returns(Enumeration.class)),
         ResourceInjectionInstrumentation.class.getName() + "$GetResourcesAdvice");
-    transformer.applyAdviceToMethod(
-        isMethod()
+    transformer.applyAdviceToMethod(isMethod()
             .and(named("getResourceAsStream"))
             .and(takesArguments(String.class))
             .and(returns(InputStream.class)),
@@ -80,8 +77,7 @@ public class ResourceInjectionInstrumentation implements TypeInstrumentation {
   public static class GetResourcesAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void onExit(
-        @Advice.This ClassLoader classLoader,
+    public static void onExit(@Advice.This ClassLoader classLoader,
         @Advice.Argument(0) String name,
         @Advice.Return(readOnly = false) Enumeration<URL> resources) {
       List<URL> helpers = HelperResources.loadAll(classLoader, name);
@@ -117,8 +113,7 @@ public class ResourceInjectionInstrumentation implements TypeInstrumentation {
   public static class GetResourceAsStreamAdvice {
 
     @Advice.OnMethodExit(suppress = Throwable.class)
-    public static void onExit(
-        @Advice.This ClassLoader classLoader,
+    public static void onExit(@Advice.This ClassLoader classLoader,
         @Advice.Argument(0) String name,
         @Advice.Return(readOnly = false) InputStream inputStream) {
       if (inputStream != null) {

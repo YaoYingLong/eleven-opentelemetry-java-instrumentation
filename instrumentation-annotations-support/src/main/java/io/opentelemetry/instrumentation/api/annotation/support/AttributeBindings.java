@@ -33,8 +33,7 @@ interface AttributeBindings {
    * @param method the traced method
    * @return the bindings of the parameters
    */
-  static AttributeBindings bind(
-      Method method, ParameterAttributeNamesExtractor parameterAttributeNamesExtractor) {
+  static AttributeBindings bind(Method method, ParameterAttributeNamesExtractor parameterAttributeNamesExtractor) {
     AttributeBindings bindings = EmptyAttributeBindings.INSTANCE;
 
     Parameter[] parameters = method.getParameters();

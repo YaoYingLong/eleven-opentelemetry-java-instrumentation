@@ -48,13 +48,8 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
   private final ElementMatcher.Junction<MethodDescription> excludedMethodsMatcher;
 
   WithSpanInstrumentation() {
-    annotatedMethodMatcher =
-        isAnnotatedWith(named("application.io.opentelemetry.extension.annotations.WithSpan"));
-    annotatedParametersMatcher =
-        hasParameters(
-            whereAny(
-                isAnnotatedWith(
-                    named("application.io.opentelemetry.extension.annotations.SpanAttribute"))));
+    annotatedMethodMatcher = isAnnotatedWith(named("application.io.opentelemetry.extension.annotations.WithSpan"));
+    annotatedParametersMatcher = hasParameters(whereAny(isAnnotatedWith(named("application.io.opentelemetry.extension.annotations.SpanAttribute"))));
     excludedMethodsMatcher = configureExcludedMethods();
   }
 
@@ -70,48 +65,42 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
 
   @Override
   public void transform(TypeTransformer transformer) {
-    ElementMatcher.Junction<MethodDescription> tracedMethods =
-        annotatedMethodMatcher.and(not(excludedMethodsMatcher));
+    ElementMatcher.Junction<MethodDescription> tracedMethods = annotatedMethodMatcher.and(
+        not(excludedMethodsMatcher));
 
     ElementMatcher.Junction<MethodDescription> tracedMethodsWithParameters =
         tracedMethods.and(annotatedParametersMatcher);
     ElementMatcher.Junction<MethodDescription> tracedMethodsWithoutParameters =
         tracedMethods.and(not(annotatedParametersMatcher));
 
-    transformer.applyAdviceToMethod(
-        tracedMethodsWithoutParameters,
+    transformer.applyAdviceToMethod(tracedMethodsWithoutParameters,
         WithSpanInstrumentation.class.getName() + "$WithSpanAdvice");
 
     // Only apply advice for tracing parameters as attributes if any of the parameters are annotated
     // with @SpanAttribute to avoid unnecessarily copying the arguments into an array.
-    transformer.applyAdviceToMethod(
-        tracedMethodsWithParameters,
+    transformer.applyAdviceToMethod(tracedMethodsWithParameters,
         WithSpanInstrumentation.class.getName() + "$WithSpanAttributesAdvice");
   }
 
   /*
-  Returns a matcher for all methods that should be excluded from auto-instrumentation by
-  annotation-based advices.
-  */
+   * Returns a matcher for all methods that should be excluded from auto-instrumentation by annotation-based advices.
+   */
   static ElementMatcher.Junction<MethodDescription> configureExcludedMethods() {
     ElementMatcher.Junction<MethodDescription> result = none();
 
-    Map<String, Set<String>> excludedMethods =
-        MethodsConfigurationParser.parse(
-            InstrumentationConfig.get().getString(TRACE_ANNOTATED_METHODS_EXCLUDE_CONFIG));
+    Map<String, Set<String>> excludedMethods = MethodsConfigurationParser.parse(
+        InstrumentationConfig.get().getString(TRACE_ANNOTATED_METHODS_EXCLUDE_CONFIG));
     for (Map.Entry<String, Set<String>> entry : excludedMethods.entrySet()) {
       String className = entry.getKey();
-      ElementMatcher.Junction<ByteCodeElement> matcher =
-          isDeclaredBy(ElementMatchers.named(className));
+      ElementMatcher.Junction<ByteCodeElement> matcher = isDeclaredBy(
+          ElementMatchers.named(className));
 
       Set<String> methodNames = entry.getValue();
       if (!methodNames.isEmpty()) {
         matcher = matcher.and(namedOneOf(methodNames.toArray(new String[0])));
       }
-
       result = result.or(matcher);
     }
-
     return result;
   }
 
@@ -119,8 +108,7 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
   public static class WithSpanAdvice {
 
     @Advice.OnMethodEnter(suppress = Throwable.class)
-    public static void onEnter(
-        @Advice.Origin Method originMethod,
+    public static void onEnter(@Advice.Origin Method originMethod,
         @Advice.Local("otelMethod") Method method,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope) {
@@ -138,8 +126,7 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void stopSpan(
-        @Advice.Local("otelMethod") Method method,
+    public static void stopSpan(@Advice.Local("otelMethod") Method method,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope,
         @Advice.Return(typing = Assigner.Typing.DYNAMIC, readOnly = false) Object returnValue,
@@ -149,9 +136,10 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
       }
       scope.close();
 
-      AsyncOperationEndSupport<Method, Object> operationEndSupport =
-          AsyncOperationEndSupport.create(
-              WithSpanSingletons.instrumenter(), Object.class, method.getReturnType());
+      // 通过AsyncOperationEndSupport封装一次，主要是对异步逻辑的封装，如使用CompletableFuture
+      AsyncOperationEndSupport<Method, Object> operationEndSupport = AsyncOperationEndSupport.create(
+          WithSpanSingletons.instrumenter(), Object.class, method.getReturnType());
+      // 调用AsyncOperationEndSupport的asyncEnd，如果有异步逻辑则单独处理，否则其实就是调用instrumenter.end
       returnValue = operationEndSupport.asyncEnd(context, method, returnValue, throwable);
     }
   }
@@ -172,8 +160,7 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
       // to local variable so that there would be only one call to Class.getMethod.
       method = originMethod;
 
-      Instrumenter<MethodRequest, Object> instrumenter =
-          WithSpanSingletons.instrumenterWithAttributes();
+      Instrumenter<MethodRequest, Object> instrumenter = WithSpanSingletons.instrumenterWithAttributes();
       Context current = Java8BytecodeBridge.currentContext();
       request = new MethodRequest(method, args);
 
@@ -184,8 +171,7 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
     }
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
-    public static void stopSpan(
-        @Advice.Local("otelMethod") Method method,
+    public static void stopSpan(@Advice.Local("otelMethod") Method method,
         @Advice.Local("otelRequest") MethodRequest request,
         @Advice.Local("otelContext") Context context,
         @Advice.Local("otelScope") Scope scope,
@@ -195,11 +181,12 @@ public class WithSpanInstrumentation implements TypeInstrumentation {
         return;
       }
       scope.close();
-      AsyncOperationEndSupport<MethodRequest, Object> operationEndSupport =
-          AsyncOperationEndSupport.create(
-              WithSpanSingletons.instrumenterWithAttributes(),
-              Object.class,
-              method.getReturnType());
+      // 通过AsyncOperationEndSupport封装一次，主要是对异步逻辑的封装，如使用CompletableFuture
+      AsyncOperationEndSupport<MethodRequest, Object> operationEndSupport = AsyncOperationEndSupport.create(
+          WithSpanSingletons.instrumenterWithAttributes(),
+          Object.class,
+          method.getReturnType());
+      // 调用AsyncOperationEndSupport的asyncEnd，如果有异步逻辑则单独处理，否则其实就是调用instrumenter.end
       returnValue = operationEndSupport.asyncEnd(context, request, returnValue, throwable);
     }
   }

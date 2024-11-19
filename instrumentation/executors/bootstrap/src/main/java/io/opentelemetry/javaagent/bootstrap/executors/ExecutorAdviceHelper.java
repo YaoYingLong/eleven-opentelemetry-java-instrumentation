@@ -71,8 +71,7 @@ public final class ExecutorAdviceHelper {
    * Clean up {@code propagatedContext} in case of any submission errors. Call this method after the
    * submission method has exited.
    */
-  public static void cleanUpAfterSubmit(
-      @Nullable PropagatedContext propagatedContext, @Nullable Throwable throwable) {
+  public static void cleanUpAfterSubmit(@Nullable PropagatedContext propagatedContext, @Nullable Throwable throwable) {
     if (propagatedContext != null && throwable != null) {
       /*
       Note: this may potentially clear somebody else's parent span if we didn't set it

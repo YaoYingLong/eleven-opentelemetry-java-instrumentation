@@ -20,21 +20,25 @@ public enum Jdk8AsyncOperationEndStrategy implements AsyncOperationEndStrategy {
     return asyncType == CompletionStage.class || asyncType == CompletableFuture.class;
   }
 
+
+  /**
+   * 调用时机是在AsyncOperationEndSupport中的asyncEnd方法中被调用
+   */
   @Override
-  public <REQUEST, RESPONSE> Object end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
-      Context context,
-      REQUEST request,
-      Object asyncValue,
-      Class<RESPONSE> responseType) {
+  public <REQUEST, RESPONSE> Object end(Instrumenter<REQUEST, RESPONSE> instrumenter,
+      Context context, REQUEST request, Object asyncValue, Class<RESPONSE> responseType) {
     if (asyncValue instanceof CompletableFuture) {
       CompletableFuture<?> future = (CompletableFuture<?>) asyncValue;
+      // 如果future未执行完成，直接返回false，否则执行instrumenter.end方法，然后返回true
       if (tryToEndSynchronously(instrumenter, context, request, future, responseType)) {
         return future;
       }
+      // 对于CompletionStage类型的whenComplete进行处理，其实就是在whenComplete中调用instrumenter.end
       return endWhenComplete(instrumenter, context, request, future, responseType);
     }
+    // asyncValue强制转为CompletionStage
     CompletionStage<?> stage = (CompletionStage<?>) asyncValue;
+    // 对于CompletionStage类型的whenComplete进行处理，其实就是在whenComplete中调用instrumenter.end
     return endWhenComplete(instrumenter, context, request, stage, responseType);
   }
 
@@ -50,12 +54,15 @@ public enum Jdk8AsyncOperationEndStrategy implements AsyncOperationEndStrategy {
       CompletableFuture<?> future,
       Class<RESPONSE> responseType) {
 
+    // 如果CompletableFuture没有完成直接返回false
     if (!future.isDone()) {
       return false;
     }
 
     try {
+      // 等待异步任务完成并获取其结果
       Object potentialResponse = future.join();
+      // 通过tryToGetResponse将potentialResponse从Object类型转换为具体的responseType
       instrumenter.end(context, request, tryToGetResponse(responseType, potentialResponse), null);
     } catch (Throwable t) {
       instrumenter.end(context, request, null, t);
@@ -73,8 +80,9 @@ public enum Jdk8AsyncOperationEndStrategy implements AsyncOperationEndStrategy {
       REQUEST request,
       CompletionStage<?> stage,
       Class<RESPONSE> responseType) {
-    return stage.whenComplete(
-        (result, exception) ->
-            instrumenter.end(context, request, tryToGetResponse(responseType, result), exception));
+
+    return stage.whenComplete((result, exception) ->
+        // 通过tryToGetResponse将potentialResponse从Object类型转换为具体的responseType
+        instrumenter.end(context, request, tryToGetResponse(responseType, result), exception));
   }
 }

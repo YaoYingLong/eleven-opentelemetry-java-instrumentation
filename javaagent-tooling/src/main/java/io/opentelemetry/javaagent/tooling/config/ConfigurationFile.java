@@ -21,6 +21,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
+/**
+ * 读取环境变量otel.javaagent.configuration-file中配置的配置文件地址，并将配置解析为HashMap存储到configFileContents
+ */
 final class ConfigurationFile {
 
   static final String CONFIGURATION_FILE_PROPERTY = "otel.javaagent.configuration-file";
@@ -36,6 +39,7 @@ final class ConfigurationFile {
     if (configFileContents == null) {
       configFileContents = loadConfigFile();
     }
+    // TODO 用于代码调试验证，验证完成后需要删除
     for (Map.Entry<String, String> entry : configFileContents.entrySet()) {
       System.out.println("configFileContents: " + entry.getKey() + "=" + entry.getValue());
     }
@@ -48,15 +52,18 @@ final class ConfigurationFile {
     // 从系统环境变量和用户环境变量中获取otel.javaagent.configuration-file配置的配置文件路径
     String configurationFilePath = ConfigPropertiesUtil.getString(CONFIGURATION_FILE_PROPERTY);
     if (configurationFilePath == null) {
+      // 如果未进行配置，则直接返回一个空的Map，注意不是返回null
       return emptyMap();
     }
     // Normalizing tilde (~) paths for unix systems
+    // 对应unix类型的系统进行处理，将开始的～替换为环境变量中配置的user.home
     configurationFilePath = configurationFilePath.replaceFirst("^~", System.getProperty("user.home"));
 
     // Configuration properties file is optional
     File configurationFile = new File(configurationFilePath);
     if (!configurationFile.exists()) {
       fileLoadErrorMessage = "Configuration file \"" + configurationFilePath + "\" not found.";
+      // 若文件不存在，记录加载错误信息然后返回空Map，这里是记录不是直接打印的原因是因为此时logging还没有配置加载
       return emptyMap();
     }
 

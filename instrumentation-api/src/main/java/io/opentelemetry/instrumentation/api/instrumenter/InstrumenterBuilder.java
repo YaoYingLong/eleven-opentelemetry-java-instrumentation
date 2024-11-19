@@ -57,7 +57,9 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
       new ArrayList<>();
   // 用于修改Context内容的函数表达式，会在Instrumenter的start方法中执行
   final List<ContextCustomizer<? super REQUEST>> contextCustomizers = new ArrayList<>();
+  // 处理Metrics的逻辑
   private final List<OperationListener> operationListeners = new ArrayList<>();
+  // 处理Metrics的逻辑
   private final List<OperationMetrics> operationMetrics = new ArrayList<>();
 
   @Nullable private String instrumentationVersion;
@@ -297,6 +299,9 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
     return tracerBuilder.build();
   }
 
+  /**
+   * 构建Metrics处理的Meter
+   */
   List<OperationListener> buildOperationListeners() {
     // just copy the listeners list if there are no metrics registered
     if (operationMetrics.isEmpty()) {

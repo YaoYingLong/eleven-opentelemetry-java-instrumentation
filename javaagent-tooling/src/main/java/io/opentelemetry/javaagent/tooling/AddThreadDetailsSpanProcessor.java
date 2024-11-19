@@ -23,6 +23,8 @@ public class AddThreadDetailsSpanProcessor implements SpanProcessor {
     span.setAttribute(SemanticAttributes.THREAD_NAME, currentThread.getName());
   }
 
+  // 这个方法如果是整个Agent中只有一个SpanProcessor，则该方法不会被调用，但是有多个SpanProcessor时
+  // 会在MultiSpanProcessor中被调用，目的是将需要执行onStart的单独放到一个spanProcessorsStart中执行
   @Override
   public boolean isStartRequired() {
     return true;
@@ -31,6 +33,8 @@ public class AddThreadDetailsSpanProcessor implements SpanProcessor {
   @Override
   public void onEnd(ReadableSpan span) {}
 
+  // 这个方法如果是整个Agent中只有一个SpanProcessor，则该方法不会被调用，但是有多个SpanProcessor时
+  // 会在MultiSpanProcessor中被调用，目的是将需要执行onEnd的单独放到一个spanProcessorsEnd中执行
   @Override
   public boolean isEndRequired() {
     return false;

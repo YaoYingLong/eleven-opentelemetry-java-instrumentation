@@ -29,10 +29,7 @@ final class ApplicationLoggerFactory extends ApplicationLoggerBridge
   protected void install(InternalLogger.Factory applicationLoggerFactory) {
     // just use the first bridge that gets discovered and ignore the rest
     if (!installed.compareAndSet(false, true)) {
-      applicationLoggerFactory
-          .create(ApplicationLoggerBridge.class.getName())
-          .log(
-              InternalLogger.Level.WARN,
+      applicationLoggerFactory.create(ApplicationLoggerBridge.class.getName()).log(InternalLogger.Level.WARN,
               "Multiple application logger implementations were provided."
                   + " The javaagent will use the first bridge provided and ignore the following ones (this one).",
               null);
@@ -49,10 +46,7 @@ final class ApplicationLoggerFactory extends ApplicationLoggerBridge
 
     // actually install the application logger - from this point, everything will be logged
     // directly through the application logging system
-    inMemoryLoggers
-        .values()
-        .forEach(
-            logger -> logger.replaceByActualLogger(applicationLoggerFactory.create(logger.name())));
+    inMemoryLoggers.values().forEach(logger -> logger.replaceByActualLogger(applicationLoggerFactory.create(logger.name())));
     this.actual = applicationLoggerFactory;
 
     // if there are any leftover logs left in the memory store, flush them - this will cause some

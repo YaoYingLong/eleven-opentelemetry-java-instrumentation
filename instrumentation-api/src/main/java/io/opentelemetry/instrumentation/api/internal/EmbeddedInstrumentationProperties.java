@@ -56,7 +56,7 @@ public final class EmbeddedInstrumentationProperties {
 
   @Nullable
   private static String loadVersion(String instrumentationName) {
-    // 读取配置文件中的版本号，如果没有读取到，则返回null
+    // 读取Agent jar包中META-INF目录下的配置文件中的版本号，如果没有读取到，则返回null
     String path = "META-INF/io/opentelemetry/instrumentation/" + instrumentationName + ".properties";
     try (InputStream in = loader.getResourceAsStream(path)) {
       if (in == null) {

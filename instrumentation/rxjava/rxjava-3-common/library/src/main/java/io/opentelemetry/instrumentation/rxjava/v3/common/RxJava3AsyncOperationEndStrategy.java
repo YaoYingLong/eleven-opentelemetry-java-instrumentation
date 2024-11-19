@@ -53,13 +53,13 @@ public final class RxJava3AsyncOperationEndStrategy implements AsyncOperationEnd
         || returnType == ParallelFlowable.class;
   }
 
+
+  /**
+   * 调用时机是在AsyncOperationEndSupport中的asyncEnd方法中被调用
+   */
   @Override
-  public <REQUEST, RESPONSE> Object end(
-      Instrumenter<REQUEST, RESPONSE> instrumenter,
-      Context context,
-      REQUEST request,
-      Object asyncValue,
-      Class<RESPONSE> responseType) {
+  public <REQUEST, RESPONSE> Object end(Instrumenter<REQUEST, RESPONSE> instrumenter,
+      Context context, REQUEST request, Object asyncValue, Class<RESPONSE> responseType) {
 
     EndOnFirstNotificationConsumer<Object> notificationConsumer =
         new EndOnFirstNotificationConsumer<Object>(context) {
@@ -83,10 +83,8 @@ public final class RxJava3AsyncOperationEndStrategy implements AsyncOperationEnd
     return endWhenPublisherComplete((Publisher<?>) asyncValue, notificationConsumer);
   }
 
-  private static Completable endWhenComplete(
-      Completable completable, EndOnFirstNotificationConsumer<?> notificationConsumer) {
-    return completable
-        .doOnEvent(notificationConsumer)
+  private static Completable endWhenComplete(Completable completable, EndOnFirstNotificationConsumer<?> notificationConsumer) {
+    return completable.doOnEvent(notificationConsumer)
         .doOnDispose(notificationConsumer::onCancelOrDispose);
   }
 

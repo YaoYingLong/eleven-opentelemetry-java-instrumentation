@@ -16,23 +16,29 @@ public final class ApplicationLoggingCustomizer implements LoggingCustomizer {
 
   @Override
   public String name() {
+    // 该名称用于与otel.javaagent.logging配置的名称匹配
     return "application";
   }
 
   @Override
   public void init(EarlyInitAgentConfig earlyConfig) {
+    // 获取日志最大buffer长度，默认是2048
     int limit = earlyConfig.getInt("otel.javaagent.logging.application.logs-buffer-max-records", 2048);
     InMemoryLogStore inMemoryLogStore = new InMemoryLogStore(limit);
     ApplicationLoggerFactory loggerFactory = new ApplicationLoggerFactory(inMemoryLogStore);
     // register a shutdown hook that'll dump the logs to stderr in case something goes wrong
     Runtime.getRuntime().addShutdownHook(new Thread(() -> inMemoryLogStore.dump(System.err)));
+    // 将ApplicationLoggerFactory通过CAS设置到ApplicationLoggerBridge
     ApplicationLoggerBridge.set(loggerFactory);
+    // 其实就是将ApplicationLoggerFactory设置到InternalLoggerFactoryHolder中
     InternalLogger.initialize(loggerFactory);
   }
 
+  // AgentStarterImpl的start结束时判断是否产生异常时调用
   @Override
   public void onStartupSuccess() {}
 
+  // AgentStarterImpl的start结束时判断是否产生异常时调用
   @Override
   @SuppressWarnings("SystemOut")
   public void onStartupFailure(Throwable throwable) {

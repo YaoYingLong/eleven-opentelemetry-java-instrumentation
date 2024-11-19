@@ -15,6 +15,7 @@ final class InMemoryLogStore {
 
   private final Object lock = new Object();
 
+  // 每一个InMemoryLog对象都是一条日志记录
   @GuardedBy("lock")
   private final ArrayList<InMemoryLog> inMemoryLogs = new ArrayList<>();
 

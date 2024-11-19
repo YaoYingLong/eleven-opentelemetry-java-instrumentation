@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 public final class EarlyInitAgentConfig {
 
   public static EarlyInitAgentConfig create() {
+    // 读取环境变量otel.javaagent.configuration-file中配置的配置文件地址，并将配置解析为HashMap存储到configFileContents
     return new EarlyInitAgentConfig(ConfigurationFile.getProperties());
   }
 
@@ -27,31 +28,38 @@ public final class EarlyInitAgentConfig {
 
   @Nullable
   public String getString(String propertyName) {
+    // 先从系统或环境变量中读取属性名称对应的值
     String value = ConfigPropertiesUtil.getString(propertyName);
     if (value != null) {
       return value;
     }
+    // 如果未从系统或环境变量中读取属性名称对应的值，则从配置文件中解析的配置中读取
     return configFileContents.get(propertyName);
   }
 
   public boolean getBoolean(String propertyName, boolean defaultValue) {
+    // 先从配置文件中解析的配置中读取
     String configFileValueStr = configFileContents.get(propertyName);
-    boolean configFileValue =
-        configFileValueStr == null ? defaultValue : Boolean.parseBoolean(configFileValueStr);
+    boolean configFileValue = configFileValueStr == null ? defaultValue : Boolean.parseBoolean(configFileValueStr);
+    // 从系统或环境变量中读取属性名称对应的值，如果未读取到返回configFileValue对应的默认值
     return ConfigPropertiesUtil.getBoolean(propertyName, configFileValue);
   }
 
   public int getInt(String propertyName, int defaultValue) {
     try {
+      // 先从配置文件中解析的配置中读取
       String configFileValueStr = configFileContents.get(propertyName);
-      int configFileValue =
-          configFileValueStr == null ? defaultValue : Integer.parseInt(configFileValueStr);
+      int configFileValue = configFileValueStr == null ? defaultValue : Integer.parseInt(configFileValueStr);
+      // 从系统或环境变量中读取属性名称对应的值，如果未读取到返回configFileValue对应的默认值
       return ConfigPropertiesUtil.getInt(propertyName, configFileValue);
     } catch (NumberFormatException ignored) {
       return defaultValue;
     }
   }
 
+  /*
+   * 打印日志：在加载&解析配置文件过程中如果产生了异常，会直接打印出来，如果没有异常产生则不会产生日志信息
+   */
   public void logEarlyConfigErrorsIfAny() {
     ConfigurationFile.logErrorIfAny();
   }

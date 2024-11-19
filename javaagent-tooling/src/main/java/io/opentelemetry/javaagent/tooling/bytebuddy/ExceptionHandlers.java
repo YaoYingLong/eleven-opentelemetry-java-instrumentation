@@ -18,8 +18,7 @@ public final class ExceptionHandlers {
   // Bootstrap ExceptionLogger.class will always be resolvable, so we'll use it in the log name
   private static final String LOGGER_NAME = ExceptionLogger.class.getName().replace('.', '/');
 
-  private static final ExceptionHandler EXCEPTION_STACK_HANDLER =
-      new ExceptionHandler.Simple(
+  private static final ExceptionHandler EXCEPTION_STACK_HANDLER = new ExceptionHandler.Simple(
           new StackManipulation() {
             // Pops one Throwable off the stack. Maxes the stack to at least 2 (throwable, string).
             private final StackManipulation.Size size = new StackManipulation.Size(-1, 2);
