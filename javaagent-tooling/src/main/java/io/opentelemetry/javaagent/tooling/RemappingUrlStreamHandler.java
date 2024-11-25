@@ -31,20 +31,22 @@ class RemappingUrlStreamHandler extends URLStreamHandler {
   @Override
   protected URLConnection openConnection(URL url) throws IOException {
     String file = url.getFile();
+    // 如果file等于/则直接抛出异常
     if ("/".equals(file)) {
+      // "/"是jar url默认的
       // "/" is used as the default url of the jar
       // This is called by the SecureClassLoader trying to obtain permissions
       // nullInputStream() is not available until Java 11
       return new InputStreamUrlConnection(url, new ByteArrayInputStream(new byte[0]), 0);
     }
 
+    // 如果以"/"开头，则直接截掉
     if (file.startsWith("/")) {
       file = file.substring(1);
     }
     JarEntry entry = delegateJarFile.getJarEntry(file);
     if (entry == null) {
-      throw new FileNotFoundException(
-          "JAR entry " + file + " not found in " + delegateJarFile.getName());
+      throw new FileNotFoundException("JAR entry " + file + " not found in " + delegateJarFile.getName());
     }
 
     // That will NOT remap the content of files under META-INF/services

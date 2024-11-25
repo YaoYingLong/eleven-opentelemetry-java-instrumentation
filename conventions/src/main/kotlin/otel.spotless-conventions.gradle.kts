@@ -86,6 +86,7 @@ spotless {
 // see https://github.com/diffplug/spotless/tree/main/plugin-gradle#dependency-resolution-modes
 if (project == rootProject) {
   spotless {
+    // 为特定文件类型定义自定义格式化规则
     format("misc") {
       target(
         ".gitignore",
@@ -98,7 +99,9 @@ if (project == rootProject) {
         "**/gradle.properties"
       )
       indentWithSpaces()
+      // 删除行尾多余的空白字符
       trimTrailingWhitespace()
+      // 确保每个文件末尾都有一个空行
       endWithNewline()
     }
     predeclareDeps()

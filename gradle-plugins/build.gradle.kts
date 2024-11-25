@@ -12,6 +12,7 @@ plugins {
 
 group = "io.opentelemetry.instrumentation"
 
+// 将外部的Gradle脚本文件应用到当前的构建脚本中，通过这种方式外部脚本中的所有配置和任务都将被引入并在当前脚本中生效
 apply(from = "../version.gradle.kts")
 
 repositories {

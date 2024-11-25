@@ -51,10 +51,17 @@ public class ExtensionClassLoader extends URLClassLoader {
     ClassLoader.registerAsParallelCapable();
   }
 
+  /**
+   * 加载extensions/目录下的jar，每一个extensions/目下下的Jar都会生成一个协议为otel的URL
+   * 为每一个extensions/目录下的jar都单独创建一个ExtensionClassLoader来加载
+   *
+   * - parent：        AgentClassLoader
+   * - javaagentFile： 就是Agent对应Jar包
+   */
   public static ClassLoader getInstance(ClassLoader parent, File javaagentFile, boolean isSecurityManagerSupportEnabled, EarlyInitAgentConfig earlyConfig) {
     List<URL> extensions = new ArrayList<>();
 
-    // 加载extensions/目录下的jar
+    // 加载extensions/目录下的jar，每一个extensions/目下下的Jar都会生成一个协议为otel的URL
     includeEmbeddedExtensionsIfFound(extensions, javaagentFile);
 
     // 加载自定义扩展，通过otel.javaagent.extensions配置jar表列表，若有多个用逗号隔开
@@ -67,6 +74,7 @@ public class ExtensionClassLoader extends URLClassLoader {
     }
 
     List<ClassLoader> delegates = new ArrayList<>(extensions.size());
+    // 这里为每一个extensions/目录下的jar都单独创建一个ExtensionClassLoader来加载
     for (URL url : extensions) {
       delegates.add(getDelegate(parent, url, isSecurityManagerSupportEnabled));
     }
@@ -83,19 +91,26 @@ public class ExtensionClassLoader extends URLClassLoader {
         JarEntry jarEntry = entryEnumeration.nextElement();
         String name = jarEntry.getName();
 
+        // 这里的name值为：extensions/*.jar
         if (name.startsWith(prefix) && !jarEntry.isDirectory()) {
-          System.out.println("extensions load:" + name);
+          // 如果tempDirectory为空，创建otel-extensions临时目录，且在退出时删除
           tempDirectory = ensureTempDirectoryExists(tempDirectory);
 
+          // 生成临时文件对象：otel-extensions/*.jar
           File tempFile = new File(tempDirectory, name.substring(prefix.length()));
           // reject extensions that would be extracted outside of temp directory
           // https://security.snyk.io/research/zip-slip-vulnerability
+          // getCanonicalFile返回一个新的File对象，表示文件路径的标准化版本，去除了冗余的部分，如"."和".."
           if (!tempFile.getCanonicalFile().toPath().startsWith(tempDirectory.getCanonicalFile().toPath())) {
             throw new IllegalStateException("Invalid extension " + name);
           }
+          // 创建临时文件：otel-extensions/*.jar
           if (tempFile.createNewFile()) {
+            // 退出时删除该文件
             tempFile.deleteOnExit();
+            // 将jarEntry即对应的extensions/*.jar文件内容写入到otel-extensions/*.jar中
             extractFile(jarFile, jarEntry, tempFile);
+            // 通过传入otel-extensions/*.jar构建自定义UrlStreamHandler，然后在构建自定义otel协议的URL，将URL添加到extensions列表中
             addFileUrl(extensions, tempFile);
           } else {
             System.err.println("Failed to create temp file " + tempFile);
@@ -107,6 +122,7 @@ public class ExtensionClassLoader extends URLClassLoader {
     }
   }
 
+  // 如果tempDirectory为空，创建otel-extensions临时目录，且在退出时删除
   private static File ensureTempDirectoryExists(File tempDirectory) throws IOException {
     if (tempDirectory == null) {
       tempDirectory = Files.createTempDirectory("otel-extensions").toFile();
@@ -115,17 +131,20 @@ public class ExtensionClassLoader extends URLClassLoader {
     return tempDirectory;
   }
 
+  // 创建一个新的ExtensionClassLoader为extensionUrl
   private static URLClassLoader getDelegate(ClassLoader parent, URL extensionUrl, boolean isSecurityManagerSupportEnabled) {
     return new ExtensionClassLoader(extensionUrl, parent, isSecurityManagerSupportEnabled);
   }
 
   // visible for testing
   static List<URL> parseLocation(@Nullable String locationName, File javaagentFile) {
+    // 如果配置的locationName为空，则直接返回空列表
     if (locationName == null) {
       return Collections.emptyList();
     }
 
     List<URL> result = new ArrayList<>();
+    // 将用逗号隔开的locationName拆封开，遍历
     for (String location : locationName.split(",")) {
       parseLocation(location, javaagentFile, result);
     }
@@ -134,17 +153,25 @@ public class ExtensionClassLoader extends URLClassLoader {
   }
 
   private static void parseLocation(String locationName, File javaagentFile, List<URL> locations) {
+    // 过滤掉空值
     if (locationName.isEmpty()) {
       return;
     }
 
     File location = new File(locationName);
+    // 判断location是否是一个Jar文件
     if (isJar(location)) {
+      // 通过传入jar构建自定义UrlStreamHandler，然后在构建自定义otel协议的URL，将URL添加到locations列表中
       addFileUrl(locations, location);
+      // 如果location是一个目录
     } else if (location.isDirectory()) {
+      // 遍历过滤出目录中所有的jar文件
       File[] files = location.listFiles(ExtensionClassLoader::isJar);
+      // 如果过滤出的jar文件列表不为空
       if (files != null) {
+        // 遍历过滤出的jar文件列表不为空
         for (File file : files) {
+          // 如果文件的绝对路径与opentelemetry-javaagent-1.31.0.jar的绝对路径不相等，才执行addFileUrl
           if (isJar(file) && !file.getAbsolutePath().equals(javaagentFile.getAbsolutePath())) {
             addFileUrl(locations, file);
           }
@@ -157,15 +184,23 @@ public class ExtensionClassLoader extends URLClassLoader {
     return f.isFile() && f.getName().endsWith(".jar");
   }
 
+  /**
+   * 通过传入otel-extensions/*.jar构建自定义UrlStreamHandler，然后在构建自定义otel协议的URL，将URL添加到extensions列表中
+   */
   private static void addFileUrl(List<URL> result, File file) {
     try {
+      // 自定义了otel协议，通过传入的文件自定义URLStreamHandler
       URL wrappedUrl = new URL("otel", null, -1, "/", new RemappingUrlStreamHandler(file));
+      // 将生成的URL添加到result列表中
       result.add(wrappedUrl);
     } catch (MalformedURLException ignored) {
       System.err.println("Ignoring " + file);
     }
   }
 
+  /**
+   *  将jarEntry即对应的extensions/*.jar文件内容写入到otel-extensions/*.jar中
+   */
   private static void extractFile(JarFile jarFile, JarEntry jarEntry, File outputFile)
       throws IOException {
     try (InputStream in = jarFile.getInputStream(jarEntry);

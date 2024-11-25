@@ -116,6 +116,7 @@ public class AgentClassLoader extends URLClassLoader {
       throw new IllegalStateException("Unable to open agent jar", e);
     }
 
+    // AGENT_INITIALIZER_JAR默认是空，可以通过JVM参数设置
     if (!AGENT_INITIALIZER_JAR.isEmpty()) {
       URL url;
       try {
@@ -418,6 +419,7 @@ public class AgentClassLoader extends URLClassLoader {
       super(url);
       this.jarFile = jarFile;
       String path = url.getFile();
+      // 截掉path开头的/
       if (path.startsWith("/")) {
         path = path.substring(1);
       }

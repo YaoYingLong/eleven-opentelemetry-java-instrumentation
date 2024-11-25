@@ -24,11 +24,14 @@ public final class CallDepth {
 
   private int depth;
 
+  // 默认调用深度为0
   CallDepth() {
     this.depth = 0;
   }
 
   /**
+   * 返回给定类（不是方法；我们希望能够跟踪类中不同方法之间的调用）的当前调用深度
+   *
    * Return the current call depth for a given class (not method; we want to be able to track calls
    * between different methods in a class).
    *

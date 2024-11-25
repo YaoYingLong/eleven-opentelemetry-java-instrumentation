@@ -26,7 +26,7 @@ public final class OpenTelemetryInstaller {
     // 首先通过builder方法实例化AutoConfiguredOpenTelemetrySdkBuilder，然后设置ServiceClassLoader等属性
     // 最终调用AutoConfiguredOpenTelemetrySdkBuilder的build
     AutoConfiguredOpenTelemetrySdk autoConfiguredSdk = AutoConfiguredOpenTelemetrySdk.builder()
-        // 将生成的
+        // 设置为ture后会将生成的OpenTelemetrySdk设置到GlobalOpenTelemetry中
         .setResultAsGlobal()
         .setServiceClassLoader(extensionClassLoader)
         // disable the logs exporter by default for the time being

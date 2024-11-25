@@ -13,10 +13,20 @@ plugins {
 description = "OpenTelemetry Javaagent"
 group = "io.opentelemetry.javaagent"
 
+
+/*
+ * configurations.creating用于定义一个自定义的依赖组时，特定的任务需要一组特定的依赖，或者需要在构建生命周期中以某种方式隔离这些依赖
+ * - isCanBeResolved为true表示，configurations被消费者使用，将其管理的一组dependencies解析为文件
+ * - isCanBeConsumed为true表示，configurations被生产者使用，公开其管理的artifacts及其dependencies以供其他项目使用
+ * - extendsFrom表示子configurations继承父configurations的dependencies
+ */
+
 // this configuration collects libs that will be placed in the bootstrap classloader
 // 此配置收集将放置在Bootstrap类加载器中的libs
 val bootstrapLibs by configurations.creating {
+  // isCanBeResolved为true表示，configurations被消费者使用，将其管理的一组dependencies解析为文件
   isCanBeResolved = true
+  // 若isCanBeConsumed为true表示，configurations被生产者使用，公开其管理的artifacts及其dependencies以供其他项目使用
   isCanBeConsumed = false
 }
 // this configuration collects only required instrumentations and agent machinery
@@ -30,6 +40,7 @@ val baseJavaagentLibs by configurations.creating {
 val javaagentLibs by configurations.creating {
   isCanBeResolved = true
   isCanBeConsumed = false
+  // 子configurations继承父configurations的dependencies
   extendsFrom(baseJavaagentLibs)
 }
 
@@ -101,21 +112,28 @@ dependencies {
 val javaagentDependencies = dependencies
 
 // collect all bootstrap and javaagent instrumentation dependencies
+// 用于访问根项目的子项目instrumentation的所有子项目
 project(":instrumentation").subprojects {
   val subProj = this
 
+  // 在instrumentation的子项目中应用了otel.javaagent-bootstrap插件时，执行代码块
   plugins.withId("otel.javaagent-bootstrap") {
     javaagentDependencies.run {
+      // 举个例子这里其实就相当于：bootstrapLibs(project(:instrumentation:armeria-1.3:testing))
       add(bootstrapLibs.name, project(subProj.path))
     }
   }
 
+  // 在instrumentation的子项目中应用了otel.javaagent-instrumentation插件时，执行代码块
   plugins.withId("otel.javaagent-instrumentation") {
     javaagentDependencies.run {
+      // javaagentLibs.name值就是javaagentLibs
+      // subProj.path获取子项目的路径，使得构建脚本可以将该子项目作为依赖添加到指定的配置中
       add(javaagentLibs.name, project(subProj.path))
     }
   }
 
+  // 在instrumentation的子项目中应用了otel.sdk-extension插件时，执行代码块
   plugins.withId("otel.sdk-extension") {
     javaagentDependencies.run {
       add(javaagentLibs.name, project(subProj.path))
@@ -124,12 +142,15 @@ project(":instrumentation").subprojects {
 }
 
 tasks {
+  // 用于处理目录中的资源文件
   processResources {
+    // 将源文件rootPath下的licenses目录下的文件放到META-INF/licenses下
     from(rootProject.file("licenses")) {
       into("META-INF/licenses")
     }
   }
 
+  // 在Gradle的任务容器中注册一个新的ShadowJar任务，且委托给buildBootstrapLibs，任务在需要时才被实际配置
   val buildBootstrapLibs by registering(ShadowJar::class) {
     configurations = listOf(bootstrapLibs)
 
@@ -162,6 +183,7 @@ tasks {
   }
 
   // Includes everything needed for OOTB experience
+  // existing的作用是获取类型为ShadowJar的已注册任务的引用
   val shadowJar by existing(ShadowJar::class) {
     dependsOn(buildBootstrapLibs)
     from(zipTree(buildBootstrapLibs.get().archiveFile))
@@ -299,7 +321,9 @@ licenseReport {
   filters = arrayOf(LicenseBundleNormalizer("$projectDir/license-normalizer-bundle.json", true))
 }
 
+//
 fun CopySpec.isolateClasses(jar: Provider<RegularFile>) {
+  // zipTree的作用是用于解压传入的jar文件，且将解压后的内容作为文件树返回
   from(zipTree(jar)) {
     // important to keep prefix "inst" short, as it is prefixed to lots of strings in runtime mem
     into("inst")

@@ -100,8 +100,7 @@ public abstract class AbstractHttpClientTest<REQUEST> implements HttpClientTypeA
   @BeforeEach
   void verifyExtension() {
     if (testing == null) {
-      throw new AssertionError(
-          "Subclasses of AbstractHttpClientTest must register HttpClientInstrumentationExtension");
+      throw new AssertionError("Subclasses of AbstractHttpClientTest must register HttpClientInstrumentationExtension");
     }
   }
 

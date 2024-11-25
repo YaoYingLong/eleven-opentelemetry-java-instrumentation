@@ -58,9 +58,7 @@ class HttpUrlConnectionTest extends AbstractHttpClientTest<HttpURLConnection> {
   }
 
   @Override
-  public int sendRequest(
-      HttpURLConnection connection, String method, URI uri, Map<String, String> headers)
-      throws Exception {
+  public int sendRequest(HttpURLConnection connection, String method, URI uri, Map<String, String> headers) throws Exception {
     if (uri.toString().contains("/read-timeout")) {
       connection.setReadTimeout((int) READ_TIMEOUT.toMillis());
     }

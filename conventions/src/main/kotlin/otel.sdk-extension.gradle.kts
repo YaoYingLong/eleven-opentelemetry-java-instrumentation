@@ -11,4 +11,5 @@ plugins {
 
 extra["mavenGroupId"] = "io.opentelemetry.instrumentation"
 
+// 用于设置生成的jar的基础名称，projectDir表示当前项目的目录，即当前项目的父目录的名称
 base.archivesName.set(projectDir.parentFile.name)

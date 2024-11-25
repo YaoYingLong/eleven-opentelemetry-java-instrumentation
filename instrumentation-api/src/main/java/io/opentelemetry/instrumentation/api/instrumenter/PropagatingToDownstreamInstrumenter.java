@@ -10,6 +10,8 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapSetter;
 
 /**
+ * 用于SpanKind为Client，即RPC客户端
+ *
  * 用于需要跨进程传递执行上下文参数的，且向下传递参数，如HTTP Client
  */
 final class PropagatingToDownstreamInstrumenter<REQUEST, RESPONSE>
@@ -27,6 +29,7 @@ final class PropagatingToDownstreamInstrumenter<REQUEST, RESPONSE>
   @Override
   public Context start(Context parentContext, REQUEST request) {
     Context newContext = super.start(parentContext, request);
+    // 向newContext中设置
     propagators.getTextMapPropagator().inject(newContext, request, setter);
     return newContext;
   }

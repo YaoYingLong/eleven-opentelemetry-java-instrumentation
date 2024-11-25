@@ -98,7 +98,7 @@ public abstract class InstrumentationTestRunner {
   }
 
   public final <T extends Consumer<TraceAssert>>
-      void waitAndAssertTracesWithoutScopeVersionVerification(Iterable<T> assertions) {
+  void waitAndAssertTracesWithoutScopeVersionVerification(Iterable<T> assertions) {
     waitAndAssertTraces(null, assertions, false);
   }
 
@@ -159,8 +159,8 @@ public abstract class InstrumentationTestRunner {
                         .filteredOn(
                             data ->
                                 data.getInstrumentationScopeInfo()
-                                        .getName()
-                                        .equals(instrumentationName)
+                                    .getName()
+                                    .equals(instrumentationName)
                                     && data.getName().equals(metricName))));
   }
 
@@ -192,8 +192,7 @@ public abstract class InstrumentationTestRunner {
    */
   public final <E extends Exception> void runWithSpan(String spanName, ThrowingRunnable<E> callback)
       throws E {
-    runWithSpan(
-        spanName,
+    runWithSpan(spanName,
         () -> {
           callback.run();
           return null;
@@ -204,8 +203,8 @@ public abstract class InstrumentationTestRunner {
    * Runs the provided {@code callback} inside the scope of an INTERNAL span with name {@code
    * spanName}.
    */
-  public final <T, E extends Throwable> T runWithSpan(
-      String spanName, ThrowingSupplier<T, E> callback) throws E {
+  public final <T, E extends Throwable> T runWithSpan(String spanName,
+      ThrowingSupplier<T, E> callback) throws E {
     return testInstrumenters.runWithSpan(spanName, callback);
   }
 

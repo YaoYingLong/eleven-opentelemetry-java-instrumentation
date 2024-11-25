@@ -23,6 +23,9 @@ public class RemappingUrlConnection extends URLConnection {
   // We need to prefix the names to prevent the gradle shadowJar relocation rules from touching
   // them. It's possible to do this by excluding this class from shading, but it may cause issue
   // with transitive dependencies down the line.
+  // 我们需要为名称添加前缀，以防止gradle shadowJar重定位规则触及它们。可以通过从着色中排除此类来执行此操作，但这可能会导致后续传递依赖项出现问题。
+  // 其实这里的作用：若传入的路径为io.opentelemetry.context.ContextKey，则替换为io.opentelemetry.javaagent.shaded.io.opentelemetry.context.ContextKey
+  // 当然要与ShadingRemapper中rule匹配，如传入的io.opentelemetry.semconv.*，则替换为io.opentelemetry.javaagent.shaded.io.opentelemetry.semconv.*
   private static final ShadingRemapper remapper =
       new ShadingRemapper(
           rule("#io.opentelemetry.api", "#io.opentelemetry.javaagent.shaded.io.opentelemetry.api"),

@@ -94,9 +94,8 @@ final class TestInstrumenters {
     }
   }
 
-  private static <T, E extends Throwable> T runWithInstrumenter(
-      String spanName, Instrumenter<String, Void> instrumenter, ThrowingSupplier<T, E> callback)
-      throws E {
+  private static <T, E extends Throwable> T runWithInstrumenter(String spanName,
+      Instrumenter<String, Void> instrumenter, ThrowingSupplier<T, E> callback) throws E {
     Context context = instrumenter.start(Context.current(), spanName);
     Throwable err = null;
     try (Scope ignored = context.makeCurrent()) {

@@ -1,12 +1,20 @@
 pluginManagement {
   plugins {
+    // 用于生成项目依赖的许可证报告
     id("com.github.jk1.dependency-license-report") version "2.5"
+    // 作用是帮助开发者将Java应用程序打包成Docker容器镜像，而不需要在本地安装Docker或编写Dockerfile
     id("com.google.cloud.tools.jib") version "3.4.0"
+    // 用于简化将Gradle插件发布到Gradle Plugin Portal的过程
     id("com.gradle.plugin-publish") version "1.2.1"
+    // 用于简化将项目发布到Maven Central的过程
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    // 用于在Gradle项目中支持Kotlin开发的插，将Kotlin编译为JVM字节码
     id("org.jetbrains.kotlin.jvm") version "1.9.10"
+    // 作用是简化在Gradle构建过程中使用JFlex的配置和执行，用于在Gradle项目中集成JFlex的插件，JFlex是一个用于生成词法分析器的工具
     id("org.xbib.gradle.plugin.jflex") version "3.0.0"
+    // 用于在Gradle项目中集成JAXB，XJC编译器的插件，XJC是一个工具，用于将XML架构（XSD文件）编译为Java类，使开发者能够更轻松地处理XML数据
     id("org.unbroken-dome.xjc") version "2.0.0"
+    // 用于在Gradle项目中集成GraalVM Native Image的插件，简化使用GraalVM Native Image的配置和构建过程
     id("org.graalvm.buildtools.native") version "0.9.27"
   }
 }
@@ -14,13 +22,17 @@ pluginManagement {
 plugins {
   // 用于构建扫描： ./gradlew build --scan
   id("com.gradle.enterprise") version "3.15.1"
+  // 用于在Gradle构建过程中收集和发送自定义用户数据的插件，插件允许开发者定义和收集构建过程中产生的自定义数据
   id("com.gradle.common-custom-user-data-gradle-plugin") version "1.11.3"
+  // 用于简化和增强Java工具链管理的插件，利用了Foojay（Friends of OpenJDK）提供的服务来解析和获取JDK的不同版本
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
   // this can't live in pluginManagement currently due to
   // https://github.com/bmuschko/gradle-docker-plugin/issues/1123
   // in particular, these commands are failing (reproducible locally):
   // ./gradlew :smoke-tests:images:servlet:buildLinuxTestImages pushMatrix -PsmokeTestServer=jetty
   // ./gradlew :smoke-tests:images:servlet:buildWindowsTestImages pushMatrix -PsmokeTestServer=jetty
+  // 用于与Docker进行交互的插件，提供了通过Docker Remote API控制和管理Docker容器、镜像和其他资源的功能
+  // apply false的作用是告诉Gradle在当前模块中引入插件但不立即应用它
   id("com.bmuschko.docker-remote-api") version "9.3.4" apply false
 }
 
@@ -38,6 +50,7 @@ val geAccessKey = System.getenv("GRADLE_ENTERPRISE_ACCESS_KEY") ?: ""
 // if GE access key is not given and we are in CI, then we publish to scans.gradle.com
 val useScansGradleCom = isCI && geAccessKey.isEmpty()
 
+// 配置和启用Gradle Enterprise的功能，以便在项目构建过程中利用其提供的优化和分析能力
 if (useScansGradleCom) {
   gradleEnterprise {
     buildScan {
@@ -53,6 +66,7 @@ if (useScansGradleCom) {
   }
 } else {
   gradleEnterprise {
+    // 扫描服务器
     server = gradleEnterpriseServer
     buildScan {
       isUploadInBackground = !isCI
@@ -89,6 +103,7 @@ buildCache {
 
 rootProject.name = "opentelemetry-java-instrumentation"
 
+// 将conventions构建项目，当成当前构建的一部分
 includeBuild("conventions")
 
 include(":custom-checks")

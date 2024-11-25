@@ -45,7 +45,7 @@ public final class EmbeddedInstrumentationProperties {
       logger.warning("Embedded properties loader has already been set up, further setPropertiesLoader() calls are ignored");
       return;
     }
-    System.out.println("EmbeddedInstrumentationProperties setPropertiesLoader() called");
+    // 默认会走到该处，传入的propertiesLoader为ExtensionClassLoader
     loader = propertiesLoader;
   }
 
