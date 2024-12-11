@@ -3,8 +3,10 @@ plugins {
   signing
 }
 
+// 发布插件
 publishing {
   publications {
+    // 用于获取一个MavenPublication实例，且实例名称为pluginMaven
     register<MavenPublication>("maven") {
       plugins.withId("java-platform") {
         from(components["javaPlatform"])
@@ -18,7 +20,7 @@ publishing {
           fromResolutionResult()
         }
       }
-
+      // 在项目配置阶段完成后执行发布插件钩子
       afterEvaluate {
         val mavenGroupId: String? by project
         if (mavenGroupId != null) {
@@ -32,10 +34,7 @@ publishing {
           throw GradleException("Unexpected groupId for this project or its parent ${project.parent}: $groupId")
         }
 
-        pom.description.set(
-          project.description
-            ?: "Instrumentation of Java libraries using OpenTelemetry."
-        )
+        pom.description.set(project.description ?: "Instrumentation of Java libraries using OpenTelemetry.")
       }
 
       pom {

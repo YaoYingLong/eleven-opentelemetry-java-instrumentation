@@ -3,6 +3,7 @@ import java.time.format.DateTimeFormatter
 
 plugins {
   // Don't apply java-conventions since no Java in this project and it interferes with play plugin.
+  // conventions模块中定义的插件，用于代码格式化和样式检查
   id("otel.spotless-conventions")
 
   id("com.google.cloud.tools.jib")

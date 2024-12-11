@@ -3,6 +3,7 @@ import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
 import org.gradle.configurationcache.extensions.capitalized
 
 plugins {
+  // conventions模块中定义的插件，用于代码格式化和样式检查
   id("otel.spotless-conventions")
 
   id("com.bmuschko.docker-remote-api")

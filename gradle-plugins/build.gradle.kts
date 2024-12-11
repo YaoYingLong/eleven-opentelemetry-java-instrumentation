@@ -3,10 +3,13 @@ import java.time.Duration
 
 plugins {
   `kotlin-dsl`
+  // 配合下面的io.github.gradle-nexus.publish-plugin插件一起使用的
   `maven-publish`
+  // 配合下面的io.github.gradle-nexus.publish-plugin插件一起使用的，发布到Maven Central通常需要对构建产物进行签名
   signing
 
   id("com.gradle.plugin-publish")
+  // 提供了一种方便的方式来配置和执行发布任务，可以简化将构建产物发布到Maven仓库的过程
   id("io.github.gradle-nexus.publish-plugin")
 }
 
@@ -51,6 +54,7 @@ dependencies {
 }
 
 tasks {
+  // 用于配置所有类型的Test任务中的通用属性
   withType<Test>().configureEach {
     useJUnitPlatform()
   }
@@ -68,36 +72,45 @@ tasks {
   }
 }
 
+// 用于创建和发布自定义Gradle插件
 gradlePlugin {
   website.set("https://opentelemetry.io")
   vcsUrl.set("https://github.com/open-telemetry/opentelemetry-java-instrumentation")
   plugins {
     get("io.opentelemetry.instrumentation.muzzle-generation").apply {
       displayName = "Muzzle safety net generation"
-      description = "https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/muzzle.md"
+      description =
+        "https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/muzzle.md"
       tags.set(listOf("opentelemetry", "instrumentation", "java"))
     }
     get("io.opentelemetry.instrumentation.muzzle-check").apply {
       displayName = "Checks instrumented libraries against muzzle safety net"
-      description = "https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/muzzle.md"
+      description =
+        "https://github.com/open-telemetry/opentelemetry-java-instrumentation/blob/main/docs/contributing/muzzle.md"
       tags.set(listOf("opentelemetry", "instrumentation", "java"))
     }
   }
 }
 
 java {
-  toolchain {
+  // toolchain允许开发者在构建过程中指定和使用不同版本的Java，而不必依赖于构建环境中默认安装的Java版本
+  toolchain {   // 默认情况下，Gradle会自动下载所需的 JDK
+    // 配置项目的jdk版本为jdk11
     languageVersion.set(JavaLanguageVersion.of(11))
   }
+  // 用于生成Javadoc JAR文件的快捷配置方法，Javadoc JAR文件是包含项目API文档的压缩文件
   withJavadocJar()
   withSourcesJar()
 }
 
+// 提供了一种方便的方式来配置和执行发布任务，可以简化将构建产物发布到Maven仓库的过程
 nexusPublishing {
+  // 指定要发布的包的Maven GroupID为：io.opentelemetry
   packageGroup.set("io.opentelemetry")
 
   repositories {
     sonatype {
+      // 用于认证，可以通过Gradle属性或环境变量传递，以保持敏感信息的安全
       username.set(System.getenv("SONATYPE_USER"))
       password.set(System.getenv("SONATYPE_KEY"))
     }
@@ -108,14 +121,18 @@ nexusPublishing {
 }
 
 tasks {
+  // 如果打的jar包的版本信息包含SNAPSHOT，则禁用publishPlugins任务
   publishPlugins {
     enabled = !version.toString().contains("SNAPSHOT")
   }
 }
 
+// 在项目配置阶段完成后执行发布插件钩子
 afterEvaluate {
+  // 发布插件
   publishing {
     publications {
+      // 用于获取一个MavenPublication实例，且实例名称为pluginMaven
       named<MavenPublication>("pluginMaven") {
         pom {
           name.set("OpenTelemetry Instrumentation Gradle Plugins")

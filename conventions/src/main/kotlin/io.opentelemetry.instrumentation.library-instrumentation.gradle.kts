@@ -1,4 +1,5 @@
 plugins {
+  // 可以使用library、testLibrary、latestDepTestLibrary直接添加依赖，生成projectName.properties版本文件
   id("io.opentelemetry.instrumentation.base")
 }
 

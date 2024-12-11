@@ -4,16 +4,20 @@ plugins {
   id("idea")
 
   id("io.github.gradle-nexus.publish-plugin")
+  // conventions模块中定义的插件，用于代码格式化和样式检查
   id("otel.spotless-conventions")
 }
 
 apply(from = "version.gradle.kts")
 
+// 提供了一种方便的方式来配置和执行发布任务，可以简化将构建产物发布到Maven仓库的过程
 nexusPublishing {
+  // 指定要发布的包的Maven GroupID为：io.opentelemetry
   packageGroup.set("io.opentelemetry")
 
   repositories {
     sonatype {
+      // 用于认证，可以通过Gradle属性或环境变量传递，以保持敏感信息的安全
       username.set(System.getenv("SONATYPE_USER"))
       password.set(System.getenv("SONATYPE_KEY"))
     }

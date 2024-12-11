@@ -112,7 +112,7 @@ dependencies {
 val javaagentDependencies = dependencies
 
 // collect all bootstrap and javaagent instrumentation dependencies
-// 用于访问根项目的子项目instrumentation的所有子项目
+// 用于访问根项目的子项目instrumentation的所有子项目，目的是通过每个项目使用的不同的插件将子项目依赖放入到不同的依赖分组中
 project(":instrumentation").subprojects {
   val subProj = this
 
@@ -151,10 +151,13 @@ tasks {
   }
 
   // 在Gradle的任务容器中注册一个新的ShadowJar任务，且委托给buildBootstrapLibs，任务在需要时才被实际配置
+  // 这里其实将通过Bootstrap类加载器加载的代码单独打成一个jar包
   val buildBootstrapLibs by registering(ShadowJar::class) {
     configurations = listOf(bootstrapLibs)
 
     // exclude the agent part of the javaagent-extension-api; these classes will be added in relocate tasks
+    // javaagent-extension-api项目即被bootstrapLibs依赖分组引入，也被baseJavaagentLibs依赖分组引入
+    // extension目录下的代码需要放到/inst目录，所以需要排除，只将bootstrap目录下的代码打包到bootstrapLibs.jar中
     exclude("io/opentelemetry/javaagent/extension/**")
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
@@ -162,9 +165,11 @@ tasks {
     archiveFileName.set("bootstrapLibs.jar")
   }
 
+  // 将baseJavaagentLibs中依赖的项目单独打成一个baseJavaagentLibs-relocated.jar包
   val relocateBaseJavaagentLibs by registering(ShadowJar::class) {
     configurations = listOf(baseJavaagentLibs)
 
+    // 从依赖中排除bootstrap相关的依赖
     excludeBootstrapClasses()
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
@@ -172,9 +177,11 @@ tasks {
     archiveFileName.set("baseJavaagentLibs-relocated.jar")
   }
 
+  // 将instrumentation目录下的代码，单独打成一个javaagentLibs-relocated.jar包
   val relocateJavaagentLibs by registering(ShadowJar::class) {
     configurations = listOf(javaagentLibs)
 
+    // 从依赖中排除bootstrap相关的依赖
     excludeBootstrapClasses()
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
@@ -185,16 +192,22 @@ tasks {
   // Includes everything needed for OOTB experience
   // existing的作用是获取类型为ShadowJar的已注册任务的引用
   val shadowJar by existing(ShadowJar::class) {
+    // 依赖buildBootstrapLibs任务打的jar包
     dependsOn(buildBootstrapLibs)
+    // 把buildBootstrapLibs任务打的jar包文件拷贝到当前任务
     from(zipTree(buildBootstrapLibs.get().archiveFile))
 
+    // 将instrumentation目录下的代码单独打成的jar包拷贝到当前任务
     dependsOn(relocateJavaagentLibs)
+    // 将传入的jar的代码文件树放到inst目录下，且将所有的.class后缀改为.classdata后缀
     isolateClasses(relocateJavaagentLibs.get().archiveFile)
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
+    // 生成opentelemetry-javaagent-1.31.0.jar包，也是我们最终使用的包
     archiveClassifier.set("")
 
+    // 设置manifest内容
     manifest {
       attributes(jar.get().manifest.attributes)
       attributes(
@@ -209,14 +222,19 @@ tasks {
 
   // Includes only the agent machinery and required instrumentations
   val baseJavaagentJar by registering(ShadowJar::class) {
+    // 依赖buildBootstrapLibs任务打的jar包
     dependsOn(buildBootstrapLibs)
+    // 把buildBootstrapLibs任务打的jar包文件拷贝到当前任务
     from(zipTree(buildBootstrapLibs.get().archiveFile))
 
+    // 将baseJavaagentLibs中依赖的项目单独打成一个baseJavaagentLibs-relocated.jar引入当前任务
     dependsOn(relocateBaseJavaagentLibs)
+    // 将传入的jar的代码文件树放到inst目录下，且将所有的.class后缀改为.classdata后缀
     isolateClasses(relocateBaseJavaagentLibs.get().archiveFile)
 
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
+    // 生成opentelemetry-javaagent-1.31.0-base.jar包
     archiveClassifier.set("base")
 
     manifest {
@@ -224,6 +242,7 @@ tasks {
     }
   }
 
+  // opentelemetry-javaagent-1.31.0-dontuse.jar，就是对生成的jar包进行一个分类
   jar {
     // Empty jar that cannot be used for anything and isn't published.
     archiveClassifier.set("dontuse")
@@ -234,10 +253,12 @@ tasks {
     isCanBeResolved = false
   }
 
+  // 将baseJavaagentJar文件添加到baseJar配置中，标记为项目的一个构建产物
   artifacts {
     add("baseJar", baseJavaagentJar)
   }
 
+  // 执行assemble任务时，会先执行shadowJar和baseJavaagentJar任务
   assemble {
     dependsOn(shadowJar, baseJavaagentJar)
   }
@@ -321,7 +342,7 @@ licenseReport {
   filters = arrayOf(LicenseBundleNormalizer("$projectDir/license-normalizer-bundle.json", true))
 }
 
-//
+// 将传入的jar的代码文件树放到inst目录下，且将所有的.class后缀改为.classdata后缀
 fun CopySpec.isolateClasses(jar: Provider<RegularFile>) {
   // zipTree的作用是用于解压传入的jar文件，且将解压后的内容作为文件树返回
   from(zipTree(jar)) {
@@ -337,6 +358,7 @@ fun CopySpec.isolateClasses(jar: Provider<RegularFile>) {
 }
 
 // exclude bootstrap projects from javaagent libs - they won't be added to inst/
+// 从依赖中排除bootstrap相关的依赖
 fun ShadowJar.excludeBootstrapClasses() {
   dependencies {
     exclude(project(":instrumentation-api"))
@@ -346,6 +368,8 @@ fun ShadowJar.excludeBootstrapClasses() {
   }
 
   // exclude the bootstrap part of the javaagent-extension-api
+  // dependencies中通过baseJavaagentLibs(project(":javaagent-extension-api"))，将javaagent-extension-api项目生成的代码放入baseJavaagentLibs分组中
+  // 这里是将javaagent-extension-api项目中的bootstrap目录下的代码，从baseJavaagentLibs中排除掉，通过bootstrap classloader来加载
   exclude("io/opentelemetry/javaagent/bootstrap/**")
 }
 

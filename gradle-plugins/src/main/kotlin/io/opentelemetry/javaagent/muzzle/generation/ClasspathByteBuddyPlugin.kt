@@ -15,6 +15,11 @@ import java.net.URL
 import java.net.URLClassLoader
 
 /**
+ *
+ * 从版本1.10.15开始ByteBuddy gradle插件转换要求插件类作为类实例而不是类名字符串给出
+ * 为了仍然能够使用不是构建脚本依赖项的插件实现，这通过将委托类名和类路径作为参数并在实例化插件时
+ * 从提供的类加载器加载插件类来重新实现以前的逻辑
+ *
  * Starting from version 1.10.15, ByteBuddy gradle plugin transformations require that plugin
  * classes are given as class instances instead of a class name string. To be able to still use a
  * plugin implementation that is not a buildscript dependency, this reimplements the previous logic

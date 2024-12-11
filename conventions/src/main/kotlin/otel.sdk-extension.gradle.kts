@@ -2,8 +2,10 @@
 // but since they depend on the SDK they must be loaded by the agent CL in the javaagent
 
 plugins {
+  // 可以使用library、testLibrary、latestDepTestLibrary直接添加依赖，生成projectName.properties版本文件
   id("io.opentelemetry.instrumentation.library-instrumentation")
 
+  // conventions模块中定义的插件，用于生成测试覆盖率报告
   id("otel.jacoco-conventions")
   id("otel.java-conventions")
   id("otel.publish-conventions")

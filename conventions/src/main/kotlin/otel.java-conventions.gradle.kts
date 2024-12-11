@@ -11,7 +11,9 @@ plugins {
   idea
 
   id("otel.errorprone-conventions")
+  // conventions模块中定义的插件，用于代码格式化和样式检查
   id("otel.spotless-conventions")
+  // 帮助开发者识别和管理软件中的安全漏洞，特别是在使用第三方库时
   id("org.owasp.dependencycheck")
 }
 
