@@ -23,6 +23,7 @@ public class JavaHttpClientSingletons {
   private static final Instrumenter<HttpRequest, HttpResponse<?>> INSTRUMENTER;
 
   static {
+    // TextMapPropagator相关的实现
     SETTER = new HttpHeadersSetter(GlobalOpenTelemetry.getPropagators());
 
     INSTRUMENTER =

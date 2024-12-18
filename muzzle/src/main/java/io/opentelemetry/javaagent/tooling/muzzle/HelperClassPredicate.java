@@ -33,10 +33,18 @@ public final class HelperClassPredicate {
    *
    * <p>Aside from "standard" instrumentation helper class packages, instrumentation modules can
    * pass an additional predicate to include instrumentation helper classes from 3rd party packages.
+   *
+   * className是否以io.opentelemetry.javaagent.instrumentation.为前缀
+   * 或className是以io.opentelemetry.instrumentation.为前缀，且不以io.opentelemetry.instrumentation.api.为前缀
+   * 或调用的具体的InstrumentationModule::isHelperClass方法返回为true
+   * 满足以上条件之一返回true
    */
   public boolean isHelperClass(String className) {
+    // 包路径是否以io.opentelemetry.javaagent.instrumentation.为前缀，是的话返回true
     return isJavaagentHelperClass(className)
+        // className是以io.opentelemetry.instrumentation.为前缀，且不以io.opentelemetry.instrumentation.api.为前缀
         || isLibraryHelperClass(className)
+        // 调用的具体的InstrumentationModule::isHelperClass方法返回的值
         || additionalLibraryHelperClassPredicate.test(className);
   }
 
@@ -44,6 +52,14 @@ public final class HelperClassPredicate {
     return !isHelperClass(className) && !isBootstrapClass(className);
   }
 
+  /**
+   * className是以io.opentelemetry.instrumentation.api.为前缀
+   * 或以io.opentelemetry.javaagent.bootstrap.为前缀
+   * 或以io.opentelemetry.api.为前缀
+   * 或以io.opentelemetry.context.为前缀
+   * 或以io.opentelemetry.semconv.为前缀
+   * 满足以上条件之一返回true
+   */
   private static boolean isBootstrapClass(String className) {
     return className.startsWith(INSTRUMENTATION_API_PACKAGE)
         || className.startsWith("io.opentelemetry.javaagent.bootstrap.")
@@ -52,10 +68,16 @@ public final class HelperClassPredicate {
         || className.startsWith("io.opentelemetry.semconv.");
   }
 
+  /**
+   * 包路径是否以io.opentelemetry.javaagent.instrumentation.为前缀，是的话返回true
+   */
   private static boolean isJavaagentHelperClass(String className) {
     return className.startsWith(JAVAAGENT_INSTRUMENTATION_PACKAGE);
   }
 
+  /**
+   * className是以io.opentelemetry.instrumentation.为前缀，且不以io.opentelemetry.instrumentation.api.为前缀
+   */
   private static boolean isLibraryHelperClass(String className) {
     return className.startsWith(LIBRARY_INSTRUMENTATION_PACKAGE)
         && !className.startsWith(INSTRUMENTATION_API_PACKAGE);

@@ -32,6 +32,7 @@ public final class LettuceSingletons {
 
     INSTRUMENTER = Instrumenter.<RedisCommand<?, ?, ?>, Void>builder(GlobalOpenTelemetry.get(),
                 INSTRUMENTATION_NAME,
+                // 这里获取的SpanName，其实就是dbAttributesGetter.getOperation获取的内容
                 DbClientSpanNameExtractor.create(dbAttributesGetter))
             .addAttributesExtractor(DbClientAttributesExtractor.create(dbAttributesGetter))
             .buildInstrumenter(SpanKindExtractor.alwaysClient());

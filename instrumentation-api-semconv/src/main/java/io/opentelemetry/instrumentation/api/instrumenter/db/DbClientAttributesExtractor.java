@@ -36,6 +36,7 @@ public final class DbClientAttributesExtractor<REQUEST, RESPONSE>
 
   @Override
   public void onStart(AttributesBuilder attributes, Context parentContext, REQUEST request) {
+    // 这里会向attributes中添加db.system、db.user、db.name
     super.onStart(attributes, parentContext, request);
 
     internalSet(attributes, SemanticAttributes.DB_STATEMENT, getter.getStatement(request));

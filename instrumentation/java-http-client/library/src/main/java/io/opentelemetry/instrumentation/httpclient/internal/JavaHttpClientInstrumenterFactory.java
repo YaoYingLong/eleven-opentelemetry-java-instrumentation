@@ -58,6 +58,7 @@ public final class JavaHttpClientInstrumenterFactory {
     if (emitExperimentalHttpClientMetrics) {
       builder.addOperationMetrics(HttpClientExperimentalMetrics.get());
     }
+    // 这里虽然是client，但是并没有设置setter
     return builder.buildInstrumenter(SpanKindExtractor.alwaysClient());
   }
 

@@ -1,10 +1,12 @@
 import net.ltgt.gradle.errorprone.errorprone
 
 plugins {
+  // 一个静态分析工具，旨在检测Java代码中的常见错误和潜在问题。它可以帮助开发者在编译时捕获一些可能导致运行时错误的编程错误
   id("net.ltgt.errorprone")
 }
 
 dependencies {
+  // 添加Error Prone作为编译器依赖
   errorprone("com.google.errorprone:error_prone_core")
   errorprone(project(":custom-checks"))
 }
@@ -12,6 +14,7 @@ dependencies {
 val disableErrorProne = properties["disableErrorProne"]?.toString()?.toBoolean() ?: false
 
 tasks {
+  // 额外定制JavaCompile
   withType<JavaCompile>().configureEach {
     with(options) {
       errorprone {

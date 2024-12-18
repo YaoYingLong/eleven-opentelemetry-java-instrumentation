@@ -273,6 +273,8 @@ public final class InstrumenterBuilder<REQUEST, RESPONSE> {
   /**
    * Returns a new {@link Instrumenter} which will create spans with kind determined by the passed
    * {@link SpanKindExtractor} and do no context propagation.
+   *
+   * 通过该方法创建的Instrumenter，不会执行context propagation
    */
   public Instrumenter<REQUEST, RESPONSE> buildInstrumenter(
       SpanKindExtractor<? super REQUEST> spanKindExtractor) {

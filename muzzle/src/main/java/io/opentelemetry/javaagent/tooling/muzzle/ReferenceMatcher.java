@@ -36,8 +36,11 @@ public final class ReferenceMatcher {
 
   public static ReferenceMatcher of(InstrumentationModule instrumentationModule) {
     return new ReferenceMatcher(
+        // 若为非InstrumentationModuleMuzzle实例大多数是返回空列表
         InstrumentationModuleMuzzle.getHelperClassNames(instrumentationModule),
+        // 如果非InstrumentationModuleMuzzle实例返回空列表
         InstrumentationModuleMuzzle.getMuzzleReferences(instrumentationModule),
+        // 调用具体的InstrumentationModule的isHelperClass返回的true和false
         instrumentationModule::isHelperClass);
   }
 
@@ -101,6 +104,12 @@ public final class ReferenceMatcher {
    */
   private List<Mismatch> checkMatch(ClassRef reference, TypePool typePool, ClassLoader loader) {
     try {
+      /*
+       * className是否以io.opentelemetry.javaagent.instrumentation.为前缀
+       * 或className是以io.opentelemetry.instrumentation.为前缀，且不以io.opentelemetry.instrumentation.api.为前缀
+       * 或调用的具体的InstrumentationModule::isHelperClass方法返回为true
+       * 满足以上条件之一返回true、
+       */
       if (helperClassPredicate.isHelperClass(reference.getClassName())) {
         // make sure helper class is registered
         if (!helperClassNames.contains(reference.getClassName())) {

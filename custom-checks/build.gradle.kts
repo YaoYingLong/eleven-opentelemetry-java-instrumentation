@@ -11,7 +11,9 @@ dependencies {
   testImplementation("com.google.errorprone:error_prone_test_helpers")
 }
 
+// otelJava在插件otel.java-conventions中被定义，且在该插件中使用
 otelJava {
+  // 设置otel.java-conventions插件中使用到的otelJava.minJavaVersionSupported为JDK11
   minJavaVersionSupported.set(JavaVersion.VERSION_11)
 }
 
@@ -64,6 +66,8 @@ tasks.withType<Test>().configureEach {
 // a circular dependency if trying to compile this project with that still there. So we filter this
 // project out.
 configurations {
+  // 我们的约定将该项目应用为容易出错的配置中的依赖项，如果尝试在该项目仍然存在的情况下编译该项目
+  // 则会导致循环依赖项。所以我们过滤掉这个项目
   named("errorprone") {
     dependencies.removeIf {
       it is ProjectDependency && it.dependencyProject == project

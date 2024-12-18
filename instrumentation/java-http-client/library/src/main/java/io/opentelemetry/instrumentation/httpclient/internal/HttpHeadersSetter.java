@@ -35,6 +35,7 @@ public final class HttpHeadersSetter {
             headerMap,
             (carrier, key, value) -> {
               if (carrier != null) {
+                // 这里的carrier其实就是headerMap
                 carrier.put(key, Collections.singletonList(value));
               }
             });

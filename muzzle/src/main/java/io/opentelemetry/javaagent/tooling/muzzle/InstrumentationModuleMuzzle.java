@@ -57,12 +57,15 @@ public interface InstrumentationModuleMuzzle {
    * InstrumentationModule#getAdditionalHelperClassNames()}.
    */
   static List<String> getHelperClassNames(InstrumentationModule module) {
+    // 如果module是InstrumentationModuleMuzzle实例，则调用其getMuzzleHelperClassNames方法，否则返回空列表
     List<String> muzzleHelperClassNames = module instanceof InstrumentationModuleMuzzle
             ? ((InstrumentationModuleMuzzle) module).getMuzzleHelperClassNames()
             : Collections.emptyList();
 
+    // 绝大多数InstrumentationModule实例使用InstrumentationModule中定义的默认方法，返回空列表
     List<String> additionalHelperClassNames = module.getAdditionalHelperClassNames();
 
+    // 下面的逻辑其实就是合并muzzleHelperClassNames和additionalHelperClassNames的内容
     if (additionalHelperClassNames.isEmpty()) {
       return muzzleHelperClassNames;
     }

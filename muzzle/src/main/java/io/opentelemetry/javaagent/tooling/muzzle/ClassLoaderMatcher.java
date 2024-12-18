@@ -21,6 +21,8 @@ import java.util.Set;
  *
  * @see InstrumentationModule
  * @see ReferenceMatcher
+ *     <p>
+ *     这个类的主要作用是验证一个给定的 ClassLoader 是否满足某个 InstrumentationModule 的所有期望
  */
 public class ClassLoaderMatcher {
 
@@ -33,18 +35,22 @@ public class ClassLoaderMatcher {
    */
   public static Map<String, List<Mismatch>> matchesAll(
       ClassLoader classLoader, boolean injectHelpers, Set<String> excludedInstrumentationNames) {
+
+    // 通过反射的方式将ClassLoaderHasClassesNamedMatcher的useCache属性设置为false
     disableMatcherCache();
 
     Map<String, List<Mismatch>> result = new HashMap<>();
+    // 通过SPI机制加载InstrumentationModule所有实现类，器通过ClassLoaderMatcher的类加载器来加载
     ServiceLoader.load(InstrumentationModule.class, ClassLoaderMatcher.class.getClassLoader())
-        .forEach(
-            module -> {
-              if (module.instrumentationNames().stream()
-                  .noneMatch(excludedInstrumentationNames::contains)) {
-                result.put(
-                    module.getClass().getName(), matches(module, classLoader, injectHelpers));
-              }
-            });
+        .forEach(module -> {
+          // 每个InstrumentationModule实现类中都调用super的该访法，用于定义mainInstrumentationName和additionalInstrumentationNames
+          // 这里module.instrumentationNames()就是获取通过构造方法设置的去重后的instrumentationNames
+          // 如果instrumentationName不包含在excludedInstrumentationNames列表中，则返回true，执行if代码块中的代码
+          if (module.instrumentationNames().stream().noneMatch(excludedInstrumentationNames::contains)) {
+            //
+            result.put(module.getClass().getName(), matches(module, classLoader, injectHelpers));
+          }
+        });
     return result;
   }
 
@@ -54,6 +60,7 @@ public class ClassLoaderMatcher {
    */
   private static List<Mismatch> matches(
       InstrumentationModule instrumentationModule, ClassLoader classLoader, boolean injectHelpers) {
+
     List<Mismatch> mismatches = checkReferenceMatcher(instrumentationModule, classLoader);
     mismatches = checkModuleClassLoaderMatcher(instrumentationModule, classLoader, mismatches);
     if (injectHelpers) {
@@ -91,11 +98,11 @@ public class ClassLoaderMatcher {
       instrumentationModule.registerHelperResources(helperResourceBuilder);
       if (!allHelperClasses.isEmpty()) {
         new HelperInjector(
-                instrumentationModule.instrumentationName(),
-                allHelperClasses,
-                helperResourceBuilder.getResources(),
-                ClassLoaderMatcher.class.getClassLoader(),
-                null)
+            instrumentationModule.instrumentationName(),
+            allHelperClasses,
+            helperResourceBuilder.getResources(),
+            ClassLoaderMatcher.class.getClassLoader(),
+            null)
             .transform(null, null, classLoader, null, null);
       }
     } catch (RuntimeException e) {
@@ -104,11 +111,11 @@ public class ClassLoaderMatcher {
     return mismatches;
   }
 
+  // 通过反射的方式将ClassLoaderHasClassesNamedMatcher的useCache属性设置为false
   private static void disableMatcherCache() {
     try {
-      Class<?> matcherClass =
-          Class.forName(
-              "io.opentelemetry.javaagent.extension.matcher.ClassLoaderHasClassesNamedMatcher");
+      Class<?> matcherClass = Class.forName(
+          "io.opentelemetry.javaagent.extension.matcher.ClassLoaderHasClassesNamedMatcher");
       Field field = matcherClass.getDeclaredField("useCache");
       field.setAccessible(true);
       field.setBoolean(null, false);

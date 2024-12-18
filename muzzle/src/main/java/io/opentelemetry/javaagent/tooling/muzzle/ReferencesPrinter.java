@@ -25,18 +25,18 @@ public final class ReferencesPrinter {
    * InstrumentationModuleMuzzle#getMuzzleReferences()} method to the standard output.
    */
   public static void printMuzzleReferences() {
+    // 遍历通过SPI机制加载的所有的InstrumentationModule，类加载器是加载ReferencesPrinter类的
     for (InstrumentationModule instrumentationModule :
         ServiceLoader.load(InstrumentationModule.class, ReferencesPrinter.class.getClassLoader())) {
       try {
         System.out.println(instrumentationModule.getClass().getName());
-        for (ClassRef ref :
-            InstrumentationModuleMuzzle.getMuzzleReferences(instrumentationModule).values()) {
+        for (ClassRef ref : InstrumentationModuleMuzzle.getMuzzleReferences(instrumentationModule)
+            .values()) {
           System.out.print(prettyPrint(ref));
         }
       } catch (RuntimeException e) {
-        String message =
-            "Unexpected exception printing references for "
-                + instrumentationModule.getClass().getName();
+        String message = "Unexpected exception printing references for "
+            + instrumentationModule.getClass().getName();
         System.out.println(message);
         throw new IllegalStateException(message, e);
       }
@@ -48,8 +48,7 @@ public final class ReferencesPrinter {
     if (!ref.getSources().isEmpty()) {
       builder.append(INDENT).append(INDENT).append("Sources:").append(lineSeparator());
       for (Source source : ref.getSources()) {
-        builder
-            .append(INDENT)
+        builder.append(INDENT)
             .append(INDENT)
             .append(INDENT)
             .append("at: ")

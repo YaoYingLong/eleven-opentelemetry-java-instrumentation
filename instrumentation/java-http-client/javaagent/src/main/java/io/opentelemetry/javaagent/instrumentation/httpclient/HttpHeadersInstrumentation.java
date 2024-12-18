@@ -39,6 +39,8 @@ public class HttpHeadersInstrumentation implements TypeInstrumentation {
 
     @Advice.OnMethodExit(onThrowable = Throwable.class, suppress = Throwable.class)
     public static void methodExit(@Advice.Return(readOnly = false) HttpHeaders headers) {
+      // 这里是调用TextMapPropagator的逻辑，其实就是调用HttpHeadersSetter的inject方法
+      // 最终调用所有TextMapPropagator的inject方法，将需要传播的字段设置到请求头HttpHeaders中
       headers = setter().inject(headers);
     }
   }

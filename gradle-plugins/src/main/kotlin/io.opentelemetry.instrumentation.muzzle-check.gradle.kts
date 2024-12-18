@@ -33,6 +33,7 @@ plugins {
 }
 
 // Select a random set of versions to test
+// 从系统属性中获取otel.javaagent.muzzle.versions.limit配置的值，默认为10
 val RANGE_COUNT_LIMIT = Integer.getInteger("otel.javaagent.muzzle.versions.limit", 10)
 
 val muzzleConfig = extensions.create<MuzzleExtension>("muzzle")

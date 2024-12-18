@@ -1,8 +1,11 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.exclude
+
 plugins {
   `java-library`
 
   id("io.opentelemetry.instrumentation.base")
   id("io.opentelemetry.instrumentation.muzzle-generation")
+  // 对于ShadowJar类型的任务，通过relocate用于重定位JAR文件中的类或包，防止应用冲突
   id("io.opentelemetry.instrumentation.javaagent-shadowing")
 }
 
@@ -18,6 +21,7 @@ dependencies {
 dependencies {
   // Integration tests may need to define custom instrumentation modules so we include the standard
   // instrumentation infrastructure for testing too.
+  // 集成测试可能需要定义自定义的instrumentation模块，因此我们也引入用于测试的标准instrumentation基础设施
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api")
   compileOnly("io.opentelemetry.instrumentation:opentelemetry-instrumentation-api-semconv")
   compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-bootstrap")

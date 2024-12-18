@@ -29,6 +29,7 @@ package io.opentelemetry.javaagent.muzzle.matcher
 // Runs in special class loader so tedious to provide access to the Gradle logger.
 class MuzzleGradlePluginUtil {
 
+  //
   companion object {
     /**
      * Verifies that all instrumentations present in the {@code agentClassLoader} can be safely
@@ -55,10 +56,11 @@ class MuzzleGradlePluginUtil {
     fun assertInstrumentationMuzzled(agentClassLoader: ClassLoader, userClassLoader: ClassLoader,
                                      excludedInstrumentationNames: Set<String>, assertPass: Boolean) {
 
+      // 通过agentClassLoader来加载ClassLoaderMatcher
       val matcherClass = agentClassLoader.loadClass("io.opentelemetry.javaagent.tooling.muzzle.ClassLoaderMatcher")
 
-      // We cannot reference Mismatch class directly here, because we are loaded from a different
-      // class loader.
+      // We cannot reference Mismatch class directly here, because we are loaded from a different class loader.
+      // 不能在这里直接引用Mismatch类，因为是从不同的类加载器加载的，通过反射的方式调用ClassLoaderMatcher的matchesAll方法
       val allMismatches = matcherClass
         .getMethod("matchesAll", ClassLoader::class.java, Boolean::class.javaPrimitiveType, Set::class.java)
         .invoke(null, userClassLoader, assertPass, excludedInstrumentationNames)
@@ -91,6 +93,8 @@ class MuzzleGradlePluginUtil {
      * instrumentationClassLoader}.
      *
      * <p>Called by the {@code printMuzzleReferences} gradle task.
+     *
+     * 该方法就只是打印一下所有的InstrumentationModule名称信息
      */
     fun printMuzzleReferences(instrumentationClassLoader: ClassLoader) {
       val matcherClass = instrumentationClassLoader.loadClass(

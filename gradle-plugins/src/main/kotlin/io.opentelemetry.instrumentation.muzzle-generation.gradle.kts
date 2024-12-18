@@ -40,6 +40,8 @@ val pluginName = "io.opentelemetry.javaagent.tooling.muzzle.generation.MuzzleCod
  * - isCanBeResolved为true表示，configurations被消费者使用，将其管理的一组dependencies解析为文件
  * - isCanBeConsumed为true表示，configurations被生产者使用，公开其管理的artifacts及其dependencies以供其他项目使用
  * - extendsFrom表示子configurations继承父configurations的dependencies
+ *
+ *
  */
 val codegen by configurations.creating {
   isCanBeConsumed = false
@@ -71,8 +73,7 @@ tasks {
   }
 }
 
-fun createLanguageTask(
-  compileTaskProvider: TaskProvider<*>, name: String): TaskProvider<*> {
+fun createLanguageTask(compileTaskProvider: TaskProvider<*>, name: String): TaskProvider<*> {
   return tasks.register<ByteBuddySimpleTask>(name) {
     setGroup("Byte Buddy")
     outputs.cacheIf { true }
@@ -81,8 +82,7 @@ fun createLanguageTask(
     val compileTask = compileTaskProvider.get()
     if (compileTask is AbstractCompile) {
       val classesDirectory = compileTask.destinationDirectory.asFile.get()
-      val rawClassesDirectory: File = File(classesDirectory.parent, "${classesDirectory.name}raw")
-        .absoluteFile
+      val rawClassesDirectory: File = File(classesDirectory.parent, "${classesDirectory.name}raw").absoluteFile
       dependsOn(compileTask)
       compileTask.destinationDirectory.set(rawClassesDirectory)
       source = rawClassesDirectory

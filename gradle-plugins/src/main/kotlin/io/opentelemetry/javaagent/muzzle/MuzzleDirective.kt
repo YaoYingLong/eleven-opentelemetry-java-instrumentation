@@ -12,6 +12,7 @@ import java.util.stream.Collectors
 
 abstract class MuzzleDirective {
 
+  // kotlin中使用val声明类中可变属性
   abstract val name: Property<String>
   abstract val group: Property<String>
   abstract val module: Property<String>
@@ -26,12 +27,16 @@ abstract class MuzzleDirective {
   internal abstract val coreJdk: Property<Boolean> // use coreJdk() function below to enable
 
   init {
+    // 设置默认值为空字符串
     name.convention("")
     classifier.convention("")
+    // 设置默认值为空Set
     skipVersions.convention(emptySet())
+    // 设置默认值为空list
     additionalDependencies.convention(listOf())
     excludedDependencies.convention(listOf())
     excludedInstrumentationNames.convention(listOf())
+    // 设置默认值为false
     assertPass.convention(false)
     assertInverse.convention(false)
     coreJdk.convention(false)
@@ -73,9 +78,11 @@ abstract class MuzzleDirective {
     skipVersions.addAll(*version)
   }
 
+  // 将名称中非数字和字母的字符替换为-
   internal val nameSlug: String
     get() = NORMALIZE_NAME_SLUG.replace(name.get().trim(), "-")
 
+  // 遍历skipVersions中的数据，并转成小写
   internal val normalizedSkipVersions: Set<String>
     get() = skipVersions.getOrElse(setOf()).stream()
       .map(String::lowercase)

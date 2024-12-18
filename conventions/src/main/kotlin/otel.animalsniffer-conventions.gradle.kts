@@ -3,6 +3,7 @@ import ru.vyarus.gradle.plugin.animalsniffer.AnimalSniffer
 plugins {
   `java-library`
 
+  // 检查编译生成的字节码是否与特定的Java API版本或其他API兼容
   id("ru.vyarus.animalsniffer")
 }
 

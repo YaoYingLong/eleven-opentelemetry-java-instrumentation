@@ -119,10 +119,12 @@ javaPlatform {
 
 dependencies {
   for (bom in DEPENDENCY_BOMS) {
+    // enforcedPlatform强制所有模块使用BOM中定义的版本
     api(enforcedPlatform(bom))
     val split = bom.split(':')
     dependencyVersions[split[0]] = split[2]
   }
+  // constraints用于定义依赖约束，这些约束可以影响依赖解析时的版本选择
   constraints {
     for (dependency in CORE_DEPENDENCIES) {
       api(dependency)
